@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+	<title>Insert title here</title>
+	<!-- HEADER:BEGIN -->
+	<link rel="stylesheet" type="text/css" href="/css/custom/validator.css" />
+	<script type="text/javascript" src="/scripts/JAST.src.js"></script>
+	<script type="text/javascript" src="/scripts/JAST-ajaxSubmit.src.js"></script>
+	<!-- HEADER:END -->
+	
+	<script type="text/javascript">
+		_.onStartup(function(){
+				/* init-script:begin */
+				_.AjaxSubmit.setup('{var:input.form}', {
+					ajaxParams: {
+						__ajaxMode:	'y'
+					},
+					onDone: function(id, buffer){
+						
+						var i = buffer.indexOf('@');
+						if(i!=-1){
+							
+							var newSavedId = buffer.substr(0,i);
+							
+							if(_._id('ID')) _._id('ID').value = newSavedId.trim();
+							if(_._id('id')) _._id('id').value = newSavedId.trim();
+							
+							buffer=buffer.substr(i+1);
+							
+						}   
+						
+						_._id('messages').innerHTML = buffer;
+						var regEx = new RegExp(/\<\!\-\- reload (.*?) \-\-\>/);
+						var results = regEx.exec(buffer);
+						if(results!==null){
+							var newURL = results[1].toString();
+							window.location.href = newURL;
+							return false;
+						}
+						
+						var i = buffer.indexOf('<!-- update: ');
+						if(i!==-1){
+							
+							var results = buffer.substring(i+14, buffer.length);
+							
+							i = results.indexOf('-->');
+							s = results.substring(0, i);
+							s = s.replace(/,(\r?\n?)+/ig, ",");
+							s = s.replace(/,\s$/ig, "");
+							var updates = _.strings.split(s, ",");
+							var url = window.location.href;
+							i = url.indexOf('#');
+							if(i>-1) url = url.substring(0, i);
+							var idTab='';
+							for(var i = 0; i<(updates.length-1); i++){
+								var upd = _.strings.split(updates[i],' ');
+								callUrl = url;
+								idTab=upd[0];
+								if(upd[2]!=null) callUrl += ((url.indexOf('?')!=-1)?'&':'?') + upd[2];
+								_.xhttp.get(callUrl, {viewToUse: upd[1]}, 'if(_._id(\''+idTab+'\')) _._id(\''+idTab+'\').innerHTML = %%BUFFER%%');
+							}
+						}
+						
+						if(_._id('save-notify')) setTimeout(fadeSaveNotify, 2000);
+						if(typeof(afterSave) =='function') afterSave();
+						
+					}
+				});
+				/* init-script:end */
+			}
+		);
+		/* script:begin */
+		function fadeSaveNotify(){
+			_.fx.fadeOut('save-notify', 30, 0, 5);
+		}
+		/* script:end */
+
+	</script>
+	
+	
+</head>
+<body>
+</body>
+</html>

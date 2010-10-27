@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<title>Insert title here</title>
+	<!-- HEADER:BEGIN -->
+	<script type="text/javascript" src="/scripts/JAST.src.js"></script>
+	<script type="text/javascript" src="/scripts/JAST-fx.src.js"></script>
+	<!-- HEADER:END -->
+	<script type="text/javascript">
+	_.onStartup(function(){
+			/* init-script:begin */
+			if(_._id('save-notify')) setTimeout(fadeSaveNotify, 2000);
+			/* init-script:end */
+			
+		}
+	);
+	
+	/* script:begin */
+	function fadeSaveNotify(){
+		_.fx.fadeOut('save-notify', 30, 0, 5);
+	}
+	/* script:end */
+	</script>
+</head>
+<body>
+
+		<!-- RENDER:BEGIN -->
+	{if:!isset($var['__ajaxMode'])}
+	<div id="ajax-response">
+	{endif}
+		{if:(!isset($var['alpha.error']) || $var['alpha.error']=='') && count($_POST)>0}
+		<div id="save-notify" class="success">
+			Informazioni salvate con successo.
+		</div>
+		{endif}
+	{var:alpha.error}
+	{if:!isset($var['__ajaxMode'])}
+	</div>
+	{endif}
+		<!-- RENDER:END -->
+</body>
+</html>

@@ -1,0 +1,70 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<!-- DEFAULT ATTRIBUTES
+@panelClassName= 			tab-panel
+@onStepChange=				null
+-->
+	<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1" />
+	<title>Tab Manager - INPUT Control custom</title>
+
+	<link rel="stylesheet" type="text/css" href="/css/base.css" />
+	<!-- HEADER:BEGIN -->
+	<link rel="stylesheet" type="text/css" href="/css/custom/tabs.css" />
+	<script type="text/javascript" src="/scripts/JAST.src.js"></script>
+	<script type="text/javascript" src="/scripts/JAST-stepwizard.src.js"></script>
+	<!-- HEADER:END -->
+	<script type="text/javascript">
+		
+		_.extend('startup', 
+			{
+				startup: function(){
+					/* init-script:begin */
+					var ItemArray = eval("{var:input.items}");
+					if(_.Array.is(ItemArray)){
+						for(var i=0; i<ItemArray.length; i++)
+							if(_._id(ItemArray[i])==null) ItemArray[i] = null;
+						ItemArray = _.Array.purge(ItemArray);
+					}
+					
+					_.StepWizard.setup(ItemArray,
+					{
+						formId:						'{var:input.form}',
+						startFrom:					0,
+						nextButton: 				false,
+						prevButton: 				false,
+						replaceSubmit: 				false,
+						stepListClassName:			'step-list',
+						stepListCurrentClassName:	'current',
+						buttonContainerClassName: 	'',
+						buttonClassName: 			'',
+						buttonPreviousClassName:	'',
+						buttonPreviousText:			'',
+						buttonNextClassName:		'',
+						buttonNextText:				'',
+						panelsClassName:			'{var:input.panelClassName}',
+						isStepClickable:			true,
+						onStep:						{var:input.onStepChange}
+					});
+				/* init-script:end */
+
+				}
+			}
+		);
+	</script>
+
+</head>
+<body>
+	
+	<form id="{var:input.form}">
+		<fieldset id="id1">
+			<legend>Step 1</legend>
+			aaa
+		</fieldset>
+		<fieldset id="id2">
+			<legend>Step 2</legend>
+			bbb
+		</fieldset>
+	</form>
+</body>
+</html>

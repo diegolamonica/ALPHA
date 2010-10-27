@@ -1,0 +1,59 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+	<!-- DEFAULT ATTRIBUTES
+@method=				GET
+@autoload=				true
+@glue=					,
+@startValue=			0
+	-->
+	<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1" />
+	<title>date - INPUT Control custom</title>
+
+	<link rel="stylesheet" type="text/css" href="../css/base.css" />
+	<!-- HEADER:BEGIN -->
+	<link rel="stylesheet" type="text/css" href="/css/custom/checkbox.css" />
+	<script type="text/javascript" src="/scripts/JAST.src.js"></script>
+	<script type="text/javascript" src="/scripts/JAST-ajaxselectloader.src.js"></script>
+	<!-- HEADER:END -->
+	<script type="text/javascript">
+		//<![CDATA[
+		_.onStartup( function(){
+			/* init-script:begin */
+			_.AjaxSelectLoader.setup('{var:input.for}', {
+				pageURL: 		'{var:input.pageURL}',
+				loadText: 		'{var:input.loadText}',
+				method:			'{var:input.method}',
+				destination:	'{var:input.on}',
+				loadFirst:		{var:input.autoload},
+				glue:			'{var:input.glue}',
+				startValue:		'{var:input.startValue}'
+			});
+			/* init-script:end */
+		});
+		// ]]>	
+	</script>
+
+<style>
+	code{
+		font-weight: bold;
+		color: #a00;
+	}
+</style>
+</head>
+<body>
+	<h1>Custom Check Box Custom Input Control</h1>
+	<h2>Per usarlo:</h2>
+	<p>
+		inserire il tag
+		<code>
+			&lt;input type="custom" model="customCheckBoxes" /&gt;			
+		</code>
+		in qualsiasi punto del modello della pagina.
+	</p>
+	<h2>Esempio:</h2>
+	<p>
+		<input type="checkbox" value="xx" id="idtest" /> <label for="idtest">Prova</label>
+	</p>
+</body>
+</html>

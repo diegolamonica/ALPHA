@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+	<!-- DEFAULT ATTRIBUTES
+@defaultActions=	true
+	-->
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+	<title>UserBar Plugin</title>
+	<!-- HEADER:BEGIN -->
+	<link rel="stylesheet" type="text/css" href="/css/user-info.css" />
+	<!-- HEADER:END -->
+</head>
+<body>
+	<!-- RENDER:BEGIN -->
+	<div class="user-info" tabindex="0">
+		<div class="fleft" id="connected-user">
+			Utente collegato: 
+			<a href="#">{var:alpha.userInfo.COGNOME} {var:alpha.userInfo.NOME} (matr. {var:alpha.userInfo.MATRICOLA})</a>
+		</div>
+		{php:EMPTY}
+			
+			$c = ClassFactory::get('connector');
+			// Devo prendere l'elenco delle applicazioni in cui l'utente è censito
+			#print_r($_SESSION['multi_apps_logon']);
+			echo('<div id="app-list">');
+			echo('<strong>Passa a</strong>');
+			echo('<ul>');
+			
+			foreach(array_keys($_SESSION['multi_apps_logon']) as $key){
+				$appRs = $c->getFirstRecord("select NOME_APPLICAZIONE, URL from ".APPLICATIONS_DATABASE_TABLE." where ID='$key'");
+				
+				echo('<li>');
+				
+				echo('<a href="' . $appRs['URL'] . '">' . $appRs['NOME_APPLICAZIONE'] . '</a>');
+				
+				if($_SESSION[SESSION_USER_TOKEN_VAR] == $_SESSION['multi_apps_logon'][$key]){
+					echo('<img src="/css/images/success.png" alt="&gt;" />');
+				}
+				echo('</li>');
+				 
+			}
+			
+			echo('</ul>');
+			echo('</div>');
+			
+		{phpend}
+		{php:EMPTY}
+			
+			$c = ClassFactory::get('connector');
+			// Devo prendere l'elenco dei ruoli attribuiti all'utente
+			echo('<div id="app-roles">');
+			echo('<strong>Autorizzazioni:</strong>');
+			echo('<ul>');
+			$m = ClassFactory::get('Model');
+			$ur = $m->getVar('userRoles');
+			for($i = 0; $i< count($ur ); $i++){
+				echo('<li><a href="#">'.$ur[$i]."</a></li>");
+				 
+			}
+			echo('</ul>');
+			echo('</div>');
+		{phpend}
+
+		<div class="user-actions">
+		{if:$var['input.defaultActions']=='true'}
+			<a class="user-logout" href="/">Menu principale</a> -
+			<a class="user-search" href="/ricerche/">Cerca</a> -
+			<a class="user-logout" href="/logout.php">Logout</a>
+		{endif}
+			<!-- CUSTOM ACTIONS -->
+			{var:input.html} &nbsp;
+			
+		</div>
+	</div>
+		
+	<!-- RENDER:END -->
+</body>
+</html>

@@ -1,0 +1,37 @@
+<!-- CACHE MANAGER
+@modelKeyVar=	input.id,input.name,input.value,input.class
+@expiresAfter=	1W
+@cacheFileName= date
+-->
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+	<!-- DEFAULT ATTRIBUTES
+@class= 
+-->
+	<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1" />
+	<title>date - INPUT Control custom</title>
+
+	<link rel="stylesheet" type="text/css" href="../css/base.css" />
+	<!-- HEADER:BEGIN -->
+	<link rel="stylesheet" type="text/css" href="/css/custom/date.css" />
+	<script type="text/javascript" src="/scripts/JAST.src.js"></script>
+	<script type="text/javascript" src="/scripts/datepicker.js"></script>
+	
+	<!-- HEADER:END -->
+</head>
+<body>
+	<!-- RENDER:BEGIN -->
+	aaa"@@ROOT/"
+	<div class="dateControl">
+		<input type="text" value="{var:input.value}" id="{var:input.id}"
+			{if:$var['input.name']!=null}
+				name="{var:input.name}"
+			{endif}
+		 class="date-control {fn:match(input.class,'','',input.class)}" />
+		<a onclick="displayDatePicker('{var:input.id}')" class="date-btn" href="#">data s</a>
+	</div>
+	
+	<!-- RENDER:END -->
+</body>
+</html>

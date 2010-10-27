@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="ISO-8859-1" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+	<!-- DEFAULT ATTRIBUTES
+@searchTableName=		the-table
+@searchFieldName=		the-field
+@searchValueName=		the-value
+@dbTableNames=			*
+@dbFieldName=			ANYFIELD
+@searchValue=			...
+@searchIdentifier=		searcher
+@searchActionLabel=		Cerca
+@formAction=			index.php
+	-->
+
+<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1" />
+<title>Insert title here</title>
+	<!-- HEADER:BEGIN -->
+	<link rel="stylesheet" type="text/css" href="/css/custom/searcher.css" />
+	<!-- HEADER:END -->
+</head>
+<body>
+
+	<!-- RENDER:BEGIN -->
+	<form method="get" action="{var:input.formAction}" class="searcher">
+		<div>
+			<input type="hidden" value="{var:input.dbFieldName}" name="{var:input.searchFieldName}" />
+			<input type="hidden" value="{var:input.dbTableNames}" name="{var:input.searchTableName}" />
+			<label for="{var:input.searchValueName}">{var:input.labelDescription}</label>
+			<input type="text" name="{var:input.searchValueName}" id="{var:input.searchValueName}" value="{var:input.searchValue}" />
+			<input type="submit" name="{var:input.searchIdentifier}" value="{var:input.searchActionLabel}" />
+		</div>
+	</form>
+	<!-- RENDER:END -->
+
+</body>
+</html>

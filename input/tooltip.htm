@@ -1,0 +1,48 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1" />
+	<title>tooltip - INPUT Control custom</title>
+
+	<link rel="stylesheet" type="text/css" href="../css/base.css" />
+	<!-- HEADER:BEGIN -->
+	<script type="text/javascript" src="/scripts/JAST.src.js"></script>
+	<script type="text/javascript" src="/scripts/JAST-tooltip.src.js"></script>
+	<!-- HEADER:END -->
+	<script type="text/javascript">
+		//<![CDATA[
+		/* script:begin */
+		if(!_.Browser.ie ||_.Browser.version>6){
+			// Esclude internet explorer 6
+			_.Tooltips.options.style = {
+				marginLeft: '5px',
+				marginTop: '5px',
+				border: '1px solid #eee',
+				backgroundColor: '#ffe',
+				padding: '0.5em',
+				width: '200px'
+			}
+		}
+		/* script:end */
+		
+		// ]]>	
+	</header>
+	
+</head>
+<body>
+	<h1>Tooltipbox Toolbar</h1>
+	
+
+	<h2>Per usarlo:</h2>
+	<p>
+		inserire il tag
+		<code>
+			&lt;meta type="custom" model="tooltip" /&gt;			
+		</code>
+		in qualsiasi punto del modello della pagina.
+	</p>
+	<h2>Esempio:</h2>
+	<p title="questo è il titolo"> Passa su qeusto  paragrafo</p> 	
+	
+</body>
+</html>

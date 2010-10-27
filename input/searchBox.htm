@@ -1,0 +1,95 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+	<!-- DEFAULT ATTRIBUTES
+@src= 					/ajax/get.php
+@pageParam=				q
+@method=				GET
+@outputId=				div-autocomplete
+@parser=				AC_PARSER_JSON
+@formatOutput=			null
+@caseSensitive=			false
+@minChar=				1
+@separator=				,				
+@separatorOnConfirm=	true
+@refresh=				100
+@onConfirm=				applyData
+@onBlur=				null
+@onTyping=				null
+@searchValues=			null
+@class=					
+	-->
+	<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1" />
+	<title>SearchBox - INPUT Control custom</title>
+
+	<link rel="stylesheet" type="text/css" href="/css/base.css" />
+	<!-- HEADER:BEGIN -->
+	<link rel="stylesheet" type="text/css" href="/css/custom/autocomplete.css" />
+	<script type="text/javascript" src="/scripts/JAST.src.js"></script>
+	<script type="text/javascript" src="/scripts/JAST-autocomplete.src.js"></script>
+	<!-- HEADER:END -->
+	
+	<script type="text/javascript">
+		
+		/* script:begin */
+		function applyData(id){
+			var i =_.Autocomplete._items[id];
+			var arr = i.cacheValue[i.selectedItem];
+			var ov = i.outputItems;
+			for(var j=0; j<ov.length; j++){
+				if(arr[j]!=null){
+					_._id(ov[j]).value = arr[j];
+				}
+			}
+		}
+		/* script:end */
+
+		_.extend('startup',
+			{
+				startup: function(){
+					/* init-script:begin */
+					_.Autocomplete.setup('{var:input.id}',
+						{
+							page:			'{var:input.src}',
+							pageParam:		'{var:input.pageParam}',
+							method:			'{var:input.method}',
+							outputId:		'{var:input.outputId}',
+							parser:			{var:input.parser},
+							formatOutput:	{var:input.formatOutput},
+							caseSensitive:	{var:input.caseSensitive},
+							minChar:		{var:input.minChar},
+							separator:		'{var:input.separator}',
+							separatorOnConfirm: {var:input.separatorOnConfirm},
+							refresh:		{var:input.refresh},
+							onConfirm: 		{var:input.onConfirm},
+							onBlur:			{var:input.onBlur},
+							onTyping:		{var:input.onTyping},
+							outputItems:	{var:input.outputItems}	/* Utilizzo esclusivo per l'applicazione dei valori nella funzione onConfirm */
+						}
+					);
+				/* init-script:end */
+					
+				}
+			}
+		
+		
+		
+		
+		);
+		
+		
+		
+	</script>
+	
+</head>
+<body>
+	<!-- RENDER:BEGIN -->
+	<input type="text" value="{var:input.value}" id="{var:input.id}"
+		{if:isset($var['input.name'])}
+			name="{var:input.name}" 
+		{endif}
+		class="autocompleter {var:input.class}" />
+	
+	<!-- RENDER:END -->
+</body>
+</html>

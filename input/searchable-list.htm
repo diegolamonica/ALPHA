@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+	<!-- DEFAULT ATTRIBUTES
+
+@listItem=			li
+-->
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<title>Insert title here</title>
+
+	<script type="text/javascript">
+	/* script:begin */
+	function doSearchInList{var:input.listItem}(value){
+		if(value.id==null) return;
+		var id = value.id;
+		
+		var list = id.substring(11);
+		value = value.lastValue;
+		
+		var ul = _._id(list);
+		var lis = _._name('{var:input.listItem}', ul);
+		for(var i=0; i<lis.length; i++){
+
+			if(lis[i].textContent.indexOf(value)!=-1 || value==''){
+				_.DOM.setStyle(lis[i], {display: ''});
+			}else{
+				_.DOM.setStyle(lis[i], {display: 'none'});
+			}
+		}
+	}
+	/* script:end */
+	
+	
+	</script>
+
+</head>
+<body>
+	<!-- RENDER:BEGIN -->
+	<p>
+		<label for="searchable-{var:input.for}">Cerca:</label>
+		<input type="text" id="searchable-{var:input.for}" value="" />
+	</p>
+	<!-- RENDER:END -->
+	<script type="text/javascript">
+	/* init-script:begin */
+	_.Listener.watch("searchable-{var:input.for}",'value', doSearchInList{var:input.listItem});
+	/* init-script:end */
+	</script>
+</body>
+</html>

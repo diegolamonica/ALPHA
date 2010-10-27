@@ -1,0 +1,32 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1" />
+	<title>date - INPUT Control custom</title>
+	<!-- HEADER:BEGIN -->
+	
+	<script type="text/javascript" src="/scripts/JAST.src.js"></script>
+	<script type="text/javascript" src="/scripts/JAST-xml.src.js"></script>
+	<script type="text/javascript" src="/scripts/JAST-shortkey.js"></script>
+	
+	<!-- HEADER:END -->
+</head>
+<body>
+	<h1>Shortkey manager</h1>
+	<h2>Per usarlo:</h2>
+	<p>
+		inserire il tag
+		<code>
+			&lt;link type="custom" model="shortkey" /&gt;			
+		</code>
+		in qualsiasi punto del modello della pagina.
+		Ed aggiungere:
+			&lt;link rel="shortcut" type="text/xml" href="path-to-xml-file" /&gt;
+		nell'intestazione.
+	</p>
+	<h2>Esempio:</h2>
+	<p>
+		<input type="checkbox" value="xx" id="idtest" /> <label for="idtest">Prova</label>
+	</p>
+</body>
+</html>

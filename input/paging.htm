@@ -1,0 +1,40 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+	<!-- DEFAULT ATTRIBUTES
+@class= 					pagination
+@current-position=			true
+-->
+<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+<title>Insert title here</title>
+	<!-- HEADER:BEGIN -->
+	<link rel="stylesheet" type="text/css" href="/css/custom/pagination.css" />
+	<!-- HEADER:END -->
+
+</head>
+<body>
+<!-- RENDER:BEGIN -->
+	<div class="{var:input.class}">
+		{if:($var['input.first-page']!='#')|| ($var['input.page_count']>$var['input.current_page'])}
+		<ul>
+			{if:$var['input.first-page']!='#'}
+				<li class="first-page"><a title="vai alla prima pagina" href="{var:input.first-page}">Prima</a></li>
+				<li class="previous-page"><a title="vai alla pagina precedente" href="{var:input.previous-page}">Pagina precedente</a></li>
+			{endif}
+			{if:$var['input.page_count']>$var['input.current_page']}
+				<li class="next-page"><a title="vai alla pagina successiva" href="{var:input.next-page}">Pagina successiva</a></li>
+				<li class="last-page"><a title="vai all'ultima pagina" href="{var:input.last-page}">Ultima pagina</a></li>
+			{endif}
+		</ul>
+		{endif}
+		{if:$var['input.current-position']=='true'}
+		<span class="page-nth-of">
+			Pagina {var:input.current_page} di {var:input.page_count}
+			
+		</span>
+		{endif}
+	</div>
+<!-- RENDER:END -->
+
+</body>
+</html>
