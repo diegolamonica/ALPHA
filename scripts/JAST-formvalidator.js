@@ -1,0 +1,19 @@
+/*
+Script Name: 	FormValidator (http://jastegg.it/eggs/FormValidator/ ) 
+version: 		1.1.0
+version date:	2008-06-06
+Plugin for:		JAST ( http://jastegg.it )
+--------------------------------
+
+Changelog:
+ 1.0 (2008-03-13):
+ 	First release
+ 
+ 1.0.6 (06-06-2008): 
+ 	Validation mismatchs controls on MATCH_LENGTH and NOT_MATCH_LENGTH
+
+ 1.1.0 (2008-07-20):
+ 	Added control on field change (blur)
+ 	
+*/
+var MATCH_EMPTY=0;var MATCH_REGEX=1;var MATCH_VALUE=2;var MATCH_FIELD=3;var MATCH_FUNCTION=4;var MATCH_LENGTH=5;var MATCH_GT_LEN=6;var MATCH_GTE_LEN=7;var MATCH_LT_LEN=8;var MATCH_LTE_LEN=9;var MATCH_CHECKED=10;var NOT_MATCH_EMPTY=50;var NOT_MATCH_REGEX=51;var NOT_MATCH_VALUE=52;var NOT_MATCH_FIELD=53;var NOT_MATCH_FUNCTION=54;var NOT_MATCH_LENGTH=55;var NOT_MATCH_GT_LEN=56;var NOT_MATCH_GTE_LEN=57;var NOT_MATCH_LT_LEN=58;var NOT_MATCH_LTE_LEN=59;var MATCH_UNCHECKED=60;JASTEggIt.extend('FormValidator',{options:{onSubmit:true,onFieldChange:false,useAlertToNotify:true,useElementToNotify:false,notifyElementId:null,setFocusOnErrorField:true,errorClassForErrorItem:'error',onValidate:function(){return true;}},forms:[],formFields:[],setup:function(formId,options){options=JASTEggIt.mergeOptions(options,this.options);this.forms[formId]=options;if(options.onSubmit){JASTEggIt._id(formId).onsubmit=function(){return JASTEggIt.FormValidator.validate(formId);};};},validCondition:function(formId,fieldId,method,expression,errorMessage){var f=this.formFields;f[f.length]={field:fieldId,method:method,expression:expression,message:errorMessage,formId:formId};if(this.forms[formId].onFieldChange){var el=JASTEggIt._id(formId).elements[fieldId];if(el==null)el=JASTEggIt._id(fieldId);JASTEggIt.Events.add(el,'blur','JASTEggIt.FormValidator.validate("'+formId+'","'+fieldId+'")');}},validate:function(formId,fieldId){var f=this.forms[formId];var ff=this.formFields;for(var i=0;i<ff.length;i++){if(ff[i].formId==formId){var field=ff[i].field;var result=false;if(fieldId==null||fieldId==field){var method=ff[i].method;var xp=ff[i].expression;var el=JASTEggIt._id(formId).elements[field];if(el==null)el=JASTEggIt._id(field);var value=el.value;switch(method){case MATCH_EMPTY:case NOT_MATCH_EMPTY:result=(JASTEggIt.strings.trim(value)=='');break;case MATCH_REGEX:case NOT_MATCH_REGEX:var myregexp=new RegExp(xp);var match=myregexp.exec(value);result=(match!=null);break;case MATCH_VALUE:case NOT_MATCH_VALUE:result=(value==xp);break;case MATCH_FIELD:case NOT_MATCH_FIELD:var tmpEl=_._id(formId).elements[xp];if(tmpEl==null)tmpEl=JASTEggIt._id(xp);result=(value==tmpEl.value);break;case MATCH_FUNCTION:case NOT_MATCH_FUNCTION:result=ff[i].expression(field,value);break;case MATCH_GT_LEN:case NOT_MATCH_GT_LEN:result=value.length>xp;break;case MATCH_GTE_LEN:case NOT_MATCH_GTE_LEN:result=value.length>=xp;break;case MATCH_LT_LEN:case NOT_MATCH_LT_LEN:result=value.length<xp;break;case MATCH_LTE_LEN:case NOT_MATCH_LTE_LEN:result=value.length<=xp;break;case MATCH_LENGTH:case NOT_MATCH_LENGTH:result=(value.length==xp);break;case MATCH_CHECKED:case MATCH_UNCHECKED:result=el.checked;break;};if(method<50)result=!result;if(!result){this.displayErrorMessage(formId,field,i);return false;}else if(f.errorClassForErrorItem!=''){JASTEggIt.DOM.removeClass(el,f.errorClassForErrorItem);};};};};if(f.onValidate)return f.onValidate(f);return true;},displayErrorMessage:function(formId,field,index){var f=JASTEggIt.FormValidator.forms[formId];var msg=JASTEggIt.FormValidator.formFields[index].message;if(f.useAlertToNotify){alert(msg);}else if(f.useElementToNotify&&f.notifyElementId!=null){JASTEggIt._id(f.notifyElementId).innerHTML=msg;};var el=_._id(formId).elements[field];if(el==null)el=JASTEggIt._id(field);if(el!=null){if(f.errorClassForErrorItem!='')JASTEggIt.DOM.appendClass(el,f.errorClassForErrorItem);if(f.setFocusOnErrorField)el.focus();};}});
