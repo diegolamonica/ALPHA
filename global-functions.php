@@ -174,7 +174,7 @@ function mailSend($from, $to, $cc, $bcc, $subject, $body, $replyTo=null){
 	$header .= "Errors-To: $replyTo\r\n" ;
 	$header .= "X-Sender: $replyTo\r\n";
 	$header .= "Date: " . date('D, d M Y H:i:s O') . "\r\n";
-	$header .= "Message-Id: <".md5(uniqid(rand())).".FedericaUnina@localhost>\r\n";
+	$header .= "Message-Id: <".md5(uniqid(rand())).".alpha@localhost>\r\n";
 	$header .= "X-Mailer: ALPHA-Mail-PHP/" . phpversion();
 
 	 mail($to,
