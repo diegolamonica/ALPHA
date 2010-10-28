@@ -1,0 +1,138 @@
+html, body{
+	margin: 0;
+	padding: 0;
+}
+
+table{
+	border: 0;
+	border-collapse: collapse;
+	height: 100%;
+}
+table.auto{
+	height: auto;
+}
+
+th{
+	font-family: monospace;
+	font-size: 0.6em;
+}
+div.half-page{
+	height: 16cm;
+}
+
+td{
+	border: 1px solid #bbb;
+	vertical-align: top;
+	font-weight: bold;
+	font-family: monospace;
+	font-size: 0.75em;
+	padding: 0.3em;
+	margin: 0;
+	width: 10%;
+}
+
+table.auto td{
+	font-size: 0.6em;
+}
+
+	td.w5{
+		width: 5%;
+	}
+	td.w10{
+		width: 10%;
+	}
+	td.w15{
+		width: 15%;
+	}
+
+	td.w20{
+		width: 20%;
+	}
+	
+	td.w25{
+		width: 25%;
+	}
+	
+	td.w30{
+		width: 30%;
+	}
+	
+	td.w40{
+		width: 40%;
+	}
+	td.w60{
+		width: 60%;
+	}
+	td.w100{
+		width: 100%;
+	}
+
+	td.noborder{
+		border: 0px;
+	}
+	
+	td.border-bottom{
+		border: 0px;
+	}
+	td div{
+		font-weight: normal;
+		padding-left: 1em;
+		text-align: center;
+	}
+		td div.left{
+			text-align: left;
+		}
+	td.evidenza{
+		font-weight: bold;
+		background-color: #ddd;
+	}
+	
+	hr{
+		margin-top: 2em;
+	}
+	
+.left{
+	text-align: left;
+}
+
+.right{
+	text-align: right;
+}
+
+.w150{
+	width: 100px;
+}
+
+/* per le fatture */
+
+div.invoice-header{
+	height: 2cm;
+}
+table.invoice-customer-info{
+	height: 5cm;
+}
+
+#invoice table{
+	height: auto;
+	font-size: 0.8em;
+	font-weight: normal;
+}
+
+.align-bottom{
+	vertical-align: bottom;
+}
+
+.page-break{
+	page-break-after: always;
+}
+#invoice table td.noborder-left{
+	border-left: 0px;
+}
+#invoice table td.noborder-right{
+	border-right: 0px;
+}
+
+p.monotype{
+	font-family: "Courier New", Courier, monospace;
+	font-size: 0.6em;
+}

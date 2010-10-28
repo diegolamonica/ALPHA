@@ -1,0 +1,213 @@
+
+fieldset{
+	line-height: 2em;
+}
+
+fieldset.small-size{
+	padding: 0.4em;
+	line-height: 2.4em;
+}
+
+	fieldset.small-size h2{
+		margin: 0;
+		padding: 0;
+		border-bottom: 1px solid #ccc;
+	}
+	fieldset.small-size input,
+	fieldset.small-size label.gigante{
+		font-size: 1.4em;
+	}
+
+	fieldset input,
+	fieldset select,
+	fieldset .simil-input{
+		border: 1px solid #ccc;
+	}
+		fieldset .simil-input{
+		
+			padding: 0.15em 0 0.15em 0;
+			background-color: #fff;
+			color: #666;
+		}
+	fieldset textarea{
+		border: 1px solid #ccc;
+		width: 80%;
+		display: block;
+	}
+	
+	fieldset input.number{
+		text-align: right;
+		background-image: url('images/virgola.gif');
+		background-repeat: no-repeat;
+		background-position: right;
+	}
+	
+#form-corso div h2{
+	display: none;
+	
+}
+
+th.functions{
+	width: 80px;
+}
+
+.floated-items{
+	clear: left;
+}
+.floated-items label{
+	float: left;
+	display: block;
+	width: 230px;
+	text-align: right;
+	
+}
+p.suggest{
+	font-size: 0.9em;
+	color: #444;
+	line-height: 1.4em;
+	height: 1px;
+	overflow: hidden;
+	padding: 20px 0.2em 0.2em 0.2em;
+	padding-top: 20px;
+	border: 1px solid #ccc;
+	background-color: #ffe;
+	background-image: url('images/help.png');
+	background-position: top left;
+	background-repeat: no-repeat;
+}
+	p.suggest:hover{
+		overflow: visible;
+		height: auto;
+		
+	}
+
+span.tip{
+	padding: 8px;
+	font-size: 1px;
+	background-image: url('images/help.png');
+	background-position: top left;
+	background-repeat: no-repeat;
+}
+
+
+.gigante input,
+.gigante select,
+.gigante textarea,
+.gigante .simil-input
+{
+	display: block;
+	width: 93%;
+	font-size: 2em;
+}
+label.gigante{
+	font-size: 2em;
+}
+.padding-left-1em{
+	padding-left: 1em;
+}
+
+.textarea{
+	width: 100%;
+}
+
+.three-columns div.gigante,
+.two-columns .three-columns div.gigante,
+.four-columns .three-columns div.gigante{
+	float: left;
+	width: 31.7%;
+}
+	.two-columns .three-columns div.span-two-of-three-columns,
+	.three-columns div.span-two-of-three-columns{
+		width: 63.6%;
+	}
+
+.four-columns div.gigante,
+.three-columns .four-columns div.gigante,
+.two-columns .four-columns div.gigante{
+	float: left;
+	width: 23.6%;
+}
+
+.two-columns div.gigante,
+.three-columns .two-columns div.gigante,
+.four-columns .two-columns div.gigante{
+	float: left;
+	width: 48%;
+}
+
+	.four-columns div.span-two-of-four-columns{
+		width: 47.5%;
+	}
+
+.four-columns div.span-three-of-four-columns{
+		width: 71.1%;
+	}
+	
+div.two-columns div.full-span,
+div.three-columns div.full-span,
+div.four-columns div.full-span{
+	width: 100%;
+}
+
+iframe{
+	border: 0px;
+	width: 100%;
+	height: 480px;
+}
+
+.manual-changed{
+	background-color: #ffe;
+	border: 1px solid #800;
+	
+}
+
+td.azioni{
+	width: 120px;
+	
+}
+
+.edit-small, 
+.attach-small,
+.new-small,
+.delete-small{
+	background-image: url('../custom/images/edit.png');
+	background-position: center center;
+	background-repeat: no-repeat;
+	display: block;
+	float: left;
+	margin-right: 1em;
+	width: 20px;
+	height: 20px;
+	text-indent: -9999px;
+	border: 1px solid #ccc;
+}
+	.edit-small:hover,
+	.attach-small:hover,
+	.new-small:hover{
+		background-color: #eee;
+	}
+
+.attach-small{
+	background-image: url('../custom/images/attach.png');
+}
+
+.new-small{
+	background-image: url('../custom/images/new_window.png');
+}
+.delete-small{
+	background-image: url('../custom/images/delete.png');
+}
+
+.attach{
+	background-image: url('../custom/images/crystal_project/32x32/actions/attach.png');
+	background-position: center left;
+	background-repeat: no-repeat;
+	display: block;
+	height: 60px;
+	padding-left: 40px;
+	background-color: #eee;
+	font-size: 2em;
+	line-height: 60px;
+	border: 1px solid #ccc;
+}
+

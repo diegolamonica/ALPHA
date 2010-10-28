@@ -1,0 +1,108 @@
+.map-coords{
+	position: absolute;
+	margin-top: 350px;
+	width: 400px;
+	padding: 0;
+	padding-top: 0.5em;
+	border-top: 1px solid #ccb;
+	background-color: #ffe;
+	text-align: right;
+	font-weight: bold;
+}
+
+.marker{
+	background-image: url('images/bandiera.png');
+	background-position: center;
+	display: block;
+	width: 16px;
+	height: 16px;
+}
+
+.map-cpanel{
+	background-image:		url("images/info.png");
+	background-repeat: 		no-repeat;
+	background-color: 		transparent;
+	display:				block;
+	height:					16px;
+	position:				absolute;
+	width:					16px;
+	overflow: 				hidden;
+}
+	
+	.map-cpanel *{
+		display: none;
+	}	
+	.map-cpanel{
+		background-image:	none;
+		overflow: 			auto;
+		width: 				auto;
+		height: 			auto;
+	}
+		
+		.map-cpanel span.action,
+		.map-cpanel .navigation{
+			width: 32px;
+			height: 32px;
+			display: block;
+			background-color: #fff;
+			margin: 2px;
+			border: 1px solid #ccb;
+			background-repeat: no-repeat;
+			background-position: center;
+			background-position: center;
+		
+		}
+			
+			.map-cpanel .navigation:hover{
+				display: block;
+				background: transparent no-repeat;
+				width: 108px;
+				height: 108px;
+				margin-top: -10px;
+				border: 0;
+			}
+
+		.map-cpanel .navigation span.action{
+			display: none;
+		}
+		.map-cpanel .navigation:hover span.action{
+			display: block;
+			background-color: transparent;
+			border: 0;
+		}
+		 
+		.map-cpanel .navigation{
+			background-image: url('images/windows_fullscreen.png');			
+		}
+
+		.map-cpanel .center{
+			background-image: url('images/home.png');			
+		}
+		.map-cpanel .zoom-in{
+			background-image: url('images/viewmagplus.png');			
+		}
+		.map-cpanel .zoom-out{
+			background-image: url('images/viewmagless.png');			
+		}
+		.map-cpanel .navigation .move-left{
+			position: absolute;
+			margin-top: 37px;
+			background-image: url('images/ovest.png');			
+		}
+		.map-cpanel .navigation .move-right{
+			position: absolute;
+			margin-top: 37px;
+			margin-left: 72px;
+			background-image: url('images/est.png');			
+		}
+		.map-cpanel .navigation .move-up{
+			position: absolute;
+			margin-left: 37px;
+			background-image: url('images/nord.png');			
+		}
+		.map-cpanel .navigation .move-down{
+			position: absolute;
+			margin-left: 37px;
+			margin-top: 72px;
+			background-image: url('images/sud.png');			
+		}

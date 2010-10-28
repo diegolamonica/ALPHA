@@ -1,0 +1,41 @@
+body{
+
+	background-color: #fff;
+	background-image: url('images/logo.jpg');
+	background-repeat: no-repeat;
+	background-position: top center;
+	
+	padding-top: 100px;
+	text-align: center;
+}
+
+form{
+
+	width: 70%;
+	margin-left: auto;
+	margin-right: auto;
+	text-align: left;
+}
+
+form div{
+	margin-bottom: 0.5em;
+	text-align: center;
+}
+form label{
+	display: block;
+	text-align: left;
+	font-size: 1.5em;
+	color: #888;
+}
+
+#user, #password{
+	border: 1px solid #ccc;
+	padding: 0.2em;
+	font-size: 1.5em;
+	width: 90%;
+	text-align: left;
+}
+
+#submit{
+	font-size: 1.5em;
+}

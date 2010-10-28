@@ -1,0 +1,21 @@
+.checkbox{
+	left: -9999px;
+	/* top: -999px; */
+	position: absolute;
+}
+
+label.checked,
+label.unchecked{
+	padding-left: 20px;
+	height: 20px;
+	line-height: 20px;
+	background-position: center left;
+	background-repeat: no-repeat;
+	background-image: url('images/unchecked.jpg');
+	padding-top: 3px;
+	padding-bottom: 3px;
+}
+
+label.checked{
+	background-image: url('images/checked.jpg');
+}

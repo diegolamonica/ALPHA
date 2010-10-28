@@ -1,0 +1,71 @@
+ol.step-list{
+	text-align: left;
+	margin: 20px 10px 0 10px;
+	padding: 0;
+	list-style: none;
+	list-style-type: none;
+	line-height: 35px;
+	word-break: keep-all;
+}
+
+ol.step-list li{
+	display: inline;
+	padding: 10px;
+	border: 1px solid #ddd;
+	border-top: 1px solid #fff;
+	border-right: 1px solid #fff;
+	border-bottom: 1px solid #DDD9D3;
+	background-color: #DDD9D3;
+	margin: 0;
+	margin-left: 10px;
+	cursor: pointer;
+}
+
+ol.step-list li a{
+	text-decoration: none;
+	font-weight: bold;
+	color: #444;
+}
+	ol.step-list li.current{
+		background-color: #EDE9E3;
+		border-bottom: 1px solid #EDE9E3;
+	}
+		ol.step-list li.current a{
+			color: #800;
+		}
+			ol.step-list li a:hover{
+				text-decoration: none;
+				font-weight: bold;
+				color: #800;
+			}
+
+fieldset{
+	padding: 20px;
+}
+
+	fieldset legend{
+		display: none;
+		clear: both;
+	}
+
+.tab-panel{
+	padding: 20px;
+	border: 1px solid #ddd;
+	background-color: #EDE9E3;
+}
+
+.tab-panel h2{
+		display: none;
+	}
+	.tab-panel .tabella-dati {
+		line-height: 2em;
+	}
+	.tab-panel .tabella-dati th{
+		text-align: right;
+		width: 35%;
+		padding-right: 0.5em;
+	}
+	
+	.tab-panel .tabella-dati td{
+		padding-left: 0.5em;
+	}

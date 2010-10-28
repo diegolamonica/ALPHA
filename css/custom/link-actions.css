@@ -1,0 +1,19 @@
+a.edit,
+a.delete{
+	background-position: center;
+	background-repeat: no-repeat;
+	display: block;
+	float: left;
+	width: 20px;
+	height: 20px;
+	text-indent: -9999px;
+	margin-left: 0.5em;
+	border: 1px solid #ccc;
+}
+
+a.edit{
+	background-image: url('images/edit.png');
+}
+a.delete{
+	background-image: url('images/delete.png');
+}

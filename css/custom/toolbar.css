@@ -1,0 +1,143 @@
+.toolbar{
+	text-align: left;
+	margin: 20px 10px 0 10px;
+	padding: 0;
+	list-style: none;
+	list-style-type: none;
+	line-height: 3.5em;
+	word-break: keep-all;
+}
+
+.toolbar li{
+	display: inline;
+	padding: 12px 5px ;
+	margin: 0.5em;
+	border: 1px solid #ddd;
+	border-top: 1px solid #fff;
+	border-right: 1px solid #fff;
+	background-color: #eee;
+	cursor: pointer;
+	background-repeat: no-repeat;
+	white-space: nowrap;
+	
+}
+
+.toolbar li a{
+	text-decoration: none;
+	font-weight: bold;
+	color: #444;
+	padding: 10px 10px 10px;
+	padding-left: 40px;
+	background-repeat: no-repeat;
+	background-color: #eee;
+}
+	.toolbar li a:hover{
+		text-decoration: none;
+		font-weight: bold;
+		color: #800;
+	}
+
+/**
+ *  Pulsanti della toolbar
+ **/
+ 
+#back a,
+.back a,
+#action-back a,
+.action-back a{
+	background-image: url('images/back.png');
+}
+
+#action-new a,
+.action-new a{
+	background-image: url('images/filenew.png');
+}
+
+#action-save a,
+.action-save a{
+	background-image: url('images/filesave.png');
+}
+
+/** inserito il 4-3-2010 da Federico Volpini */
+#edit a,
+.edit a{
+	background-image: url('images/editmod.png');
+}
+/** fine inserimento */
+
+#delete a,
+.delete a{
+	background-image: url('images/filedelete.png');
+}
+
+#action-print a,
+.action-print a{
+	background-image: url('images/print.png');
+}
+
+#action-search a,
+.action-search a{
+	background-image: url('images/find.png');
+}
+#action-admin a,
+.action-admin a{
+	background-image: url('images/kcontrol.png');
+}
+
+#action-users a,
+.action-users a{
+	background-image: url('images/kgpg.png');
+}
+
+#action-offices a,
+.action-offices a{
+	background-image: url('images/personal.png');
+}
+
+#action-activities-type a,
+.action-activities-type a{
+	background-image: url('images/klipper.png');
+}
+
+#action-activity-states a,
+.action-activity-states a{
+	background-image: url('images/undo.png');
+}
+
+#action-services-type a,
+.action-services-type a{
+	background-image: url('images/klipper.png');
+}
+#action-subjects-type a,
+.action-subjects-type a{
+	background-image: url('images/kdmconfig.png');
+}
+
+#action-log a,
+.action-log a{
+	background-image: url('images/agent.png');
+}
+
+#action-compare a,
+.action-compare a{
+	background-image: url('images/viewmagfit.png');
+}
+
+#action-import a,
+.action-import a{
+	background-image: url('images/7days.png');
+}
+
+#action-attach a,
+.action-attach a{
+	background-image: url('images/mydocuments.png');
+}
+
+#action-package a,
+.action-package a{
+	background-image: url('images/wizard.png');
+}
+
+.grid a{
+	background-image: url('images/1day-32x32.png');
+}

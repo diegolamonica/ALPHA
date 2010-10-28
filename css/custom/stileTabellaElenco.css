@@ -1,0 +1,6 @@
+#elenco-formati .contenitore,
+#elenco-formatori .contenitore{
+	overflow: 	auto;
+	height: 	350px;
+	border: 1px solid #ccc;
+}

@@ -1,0 +1,33 @@
+.autocompleter,
+div#div-autocomplete{
+	width: 350px;
+}
+
+div#div-autocomplete{
+	border: 1px solid #ccc;
+	background-color: #ffe;
+}
+
+
+div#div-autocomplete ul{
+	list-style: none;
+	list-style-type: none;
+	margin: 0;
+	padding: 0;
+}
+
+div#div-autocomplete ul li{
+	
+	padding: 0.2em;
+	
+}
+
+div#div-autocomplete ul li:hover{
+	
+	background-color: #eed;
+	
+}
+
+div#div-autocomplete ul li.selected{
+	background-color: #eed;
+}

@@ -1,0 +1,143 @@
+body{
+	font-family: Verdana, Geneva, Arial, Helvetica, sans-serif;
+	font-size: 0.8em;
+	background-color: #E5E3DC;
+	background-position: top right;
+	background-repeat: no-repeat;
+}
+
+a{
+	text-decoration: none;
+	color: #800;
+}
+a:hover{
+	text-decoration: underline;
+	color: #a00;
+}
+
+a img{
+	border: 0;
+}
+
+table{
+	width: 100%;
+	border-collapse: collapse;
+	border: 1px solid #ccc;
+}
+
+table td{
+	border-bottom: 1px solid #ddd;
+	background-color: #fff;
+}
+
+.odd td{
+	background-color: #F3EFE9; /* OLD ONE :#EDE9E3 */ 
+}
+
+#user-info{
+	border-bottom: 1px solid #ccc;
+	color: #444;
+	background-color: #eee;
+	background-image: url('images/user.png');
+	background-repeat: no-repeat;
+	background-position: left; 
+	padding-left: 30px;	
+}
+
+#user-info dt,
+#user-info dd{
+	display: inline;
+	padding: 0;
+	margin: 0;
+	padding-left: 1em;
+}
+
+#user-info dd{
+	border-right: 1px solid #ccc;
+	font-weight: bold;
+}
+
+hr{
+	clear: both;
+	height: 0;
+	overflow: hidden;
+	border: 0;
+	color: #fff;
+	margin: 0;
+	padding: 0;
+}
+
+
+th{
+	border: 1px solid #eee;
+	background-color: #444;
+	color: #fff;
+}
+
+
+.half-screen{
+	width: 45%;
+	float: left;
+	margin-left: 3%;
+}
+
+.error{
+	border: 2px solid #f80;
+	background-color: #ffe;
+	background-image: url('images/critical.png');
+	background-repeat: no-repeat;
+	background-position: left; 
+	padding: 10px 10px 10px 30px;
+	margin-right: 150px;
+}
+
+.success{
+	border: 1px solid #080;
+	background-color: #efe;
+	color: #040;
+	font-weight: bold;
+	background-image: url('images/success.png');
+	background-repeat: no-repeat;
+	background-position: left; 
+	padding: 10px 10px 10px 30px;
+}
+
+iframe{
+	border: 0px;
+	width: 100%;
+	height: 480px;
+}
+
+.fleft{
+	float: left;
+}
+
+.fright{
+	float: right;
+}
+
+.center{
+	text-align: center;
+}
+
+#user-actions{
+	background-image: url('images/agt_softwareD.png');
+	background-repeat: no-repeat;
+	background-position: top left;
+	height: 1px;
+	width: 16px;
+	background-color: #eee;
+	border: 1px solid #ccc;
+	overflow:hidden;
+	position: absolute;
+	right: 0;
+	margin-top: -36px;
+	padding-top: 16px;
+}
+
+#user-actions:hover{
+	height: auto;
+	width: auto;
+	overflow: visible;
+	background-position: top right;
+}

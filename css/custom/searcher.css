@@ -1,0 +1,19 @@
+form.searcher{
+	position: absolute;
+	top: 0;
+	right: 0;
+	width: 320px;
+	border: 1px solid #ccc;
+	background-image: url('images/find.png');
+	background-position: center left;
+	background-repeat: no-repeat;
+	padding: 0.5em;
+	padding-left: 40px;
+	background-color: #ffe;
+	z-index:9999;
+}
+
+form.searcher label{
+	display: block;
+	
+}

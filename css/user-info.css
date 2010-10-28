@@ -1,0 +1,127 @@
+body{
+	margin-top: 5em;
+
+}
+
+.user-info{
+	border: 0;
+	border-bottom: 1px solid #aaa;
+	border-right: 1px solid #aaa;
+	background-color: #fff;
+	margin: 0;
+	margin-bottom: 0.5em;
+	position: fixed;
+	left: 0;
+	top: 0;
+	width: 100%;
+	padding-top: 5px;
+	padding-bottom: 5px;
+	overflow: hidden;
+	display: block;
+	z-index: 10;
+	
+	background-image: url('images/user.png');
+	background-position: 5px 5px;
+	background-repeat: no-repeat;
+	
+	height: auto;
+	font-size: 100%;
+	text-indent: 0px;
+	border-right: 0;
+	
+	
+}
+
+	
+#connected-user{
+	padding-left: 30px;
+}
+
+.user-info:hover #app-list{
+		display: block;
+	}
+
+
+.user-info .user-actions{
+	text-align: right;
+}
+
+#app-list,
+#app-roles{
+	margin-left: 1em;
+	width: 16px;
+	height: 16px;
+	float: left;
+	background-image: url('images/1rightarrow.png');
+	background-repeat: no-repeat;
+	background-position: center;
+	
+}
+
+#app-list:hover,
+#app-roles:hover{
+	background-image: url('images/1downarrow.png');
+	
+}
+
+#app-list strong,
+#app-roles strong{
+	
+	display: block;
+	width: 150px;
+	padding-left: 20px;
+	visibility: hidden;
+}
+#app-roles{
+	display: block;
+	float: left;
+	margin-left: 200px;
+}
+#app-list ul,
+#app-roles ul{
+	display: none;
+	position: fixed;
+	border: 1px solid #ccc;
+	background-color: #eee;
+	padding: 1em;
+	line-height: 1.5em;
+	margin: 0;
+	list-style: none;
+	list-style-type: none;
+	z-index: 11;
+	-moz-border-radius: 5px;
+}
+
+#app-list:hover strong,
+#app-roles:hover strong{
+	display: block;
+	visibility: visible;
+}
+
+	#app-list ul li,
+	#app-roles ul li{
+		padding: 0;
+		margin: 0;
+		list-style: none;
+		list-style-type: none;
+		display: block;
+	}
+	
+	#app-list ul li a,
+	#app-roles ul li a{
+		display: block;
+		float: left;
+		clear: both;
+		width: 150px;
+		border-bottom: 1px dotted #ddd;
+	}
+	#app-list ul li img,
+	#app-roles ul li img{
+		display: block;
+		float: left;
+	}
+
+#app-list:hover ul,
+#app-roles:hover ul{
+	display: block;
+}

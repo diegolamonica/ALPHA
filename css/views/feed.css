@@ -1,0 +1,63 @@
+.boxed-container{
+	width: 100%;
+	padding: 1em;
+	border: 1px solid #ccc;
+	border-bottom: 1px solid #fff;
+	border-left: 1px solid #fff;
+	background-color: #eee;
+	-moz-border-radius: 15px;
+}
+
+.rss-block{
+	border: 1px solid #ccc;
+	border-bottom: 1px solid #fff;
+	border-left: 1px solid #fff;
+	background-color: #F5F3EC;
+	margin: 0.5em;
+}
+
+.rss-block h2{
+	border-bottom: 1px solid #ccc;
+	padding-top: 0;
+	margin-top: 0;
+}
+
+	.rss-block .rss-contents .rssItem{
+		height: 45px;
+		overflow: hidden;
+		border-bottom: 1px solid #ddd;
+	}
+	
+	
+	.rss-block .navigator ul{
+		list-style: none;
+		list-style-type: none;
+	}
+		
+		.rss-block .navigator ul li{
+			display: inline;
+			list-style: none;
+			list-style-type: none;
+			
+		}
+			.rss-block .navigator ul li a{
+				background-repeat: no-repeat;
+				background-position: center;
+				padding: 5px 5px 5px 10px;
+				margin-right: 1em;
+				border: 1px solid #ccc;
+				text-decoration: none;
+			}
+				.rss-block .navigator ul li a:hover{
+					background-color: #eee;
+				}
+				.rss-block .navigator ul li.previous a{
+						background-image: url('images/1leftarrow.png');
+				}
+				.rss-block .navigator ul li.next a{
+						background-image: url('images/1rightarrow.png');
+				}
+				
+				.rss-block .navigator ul li.rss a{
+						background-image: url('images/rss.png');
+				}

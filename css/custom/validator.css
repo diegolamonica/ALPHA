@@ -1,0 +1,29 @@
+input.required,
+textarea.required,
+select.required{
+	background-color: #ffe;
+}
+
+.field-error{
+	background-image: url('images/critical.png');
+	background-position: left;
+	padding-left: 20px;
+	background-repeat: no-repeat;
+	background-color: #fee !important;
+	border: 1px solid #f00;
+}
+
+#error-message{
+
+	display: block;
+	float: right;
+	background-image: url('images/delete.png');
+	background-position: left;
+	background-repeat: no-repeat;
+	padding-left: 40px;
+	color: #800;
+	font-weight: bold;
+	padding-bottom: 5px;
+	padding-top: 5px;
+	padding-right: 5px;
+}

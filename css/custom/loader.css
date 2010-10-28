@@ -1,0 +1,15 @@
+.loader{
+	display: block;
+	height: 5.5em;
+	line-height: 5em;
+	text-align: center;
+	padding-left: 40px;
+	background-image: url(images/ajax-loader.gif);
+	background-position: center left;
+	background-repeat: no-repeat;
+	position: absolute;
+	top: 0;
+	right: 0;
+	z-index: 99;
+	margin: 1em;
+}

@@ -1,0 +1,48 @@
+form{
+	width: 700px;
+	margin-left: auto;
+	margin-right: auto;
+	margin-top: 30px;
+	padding: 20px;
+	border: 1px solid #ddd;
+	background-color: #eee;
+}
+
+form div{
+	margin-top: 20px;
+	clear: left;
+	text-align: center;
+	
+}
+
+label{
+	width: 200px;
+	padding-right: 10px;
+	display: block;
+	float: left;
+	clear: left;
+	text-align: right;
+	font-weight: bold;
+}
+
+input{
+	width: 400px;
+	display: block;
+	float: left;
+	border: 1px solid #444;
+	font-family: Verdana, Geneva, Arial, Helvetica, sans-serif;
+	color: #800;
+}
+
+input[type=hidden]{ 
+	/* Regola solo per Firefox che mostra altrimenti una riga nera in corrispondenza dei campi nascosti */ 
+	display: none;
+}
+
+input.submit{
+	float: none;
+	border-style: ridge;
+	background-color: #ffc;
+	font-weight: bold;
+	padding: 5px;
+}

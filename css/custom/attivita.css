@@ -1,0 +1,25 @@
+.attivita{
+	list-style: none;
+	list-style-type: none;
+}
+	
+	.attivita li{
+		border: 1px solid #ccb;
+		background-color: #ffe;
+		padding: 0.5em;
+	}
+	
+		.attivita li#nuova-attivita{
+			background-image: url('images/editcopy.png');
+			background-position: left;
+			font-size: 2em;
+			padding-left: 40px;
+			background-repeat: no-repeat;
+		}
+			.attivita li#nuova-attivita a{
+				text-decoration: none;
+				color: #800;
+			}
+				.attivita li#nuova-attivita a:hover{
+					color: #c00;
+				}

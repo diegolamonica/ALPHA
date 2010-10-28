@@ -1,0 +1,31 @@
+@CHARSET "UTF-8";
+
+form{
+	overflow: auto;
+	height: 370px;	
+}
+
+.button-area{
+	position: fixed;
+	bottom: 0;
+	height: 30px;
+	width: 100%;
+	padding-top: 10px;
+	text-align: right;
+}
+
+	.button-area a{
+		margin-right: 10px;
+		border: 1px solid #069;
+		text-decoration: none;
+		font-weight: bold;
+		padding: 5px;
+		background-color: #069;
+		color: #fff;
+	}
+	
+		.button-area a:hover{
+			border: 1px solid #eee;
+			background-color: #17a;
+		}
+	

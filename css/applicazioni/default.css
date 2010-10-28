@@ -1,0 +1,104 @@
+#elenco-ruoli td{
+	vertical-align: top;
+}
+
+#elenco-ruoli td div{
+	display: none;
+}
+
+#elenco-ruoli td div.expanded{
+	display: block;
+	padding: 0.6em;
+}
+
+#elenco-ruoli td div.expanded span{
+	margin-top: 0.3em;
+}
+
+#elenco-ruoli td div.expanded,
+#elenco-ruoli td div.two-columns,
+#elenco-ruoli td div.two-columns div{
+	display: block;
+}
+
+#elenco-ruoli .metodi,
+#elenco-utenti .metodi{
+	width: 100px;
+}
+.edit_ruolo, 
+.delete_ruolo,
+.default_ruolo,
+.edit_utente,
+.delete_utente{
+	float: left;
+	display: block;
+	text-indent: -9999px;
+	width: 22px;
+	height: 22px;
+	border: 1px solid #ccc;
+	margin: 4px;
+	background-repeat: no-repeat;
+	background-position: center;
+}
+
+.edit_ruolo,
+.edit_utente{
+	background-image: url('images/user.png');
+}
+
+.delete_ruolo,
+.delete_utente{
+	background-image: url('images/remove.png');
+}
+
+.default_ruolo{
+	background-image: url('images/defaultn.png');
+}
+
+.default_ruolo.default{
+	background-image: url('images/defaulty.png');
+}
+
+.the-user,
+.the-role{
+	padding: 0.4em;
+	border: 1px solid #ccd;
+	background-color: #eef;
+	display: block;
+	float: left;
+	margin-right: 0.4em;
+	-moz-border-radius: 5px;
+}
+
+.the-user a,
+.the-role a{
+	display: block;
+	float: left;
+	text-indent: -999px;
+	width: 16px;
+	overflow: hidden;
+	height: 16px;
+	
+	margin-right: 0.8em;
+	background-image: url('images/remove.png');
+}
+
+.the-role a.active{
+	background-image: url('images/defaulty.png');
+}
+.the-role a.inactive{
+	background-image: url('images/defaultn.png');
+}
+
+.the-user a:hover,
+.the-role a:hover{
+	background-color: #bbc;
+}
+#elenco-ruoli td div.expanded.error{
+
+	padding-left: 30px;
+}
+
+.user-details span{
+	margin-top: 0.3em;
+}

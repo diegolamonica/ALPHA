@@ -1,0 +1,97 @@
+.toolbar li{
+	display: block;
+	float: left;
+	width: 40%;
+	height: 100px;
+	
+}
+	ul.toolbar li a{
+		background-repeat: no-repeat;
+		background-position: left center;
+		display: block;
+		margin: 5px;
+		padding: 0;
+		padding-left: 100px;
+		height: 90px;
+		line-height: 60px;
+		border: 1px solid #ddd;
+		text-decoration: none;
+		font-family: Verdana, Arial, sans-serif;
+		color: #484;
+	} 
+
+.toolbar li#action-admin a,
+.toolbar li#action-gestione a {
+	background-image: url('images/Tools.png');
+	
+	
+}
+
+.toolbar li#action-search a{
+	background-image: url('images/Search.png');
+}
+
+.toolbar li#action-clienti-fornitori a{
+	background-image: url('images/Users_Group.png');
+}
+
+
+.toolbar li#action-new-lettera a{
+	background-image: url('images/Document.png');
+}
+
+.toolbar li#action-new-borderau a{
+	background-image: url('images/Edit.png');
+}
+
+.toolbar li#action-fatturazione a{
+	background-image: url('images/kword.png');
+}
+
+.toolbar li#action-cap a{
+	background-image: url('images/Italia.png');
+}
+.toolbar li#action-cap a{
+	background-image: url('images/Italia.png');
+}
+
+.toolbar li#action-cap-listini a{
+	background-image: url('images/Cappario.png');
+}
+
+.toolbar li#back a{
+	background-image: url('images/Symbol_Back.png');
+}
+
+.toolbar li#action-workflow a{
+	background-image: url('images/Refresh.png');
+	
+}
+
+.toolbar li#action-numeratori a{
+	background-image: url('images/Forward.png');
+	
+}
+
+.toolbar li#action-vettori a{
+	background-image: url('images/Vettori.png');
+}
+
+.toolbar li#action-contrassegni a{
+	background-image: url('images/Favorite.png');
+}
+
+.toolbar li#action-incassa-contrassegno a{
+	background-image: url('images/package_editors.png');
+}
+.toolbar li#action-rendi-contrassegno a{
+	background-image: url('images/package_editorspackage_editors.png');
+}
+
+.toolbar li#action-verifica-contrassegno a{
+	background-image: url('images/lassists.png');
+}
+
+.toolbar li#action-ritiri a{
+	background-image: url('images/lists.png');
+}
