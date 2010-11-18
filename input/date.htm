@@ -22,14 +22,13 @@
 </head>
 <body>
 	<!-- RENDER:BEGIN -->
-	aaa"@@ROOT/"
 	<div class="dateControl">
 		<input type="text" value="{var:input.value}" id="{var:input.id}"
 			{if:$var['input.name']!=null}
 				name="{var:input.name}"
 			{endif}
 		 class="date-control {fn:match(input.class,'','',input.class)}" />
-		<a onclick="displayDatePicker('{var:input.id}')" class="date-btn" href="#">data s</a>
+		<a onclick="displayDatePicker('{var:input.id}')" class="date-btn" href="#">data</a>
 	</div>
 	
 	<!-- RENDER:END -->

@@ -18,13 +18,13 @@ class Model extends Debugger {
 	private $buffer = '';
 	private $storedFromCache = false;
 	private $_doNotSendHeader = false;
-	static $disallowedEscapeOn = array();
 	/**
 	 * @var <b>array</b> è un array associativo che contiene tutte le variabili da applicare sul tempalte 
 	 */
 	# Modifica del 26-02-2010 di Diego La Monica
 	#public $variables = array();
 	static $variables = array();
+	static $disallowedEscapeOn = array();
 	/**
 	 * @var <b>boolean</b> indica se al modello corrente è applicabile la cache 
 	 */

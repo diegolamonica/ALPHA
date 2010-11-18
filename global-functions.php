@@ -259,6 +259,14 @@ function implementDefaultView($viewToUse, $querySQL = '', $itemListNameOnTemplat
 	}
 	
 	$m = ClassFactory::get('Model');
+	// Aggiunta di Diego  del 2010-08-09
+	
+	if(isset($_POST['__ajaxMode']) && $_POST['__ajaxMode']=='y'){
+		$viewToUse = defined('AJAX_SUBMIT_TEMPLATE')?AJAX_SUBMIT_TEMPLATE:'ajax-default';
+	}
+	if(isset($_GET['viewToUse'])) $viewToUse = $_GET['viewToUse'];
+	// Fine aggiunta
+	
 	$m->setView($viewToUse);
 	
 	if($a->isAuthenticated()){
@@ -415,13 +423,24 @@ function oneOfIsIn($arraySrc, $arrayDst, $ifDestIsEmptyReturn = true){
 
 	return false;
 }
-
-function userHasRole($roles, $atLeastOne = true){
+/**
+ * Check if user has one of the roles given to the function as list of string parameters or a single array argument.The optional last parameter will set the condition to check for all given roles, or at least one of the given roles (default behavior)
+ * @param paramarray $role
+ * @param bool $atLeastOne [default = true] 
+ * @return bool
+ */
+function userHasRole(){
+	$atLeastOne = true;
+	$tempRoles = func_get_args();
+	if(is_bool($tempRoles[count($tempRoles)-1])){
+		$atLeastOne = $tempRoles[count($tempRoles)-1];
+		array_pop($tempRoles);
+	}
+	$roles = $tempRoles;
+	
 	if(!is_array($roles)) $roles = array($roles);
 	$a = ClassFactory::get('Authentication');
 	$u = $a->getUserData();
-
-
  	$userRoles = $u['userRoles'];
  	
 	if($atLeastOne){	

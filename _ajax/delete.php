@@ -34,7 +34,6 @@ function delete(){
 		$c = ClassFactory::get('connector');
 		
 		$sql = 'delete from ' . SQL_TABLE_PREFIX . $t . SQL_TABLE_POSTFIX .  ' where ' . SQL_FIELD_PREFIX .  $f . SQL_FIELD_POSTFIX. '=\'' . $k . '\'';
-		#echo($sql);
 		$c->query($sql, true);
 		if(isset($ajax) && $ajax=='y'){
 			echo('({error:false, message:"informazione rimossa",table:"'.$t.'",field:"'.$f.'",value:"'.$k.'"})');

@@ -14,7 +14,7 @@
  */
 define('DIMDIM_HOST_URL' , 		'webmeeting.dimdim.com');
 define('DIMDIM_BASE_URL' , 		'http://' . DIMDIM_HOST_URL . '/portal/');
-define('DIMDIM_RETURN_URL',		'http://www.iwa.it/thankyou/');
+define('DIMDIM_RETURN_URL',		'http://www.yourdomain.com/thanks/');
 define('DIMDIM_AUTH_USER_NAME',	'iwaitaly1');
 define('DIMDIM_AUTH_PASS_CODE',	'dimdim');
 
@@ -25,7 +25,7 @@ define('DIMDIM_URL_KEY_NAME',						'name');
 define('DIMDIM_URL_KEY_PASSWORD',					'password');
 define('DIMDIM_URL_KEY_START_DATE',					'startDate');
 /**
- * Definisce la ripetitività del seminario secondo i valori specificati nelle costanti DIMDIM_RECURRANCE_*
+ * Definisce la ripetitivitï¿½ del seminario secondo i valori specificati nelle costanti DIMDIM_RECURRANCE_*
  *
  */
 define('DIMDIM_URL_KEY_MEETING_RECURRANCE',			'meetingRecurrance');

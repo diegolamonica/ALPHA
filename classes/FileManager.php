@@ -7,6 +7,7 @@ define('FILEMANAGER_ERROR_NO_RIGHT_EXTENSION', 	3);
 define('FILEMANAGER_ERROR_INVALID_MIN_SIZE', 	4);
 define('FILEMANAGER_ERROR_INVALID_MAX_SIZE', 	5);
 
+define('FILEMANAGER_PROGRESSIVE_UPLOAD_SESSION_VAR', 'fmpusv');
 class FileRule{
 	
 	public $fsName = null;
@@ -33,12 +34,71 @@ class FileManager extends Debugger{
 	
 	private $fileInfo;
 	
+	private $watcher = '';
+	private $watcherFileName = '___FileManagerUploadMonitor.dat';
+	private $currentUploadingFile = false;
 	private $_rules = array();
 	
 	function getLastError(){
 		return $this->errors[$this->lastError];
 	}
-
+	
+	function getUploadingFileSize() {
+		return ($this->currentUploadingFile === false ? false : filesize($this->currentUploadingFile));
+	}
+	
+	
+	function watchProgressiveUpload(){
+		$tempDir = ini_get('upload_tmp_dir');
+		$this->watcher = $tempDir.$this->watcherFileName;
+		if(isset($_SESSION[FILEMANAGER_PROGRESSIVE_UPLOAD_SESSION_VAR]) && file_exists($_SESSION[FILEMANAGER_PROGRESSIVE_UPLOAD_SESSION_VAR]))
+			$this->currentUploadingFile = $_SESSION[FILEMANAGER_PROGRESSIVE_UPLOAD_SESSION_VAR];
+		else
+			$this->currentUploadingFile = $this->getCurrentUploadingFile($tmpfolder, '/[p][h][p]*');
+		if($this->currentUploadingFile !== false)
+				$_SESSION[FILEMANAGER_PROGRESSIVE_UPLOAD_SESSION_VAR] = $this->currentUploadingFile;
+		
+	}
+	
+	private function getCurrentUploadingFile($tmpfolder, $pattern) {
+		$found = false;
+		if(is_dir($tmpfolder)) {
+			$phptempfiles = glob($tmpfolder.$pattern);
+			if(count($phptempfiles) === 1) {
+				if(@$fp = fopen($this->watcherFileName, 'w')) {
+					@flock($fp, LOCK_EX);
+					fwrite($fp, serialize($phptempfiles));
+					@flock($fp, LOCK_UN);
+					fclose($fp);
+				}
+				$found = $phptempfiles[0];
+			}
+			else
+				$found = $this->checkUploadWatcher($phptempfiles);
+		}
+		return $found;
+	}
+	function checkUploadWatcher(&$phptempfiles) {
+		$found = false;
+		if(file_exists($this->watcher)) {
+			$fsize = filesize($this->watcher);
+			if(@$fp = fopen($this->watcher, 'r+')) {
+				@flock($fp, LOCK_EX);
+				$tmpfiles = unserialize(fread($fp, $fsize));
+				$tmpfound = array_diff_assoc($phptempfiles, $tmpfiles);
+				if(is_array($tmpfound) && count($tmpfound) === 1) {
+					foreach($tmpfound as $k => $v)
+						$found = &$v;
+					rewind($fp);
+					fwrite($fp, serialize($phptempfiles));
+				}
+				@flock($fp, LOCK_UN);
+				fclose($fp);
+			}
+		}
+		return $found;
+	}
+	
 	function rearrangeFileObject(&$file_post) {
 	
 	    $file_array = array();

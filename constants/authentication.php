@@ -64,7 +64,7 @@ _define('AUTHENTICATION_PASSWORD_ENCODING_SHA',		'sha');
  * Essa può assumere tre valori:
  * - {@link AUTHENTICATION_PASSWORD_ENCODING_PLAIN in chiaro}
  * - {@link AUTHENTICATION_PASSWORD_ENCODING_MD5 con algoritmo MD5}
- * - {@link AUTHENTICATION_PASSWORD_ENCODING_MD5 con algoritmo SHA-1}
+ * - {@link AUTHENTICATION_PASSWORD_ENCODING_SHA1 con algoritmo SHA-1}
  * @var String
  */
 _define('AUTHENTICATION_PASSWORD_ENCODING',		'AUTHENTICATION_PASSWORD_ENCODING_PLAIN', false, true);

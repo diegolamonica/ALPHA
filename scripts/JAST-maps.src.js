@@ -11,6 +11,7 @@ _.extend('Maps',{
 		offsetX:	0,
 		offsetY:	0,
 		allowMultipleMarkers:	true,
+		allowZoomBox:	true,
 		markers:	[],
 		controls:	[],
 		addControlPanel:	true,
@@ -28,6 +29,7 @@ _.extend('Maps',{
 		onMarkerClick: 	null,
 		onMove:			null,
 		onZoom:			null,
+		onZoomBoxEnd:	null,
 		_markersCount: 0
 	},
 	markerOptions: {
@@ -43,6 +45,7 @@ _.extend('Maps',{
 							// GB		- 1
 		centerMapOnClick: true
 	},
+	isDragging: false,
 	_maps: [],
 	setup: function(id, options){
 		options = _.mergeOptions(options, _.Maps.options);
@@ -68,11 +71,164 @@ _.extend('Maps',{
 		_.Events.add(id, 'dblclick', _.Maps._addMarker);
 		_.Events.add(id, 'DOMMouseScroll', _.Maps._wheel);
 		_.Events.add(id, 'mousewheel', _.Maps._wheel);
+		_.Events.add(id, 'mousedown',		_.Maps._startZoomBox);
+		_.Events.add(id, 'mousemove',		_.Maps._growZoomBox);
+		_.Events.add(id, 'mouseup',			_.Maps._endZoomBox);
+		
 		_.Maps._maps[id] = options;
 		
 		_.Maps.redraw(id, true);
 		
 	},
+	_growZoomBox:	function(event){
+		var g = _.Events.generator(event);
+		var id = g.id;
+		
+		var zoomBox = _._id(id +'-zoom-box');
+		if( zoomBox ){
+		
+			_.Maps._startZoomBox(event, true);
+			_.Maps.isDragging = true;
+		}
+	},
+	_startZoomBox: function(event, fromMove){
+		var g = _.Events.generator(event);
+		var id = g.id;
+		
+		var mapXY = _.DOM.position(id);
+		var zoomBox = _._id(id +'-zoom-box');
+		if( zoomBox ){
+			
+			// Lo ingrandisco
+			_.Maps.isDragging = true;
+			var margins = _.DOM.style(zoomBox, 'marginLeft marginTop');
+			
+			
+			var newSzX = (event.clientX-mapXY.x-_.strings.parseInt(margins.marginLeft));
+			var newSzY = (event.clientY-mapXY.y-_.strings.parseInt(margins.marginTop));
+			window.title = newSzX + ', ' + newSzY;
+			if(newSzX<10) newSzX = 10;
+			if(newSzY<10) newSzY = 10;
+			
+			_.DOM.setStyle(zoomBox, {
+				width: newSzX+'px',
+				height: newSzY+'px'
+			});
+			
+			
+		}else if(!fromMove){
+			_.Maps.isDragging = false;
+			// Creo l'elemento
+			
+			var zoomBoxDiv = _.DOM.createChild('DIV', id, id +'-zoom-box');
+			_.DOM.setStyle(zoomBoxDiv, 
+				{
+					position: 'fixed',
+					border:	'1px solid #888',
+					backgroundColor: '#aaa',
+					opacity:	'0.5',
+					marginLeft:	(event.clientX-mapXY.x) + 'px',
+					marginTop:	(event.clientY-mapXY.y) + 'px',
+					width:	'10px',
+					height: '10px'
+				}
+			);
+			
+			
+		}
+	},
+	_getScrollTop: function(){
+		if(document.documentElement && document.documentElement.scrollTop) return document.documentElement.scrollTop;
+		return document.body.scrollTop;
+	},
+	_endZoomBox: function(event){
+		var g = _.Events.generator(event);
+		var id = g.id;
+		var zoomBox = _._id(id +'-zoom-box');
+		if(_.Maps.isDragging){
+			_.Maps.isDragging = false;
+			var mapXY = _.DOM.position(id);
+			var mapSz = _.DOM.realSize(id);
+			
+			
+			var margins = _.DOM.style(zoomBox, 'marginLeft marginTop');
+			
+			margins.marginLeft = _.strings.parseInt(margins.marginLeft);
+			margins.marginTop = _.strings.parseInt(margins.marginTop);
+			
+			
+			var size = _.DOM.realSize(zoomBox);
+			var deltaX = size.width/mapSz.width;
+			var deltaY = size.height/mapSz.height;
+			
+			
+			var delta = (deltaX < deltaY)?deltaX:deltaY;
+			size.height = (size.height/deltaY) * delta;
+			size.width =  (size.width/deltaX)  * delta;
+			
+			/*
+			 bbymax
+			 +--------------------------------------------------------------+bbxmax
+			 |                                                              | ^
+			 |                                                              | |
+			 |                  margins (marginLeft,marginTop)              | |
+			 |    ymax ----------> +--------------------------------+       | |
+			 |                     |                                |       | |
+			 |                     |                                |       | |
+			 |                     |                                |       | |
+			 |                     |                                |       | |
+			 |                     |                                |       | |mapSz.height
+			 |                     |                                |       | |
+			 |                     |                                |       | |
+			 |                     |                                |       | |
+			 |    ymin ----------> +--------------------------------+       | |
+			 |                                        size(width,height)    | |
+			 |                                                              | |
+			 |                                                              | |
+			 |                                                              | |
+			 |                                                              | |
+			 |                                                              | v
+ 		  	 +--------------------------------------------------------------+bbymin
+			 bbxmin
+			 |<------------------------------------------------------------>|
+			 				           	mapSz.width
+			 
+			 se y è invertita in GB:
+			 
+			 	ymin = bbymax - (margins.y+margins.h)
+			 	ymax = bbymax - margins.y
+			 
+			 */
+			
+			var ymin = mapSz.height-(margins.marginTop+_.Maps._getScrollTop()+size.height);
+			var ymax = mapSz.height- margins.marginTop+_.Maps._getScrollTop();
+			
+			
+			var gbXYmin = _.Maps.px2gb(id, margins.marginLeft, ymin);
+			var gbXYmax = _.Maps.px2gb(id, size.width+margins.marginLeft, ymax);
+			
+			var m = _.Maps._maps[id];
+			
+			var r = m.rect;
+	
+			var diffX = gbXYmax.gbx - gbXYmin.gbx;
+			
+			m.zoom = diffX/2;
+			
+			
+			m.onMove(id, m.rect.xmin + gbXYmin.gbx+ m.zoom, m.rect.ymin + Math.abs(gbXYmin.gby)+ m.zoom);
+	/*
+			debugBuffer += '<strong>after redefined:</strong> currentRect: [(' + r.xmin + ',' + r.ymin + '), ';
+			debugBuffer += ' (' + r.xmax + ',' + r.ymax + ')]<br />';
+			
+			
+			_._id('debug-map').innerHTML = debugBuffer;
+*/
+		}
+		_.DOM.remove(zoomBox);
+		
+	},
+	
 	_wheel: function(event){
 		
         if (!event) event = window.event;
@@ -312,7 +468,6 @@ _.extend('Maps',{
 		y = m.height - y;
 		
 		var c = _.Maps.px2gb(id, x,y);
-		var cinv = _.Maps.gb2px(id, c.gbx, c.gby);
 		x = c.gbx+ m.rect.xmin;
 		y = c.gby+ m.rect.ymin;
 		_._id(id + '-coords').innerHTML = 'X: ' + parseInt(x) +'; Y: ' + parseInt(y);

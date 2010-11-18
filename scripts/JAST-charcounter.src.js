@@ -28,13 +28,13 @@ JASTEggIt.extend(
 			if(options.textSource=='') return false; 
 			var idx = this._counters.length;
 			this._counters[idx] = options;
-			JASTEggIt.Listener.watch(options.textSource, 'value', function(itm){
-				JASTEggIt.characterCount.update(idx);
+			_.Listener.watch(options.textSource, 'value', function(itm){
+				_.characterCount.update(idx);
 			} )
 		},
 		update: function(idx){
 			var itm = this._counters[idx];
-			var src = JASTEggIt._id(itm.textSource);
+			var src = _._id(itm.textSource);
 			if(src==null) return false;
 			var limit = itm.limitWarning;
 			var l = src.value.length;

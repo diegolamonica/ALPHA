@@ -65,8 +65,9 @@ class ClassFactory{
 	static function create($className, $name){
 		
 		require_once($className .'.php');
+		$obj = new $className();
+		ClassFactory::$classes[$name] = array('type' => $className , 'instance' =>& $obj);
 		
-		ClassFactory::$classes[$name] = array('type' => $className , 'instance' => new $className());
 		$result = ClassFactory::$classes[$name];
 		return $result;
 	}

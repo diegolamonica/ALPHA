@@ -41,11 +41,7 @@ function post_toJSONObject($rs){
 }
 
 function post(){
-	#print_r($_POST);
-	#print_r($_SERVER['PHP_SELF']);
 	$table 		= $_POST['_table'];
-	#$keyField 	= $_POST['_key_field']; // Perchè le prendevo?
-	#$skipKey	= $_POST['_skip_key'];  // Perchè le prendevo?
 	
 	unset($_POST['_table']);
 	unset($_POST['_key_field']);

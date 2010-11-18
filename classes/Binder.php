@@ -207,6 +207,7 @@ class Binder extends Debugger implements iBinder {
 			for($i = 0; $i<count($this->primaryKey); $i++){
 				$key = $this->primaryKey[$i];
 				$value = $this->getBindedValue($key);
+				if($value==null) $value ='';
 				$filter[$key] = $value;
 			}
 		}else{
@@ -348,12 +349,14 @@ class Binder extends Debugger implements iBinder {
 				if($value['before'] . $value['value'] .$value['after']==''){
 					$values .= 'null ';
 				}else{
-					$values .= $value['before'] .  utf8_decode($value['value'])  .$value['after'] . ' ';
+				
+					$values .= $value['before'] . $value['value'] .$value['after'] . ' ';
+					
+					
 				}
 			}
 			$sql .= '(' . $keys .') VALUES (' . $values . ')';
 			$c->query($sql, true);
-			
 			$err = $c->getLastErrorObject();
 			if($err==null){
 				if($this->autoIncrementField!=''){
@@ -375,7 +378,6 @@ class Binder extends Debugger implements iBinder {
 			$values = '';
 			$idRecord =	$this->getBindedValue($this->autoIncrementField, true);
 			$c = ClassFactory::get($this->connector);
-			$writeBuffer  ='';
 			foreach($newRs as $key => $value){
 				
 				if($values!='') $values.=',';
@@ -393,7 +395,7 @@ class Binder extends Debugger implements iBinder {
 				
 				$sql .=$values;
 				$sql .='where ' .$this->whereCondition;
-				
+		
 				$c->query($sql, true);
 				
 				if($c->lastErrorObject==''){

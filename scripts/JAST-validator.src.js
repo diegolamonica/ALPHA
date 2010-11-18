@@ -59,6 +59,7 @@ _.extend('Validator',{
 		'Per $s bisogna specificare il valore di uno solo di essi.',	// 13
 		'Manca il metodo custom %s per la validazione del campo',	// 14
 		'Il valore del campo %s deve essere compatibile con le informazioni specificate',		//15
+		'Non è stata specificata una data valida',					// 16
 		''
 	],
 	_circularReference: [],
@@ -208,6 +209,7 @@ _.extend('Validator',{
 			['required', 		c.REQUIRED,				1],
 			['integerNumber', 	c.NUMBER_INTEGER,		9],
 			['floatNumber', 	c.NUMBER_FLOAT,			9],
+			['isDate',			c.IS_DATE,				16],
 			['email',			c.EMAIL,				8],
 			['custom',			c.DO,					14],
 			['thisXorAnother', 	c.XOR,					2],			// TODO: da implementare (?)
@@ -257,7 +259,7 @@ _.extend('Validator',{
 		V._updateNotification(theFormId, false);
 		return errorCode;
 	},
-	_check_required: function(itm){
+	_check_required: function(itm, cond,actions, conditions, options){
 		var value = itm.value;
 		if(itm.options && itm['selectedIndex']!=null){
 			value = itm.options[itm.selectedIndex].value; 
@@ -274,6 +276,21 @@ _.extend('Validator',{
 		if(value=='') return 1;
 		return false;
 	},
+	_check_isDate: function(itm, cond, actions, conditions,options){
+		
+		var dateFormat = options.dateFormat;
+		
+		if(dateFormat == null) dateFormat = '(\\d+)\\/(\\d+)\/(\\d+)';
+		var rx = new RegExp(dateFormat);
+		var results = rx.exec(itm.value);
+		if(itm.value=='') return false;
+		if(results){
+			if( 	(Number(results[1])>0 && Number(results[2])>0) &&
+					(Number(results[1])<32 && Number(results[2])<13) )return false;
+		}
+		return cond[2];
+	},
+
 	_check_email: function(itm){
 		var value = itm.value;
 		if(value=='') return false;

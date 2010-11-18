@@ -31,9 +31,12 @@
 	<div id="ajax-response">
 	{endif}
 		{if:(!isset($var['alpha.error']) || $var['alpha.error']=='') && count($_POST)>0}
-		<div id="save-notify" class="success">
-			Informazioni salvate con successo.
-		</div>
+		{var:alpha.error}
+			{if:isset($var['alpha.itemId']) && $var['alpha.itemId']!=0 && isset($_POST['ID'])}
+				<div id="save-notify" class="success">
+					Informazioni salvate con successo.
+				</div>
+			{endif}
 		{endif}
 	{var:alpha.error}
 	{if:!isset($var['__ajaxMode'])}

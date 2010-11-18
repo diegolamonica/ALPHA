@@ -21,11 +21,10 @@
 						
 						var i = buffer.indexOf('@');
 						if(i!=-1){
-							
 							var newSavedId = buffer.substr(0,i);
 							
-							if(_._id('ID')) _._id('ID').value = newSavedId.trim();
-							if(_._id('id')) _._id('id').value = newSavedId.trim();
+							if(_._id('ID')) _._id('ID').value = _.strings.trim(newSavedId);
+							if(_._id('id')) _._id('id').value = _.strings.trim(newSavedId);
 							
 							buffer=buffer.substr(i+1);
 							
@@ -40,7 +39,7 @@
 							return false;
 						}
 						
-						var i = buffer.indexOf('<!-- update: ');
+						var i = buffer.indexOf('\<\!\-\- update: ');
 						if(i!==-1){
 							
 							var results = buffer.substring(i+14, buffer.length);

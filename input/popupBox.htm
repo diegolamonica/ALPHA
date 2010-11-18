@@ -24,6 +24,7 @@
 @confirmOnClick=	null
 @onBeforeDisplay=	null
 @onAfterDisplay=	null
+@class=				
 -->
 
 	<script type="text/javascript">
@@ -83,7 +84,14 @@
 	<h2>Esempio:</h2>
 	<a href="javascript:_.PopupBox.display('{var:input.id}')">Mostra il popup a video</a>
 	<!-- RENDER:BEGIN -->
-	<div id="{var:input.id}" class="popup-box" style="{var:input.style}">
+	<div id="{var:input.id}" 
+		{if:$var['input.class']==''}
+			class="popup-box"
+		{endif}
+		{if:$var['input.class']!=''}
+			class="popup-box {var:input.class}"
+		{endif}
+	>
 		<div id="{var:input.id}-data">
 			{var:input.html}
 		</div>

@@ -1,15 +1,28 @@
 .loader{
 	display: block;
-	height: 5.5em;
-	line-height: 5em;
+	height: 4em;
+	line-height: 3.9em;
 	text-align: center;
-	padding-left: 40px;
+	padding-left: 30px;
+	background-color:#ffa;
 	background-image: url(images/ajax-loader.gif);
-	background-position: center left;
+	background-position: 10% 50%;
 	background-repeat: no-repeat;
-	position: absolute;
-	top: 0;
-	right: 0;
+
+	border:1px solid #666;
+	position:fixed;
+	left:43%;
+	top:45%;
+	width:180px;
 	z-index: 99;
-	margin: 1em;
+	opacity:0.8;
+	
+	font-size:1.2em;
+	font-weight: bold;
+	color: #444;
+	-moz-border-radius: 5px;
+	-moz-box-shadow: 0 0 0.6em #444;
+
 }
+
+

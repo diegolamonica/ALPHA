@@ -4,6 +4,7 @@ body{
 	background-color: #E5E3DC;
 	background-position: top right;
 	background-repeat: no-repeat;
+	color: #000
 }
 
 a{
@@ -140,4 +141,7 @@ iframe{
 	width: auto;
 	overflow: visible;
 	background-position: top right;
+}
+h1, h2, h3, h4, h5, h6{
+	color: #800;
 }

@@ -128,11 +128,13 @@ class mysqlConnector extends Debugger implements iConnector {
 				$dbg->write('result is: ' . $this->result);
 				
 			}
+			
 			$this->lastQuery = $sql;
 		}else{
 			$this->lastError = MYSQLC_ERROR_NO_CONNECTION;
 			
 		}
+		
 		$dbg->write('Exiting ' . __FUNCTION__ , DEBUG_REPORT_FUNCTION_EXIT );
 	}
 	
@@ -228,9 +230,11 @@ class mysqlConnector extends Debugger implements iConnector {
 		$pagingIsEnabled = $this->pagingIsEnabled;
 		
 		$c = new mysqlConnector();
+		if($pagingIsEnabled) $c->disablePagination();
 		$c->query($sql);
 		$rs = $c->moveNext();
 		$c->release();
+		if($pagingIsEnabled) $c->enablePagination();
 		unset($c);
 		return $rs;
 	}

@@ -48,6 +48,17 @@ function get(){
 		if(!isset($a)) $a = '%';
 		if(!isset($b)) $b = '';
 		if(!isset($distinct)) $distinct = 'distinct';
+		
+		switch(APPLICATION_CONNECTOR_MODULE){
+			case APPLICATION_CONNECTOR_MODULE_MYSQL:
+				#$q = addslashes($q);
+				break;
+			case APPLICATION_CONNECTOR_MODULE_ORACLE:
+				$q = str_replace("'","''",$q); 
+				break;
+		
+		}
+		
 		$f = stripslashes($f);
 		$sql = "select $distinct $f from ".SQL_TABLE_PREFIX.$t.SQL_TABLE_POSTFIX." where ";
 		if(isset($xw) && $xw=='y'){
@@ -60,6 +71,7 @@ function get(){
 		}else{
 			$sql .= SQL_FIELD_PREFIX.$w.SQL_FIELD_POSTFIX." $cmp '$b$q$a'";
 		}
+		if(defined('GET_EXTRA_FILTER')) $sql .= ' and (' . GET_EXTRA_FILTER.')';
 		if(isset($orderby)){
 			$sql .= ' order by ' . $orderby;
 		}

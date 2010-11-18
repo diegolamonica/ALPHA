@@ -17,11 +17,15 @@ fieldset.small-size{
 	fieldset.small-size label.gigante{
 		font-size: 1.4em;
 	}
-
+	fieldset label{
+		color: #444;
+	}
 	fieldset input,
 	fieldset select,
 	fieldset .simil-input{
 		border: 1px solid #ccc;
+		background-color: #fff;
+		color: #444;
 	}
 		fieldset .simil-input{
 		
@@ -33,6 +37,8 @@ fieldset.small-size{
 		border: 1px solid #ccc;
 		width: 80%;
 		display: block;
+		color: #444;
+		background-color: #fff;
 	}
 	
 	fieldset input.number{

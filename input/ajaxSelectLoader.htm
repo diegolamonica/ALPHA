@@ -20,6 +20,7 @@
 		//<![CDATA[
 		_.onStartup( function(){
 			/* init-script:begin */
+			if(_._id('{var:input.for}') && _._id('{var:input.on}')){
 			_.AjaxSelectLoader.setup('{var:input.for}', {
 				pageURL: 		'{var:input.pageURL}',
 				loadText: 		'{var:input.loadText}',
@@ -29,6 +30,7 @@
 				glue:			'{var:input.glue}',
 				startValue:		'{var:input.startValue}'
 			});
+			}
 			/* init-script:end */
 		});
 		// ]]>	

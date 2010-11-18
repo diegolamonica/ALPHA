@@ -107,7 +107,10 @@ JASTEggIt.extend('Shortkey', {
 		combo = combo.replace(/\+/g,'');
 		combo = combo.replace(/TAB/g,'\t');
 		combo = combo.replace(/ENTER/g,'\r');
-		
+		combo = combo.replace(/LEFTARROW/g, String.fromCharCode(37));
+		combo = combo.replace(/UPARROW/g, String.fromCharCode(38));
+		combo = combo.replace(/RIGHTARROW/g, String.fromCharCode(39));
+		combo = combo.replace(/BOTTOMARROW/g, String.fromCharCode(40));
 		combo = combo.replace(/F12/g, String.fromCharCode(123));
 		combo = combo.replace(/F11/g, String.fromCharCode(122));
 		combo = combo.replace(/F10/g, String.fromCharCode(121));

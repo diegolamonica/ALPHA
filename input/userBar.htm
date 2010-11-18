@@ -20,7 +20,7 @@
 		</div>
 		{php:EMPTY}
 			
-			$c = ClassFactory::get('connector');
+			$c = ClassFactory::get('connector', true,'tempConnector');
 			// Devo prendere l'elenco delle applicazioni in cui l'utente è censito
 			#print_r($_SESSION['multi_apps_logon']);
 			echo('<div id="app-list">');
@@ -43,11 +43,11 @@
 			
 			echo('</ul>');
 			echo('</div>');
-			
+			ClassFactory::destroy('tempConnector');
 		{phpend}
 		{php:EMPTY}
 			
-			$c = ClassFactory::get('connector');
+			$c = ClassFactory::get('connector', true,'tempConnector');
 			// Devo prendere l'elenco dei ruoli attribuiti all'utente
 			echo('<div id="app-roles">');
 			echo('<strong>Autorizzazioni:</strong>');
@@ -60,6 +60,31 @@
 			}
 			echo('</ul>');
 			echo('</div>');
+			ClassFactory::destroy('tempConnector');
+		{phpend}
+		{php:EMPTY}
+			$c = ClassFactory::get('connector', true,'tempConnector');
+			$sql ="select TABLE_NAME from tabs where TABLE_NAME='NOTIFICHE'";
+			$rs = $c->getFirstRecord($sql);
+			$c->disablePagination();
+			if($rs!=null){
+				$m = ClassFactory::get('Model');
+				$tabellaRif = $m->getVar('alpha.dataSource');
+				$idTabellaRif = $m->getVar('alpha.itemId');
+				$matricola = $m->getVar('alpha.userInfo.MATRICOLA');
+				$c->query("select CONTENUTO from NOTIFICHE where TABELLA_RIF='$tabellaRif' and ID_TABELLA_RIF='$idTabellaRif' and MATRICOLA='$matricola'");
+				$results = $c->allResults();
+				if(count($results)>0){
+					echo('<div id="notifications">');
+					echo('<ul>');
+					for($i=0; $i<count($results);$i++){
+						echo('<li>' . nl2br( $results[0]['CONTENUTO']). '</li>');
+					}
+					echo('</ul>');
+					echo('</div>');
+				}
+			}
+			ClassFactory::destroy('tempConnector');
 		{phpend}
 
 		<div class="user-actions">

@@ -29,6 +29,7 @@
 	padding: 10px 10px 10px;
 	padding-left: 40px;
 	background-repeat: no-repeat;
+	background-position: left center;
 	background-color: #eee;
 }
 	.toolbar li a:hover{

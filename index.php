@@ -64,28 +64,34 @@ if(!class_exists('core12')){
 			!isset($method['param']) && call_user_func($method['name']);
 		}
 		static function doRequireOnce($baseDir, $subDir, $url){
-	
-					
 			$headers = array(
 			
-				'css'=>array('text/css',true),
-				'js'=>array('text/javascript',true),
-				'xml'=>array('text/xml',false),
-				'htm'=>array('text/html',false),
-				'html'=>array('text/html',false),
-				'jpg' =>array('image/jpg', false),
-				'png' =>array('image/png', false),
-				'gif' =>array('image/gif', false),
+				'css'=>array('text/css; charset=UTF-8',true, 60*60),
+				'js'=>array('text/javascript; charset=UTF-8',true, 60*60),
+				'xml'=>array('text/xml; charset=UTF-8',false),
+				'htm'=>array('text/html; charset=UTF-8',false),
+				'html'=>array('text/html; charset=UTF-8',false),
+				'jpg' =>array('image/jpg', false, 60*60*24*365),
+				'png' =>array('image/png', false, 60*60*24*365),
+				'gif' =>array('image/gif', false, 60*60*24*365),
 				'mp3' =>array('audio/mpeg', false),
-				'otf' =>array('application/vnd.ms-opentype', false),
-				'eot' =>array('application/vnd.ms-fontobject', false),
+				'otf' =>array('application/vnd.ms-opentype', false, 60*60*24*365),
+				'eot' =>array('application/vnd.ms-fontobject', false, 60*60*24*365),
 				'swf' =>array('application/x-shockwave-flash', false),
 				'doc' =>array('application/octet-stream', false)
 			);
 			foreach($headers as $header => $mime){
 				if( preg_match('/\.' . $header . '/', $url)){
 					$mimeType = $mime[0];
-					header('Content-type: '.$mime[0].'; charset=UTF-8') ;
+					header('Content-type: '.$mime[0]) ;
+					if(isset($mime[2])){
+						// Expires "Tue, 2 Mar 2010 20:00:00 GMT"
+						header("Pragma: public",true);
+						header('Last-Modified: Mon, 13 Sep 2011 10:37:55 GMT', true);
+						header("Cache-Control: maxage=".+$mime[2],true);
+						header('Expires: ' . gmdate('D, d M Y H:i:s', time()+$mime[2]) . ' GMT',true);
+						
+					}
 					$debugOutput = $mime[1];
 					break;
 				}
@@ -108,7 +114,6 @@ if(!class_exists('core12')){
 			if(!file_exists($fullPath)){
 				# Provo a cercare nelle directory del core
 				$baseDir = CORE_ROOT;
-				
 				$fullPath =$baseDir. $url;
 				
 			}
@@ -147,6 +152,8 @@ if(!class_exists('core12')){
 if(!defined('APPLICATION_CORE_VERSION')){
 
 	// Identifica quale core applicativo utilzizare e cosa fare
+	if(!isset($_GET['__url'])) $_GET['__url'] = '/';
+	if(!isset($_GET['__fn'])) $_GET['__fn'] =$_SERVER['SCRIPT_FILENAME'];
 	
 	if(substr($_GET['__url'],strlen($_GET['__url'])-1)=='/'){
 		$_GET['__url'] .= 'index.php';
@@ -161,12 +168,10 @@ if(!defined('APPLICATION_CORE_VERSION')){
 		$_GET['__url'] = '/index.php';
 		$requestedUrl = $_GET['__url'];
 	}
-	#echo($fileNameOnServer);
 
 	$baseDir = dirname($fileNameOnServer) .'/';
-	
 	define('ROOT', $baseDir);
-	#echo($fileNameOnServer);
+	
 	require_once('classes/Xml2array.php');
 	
 	$xml = new Xml2array();
@@ -269,6 +274,8 @@ if(!defined('APPLICATION_CORE_VERSION')){
 	require_once CORE_ROOT.'constants.php';
 	_defineApplyAll();
 	require_once CORE_ROOT.'classes/ClassFactory.php';
+	
+	// Gestione delle regole di rewriting dell'indirizzo
 	ob_start();
 	if(count($rules)>0){
 		print_r( $rules ); echo "\n";
@@ -363,7 +370,7 @@ if(!defined('APPLICATION_CORE_VERSION')){
 				
 				$defaultBaseDir = APPLICATION_VIEW_BASEDIR;
 				#if($ext=='css') $subBaseDir = '/'.CSS_BASEDIR;
-				if($ext=='js') 	$subBaseDir = '/'.SCRIPTS_BASEDIR;
+				#if($ext=='js') 	$subBaseDir = '/'.SCRIPTS_BASEDIR;
 		}
 	
 		

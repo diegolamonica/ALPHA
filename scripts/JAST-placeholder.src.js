@@ -65,8 +65,10 @@ _.extend('Placeholder', {
 			case 'IMG':
 				txt = src.src;
 				break;
-			case 'INPUT':
 			case 'SELECT':
+				txt = src.options[src.selectedIndex].text;
+				break;
+			case 'INPUT':
 			case 'TEXTAREA':
 				txt = src.value;
 		}
@@ -225,8 +227,8 @@ _.extend('Placeholder', {
 							D.setStyle(ac, {
 								position: 	'absolute',
 								display:	'block',
-								left:	  	(pos.x+sz.width-50) +'px',
-								top:		(pos.y + sz.height) +'px'
+								left:	  	(pos.x+sz.width-70) +'px',
+								top:		(pos.y + sz.height+1) +'px'
 								
 							});
 						}

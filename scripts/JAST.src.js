@@ -17,6 +17,9 @@ Works With:		Internet Explorer 6+
  		and DOM objects.
 
 */
+
+if(window['JASTEggIt']==null){
+	// Solo una volta deve essere caricato (anche se viene incluso 1.000.000 di volte)
 var JASTEggIt = {
 	Browser:{
 		name:		null,
@@ -40,6 +43,12 @@ var JASTEggIt = {
 	_el: function(el){ 
 		if(typeof(el) != 'object') return JASTEggIt._id(el); 
 		else return el;
+	},
+	_doDebug: function(msg,clear){
+		if(_._id('debug')){
+			if(clear==true) _._id('debug').innerHTML = '';
+			_._id('debug').innerHTML += '<div onClick="_.DOM.remove(this)">'+msg+'</div>';
+		}
 	},
 	_id: function(id){ return document.getElementById(id); },
 	_get: function( cascade, from, p ){
@@ -423,6 +432,12 @@ var JASTEggIt = {
 					(typeof a.length === 'number') && 
 					(a.nodeName==null);	// I forms espongono la proprietà length riferita a elements  
 		},
+		swap: function(arr, a, b){
+			var x = arr[a];
+			arr[a] = arr[b];
+			arr[b] = x;
+			return arr;
+		},
 		isIn: function(a, v){
 			for(var i=0; i<a.length; i++){
 				if(a[i].toString() ==v.toString()) return true;
@@ -502,6 +517,11 @@ var JASTEggIt = {
 				if(textArray[i].substr(l-1,1) == lastChar) textArray[i] = textArray[i].substr(0,l-1);
 			};
 			return textArray;
+			},
+			parseInt: function(theString){
+				var s = theString.toString().replace(/^0+([\d]+)$/,'$1');
+				if(s == '') s = '0';
+				return parseInt(s);
 		}
 	},
 	DOM:{
@@ -523,7 +543,10 @@ var JASTEggIt = {
 		},
 		createContainer: function(el, tagName){
 			el = JASTEggIt._el(el);
-			var e = _.DOM.createOnDocument(tagName, el, null, JASTEggIt.generateUniqueId(tagName))
+				var e = document.createElement(tagName);
+				e.id = JASTEggIt.generateUniqueId(tagName);
+				var p = el.parentNode;
+				if(p!=null) p.appendChild(e);
 			e.appendChild(el);
 			return e;
 		},
@@ -617,12 +640,7 @@ var JASTEggIt = {
 		realSize: function(el){
 			el = JASTEggIt._el(el);
 			if(el){
-				/*if(el.scrollHeight!=null && el.scrollWidth!=null){
-					return {
-						width: el.scrollWidth,
-						height: el.scrollHeight
-					};
-				}else{*/
+				
 
 					var att = this.style(el, 'width height paddingTop paddingBottom paddingLeft paddingRight marginTop marginBottom borderLeftWidth borderRightWidth borderTopWidth borderBottomWidth');
 					var buffer = "";
@@ -638,9 +656,6 @@ var JASTEggIt = {
 							height: height
 						};
 
-					
-			//	}
-				
 			}
 		},
 		locate: function(el, x, y, w, h, p){
@@ -689,6 +704,7 @@ var JASTEggIt = {
 				for(var i=0; i<element.length; i++) this.appendClass(element[i], className);
 			}else{
 				element = JASTEggIt._el(element);
+				if(element== null) return;
 				if(element.className==null || element.className==''){
 					element.className = className;
 				}else{
@@ -702,6 +718,7 @@ var JASTEggIt = {
 			}else{
 	
 				element = JASTEggIt._el(element);
+					if(element== null) return;
 				if(this.hasClass(element, className)){
 					var c = ' ' + element.className + ' ';
 					var i = c.indexOf(' ' + className + ' ');
@@ -803,15 +820,6 @@ var JASTEggIt = {
 			};
 			return null;
 		},
-		/*encodeURI: function (value){
-			
-			value = value.replace(/&/g, '&amp;');
-			value = value.replace(/\r/g, '%0a');
-			value = value.replace(/\n/g, '%0d');	
-			
-			return value;
-			
-		},*/
 		_createQueryString: function(parameters){
 			var params = '';
 			
@@ -821,13 +829,11 @@ var JASTEggIt = {
 					if(!_.Array.is(parameters[keys])){
 						if(params!='')params += '&';
 						params += encodeURI(keys) + '=' + encodeURI(parameters[keys]);
-						//params += _.xhttp.encodeURI(keys)+ '=' + _.xhttp.encodeURI(parameters[keys]);
 					}else{
 						
 						for(var i=0; i<parameters[keys].length; i++){
 							if(params!='')params += '&';
 							params += encodeURI(keys) + '=' + encodeURI(parameters[keys][i]);
-						//	params += _.xhttp.encodeURI(keys) + '=' + _.xhttp.encodeURI(parameters[keys][i]);
 						}
 					}
 				};
@@ -979,15 +985,15 @@ var JASTEggIt = {
 		var ver = navigator.appVersion;
 		var aver = '';
 		if (b.opera){
-			str_pos=b.agent.indexOf('Opera');
+			var str_pos=b.agent.indexOf('Opera');
 			aver= b.agent.substr((str_pos+6),4);
 			b.name = 'Opera';
 		}else if (b.safari){
-			str_pos=b.agent.indexOf('Safari');
+			var str_pos=b.agent.indexOf('Safari');
 			aver=b.agent.substr((str_pos+7),5);
 			b.name = 'Safari';
 		}else if (b.konqueror){
-			str_pos=b.agent.indexOf('Konqueror');
+			var str_pos=b.agent.indexOf('Konqueror');
 			aver=b.agent.substr((str_pos+10),3);
 			b.name = 'Konqueror';
 		}else if (b.mozilla){
@@ -1042,3 +1048,4 @@ var JASTEggIt = {
 };
 var _=JASTEggIt;
 JASTEggIt.startup();
+}

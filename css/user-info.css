@@ -47,7 +47,8 @@ body{
 }
 
 #app-list,
-#app-roles{
+#app-roles,
+#notifications{
 	margin-left: 1em;
 	width: 16px;
 	height: 16px;
@@ -57,6 +58,12 @@ body{
 	background-position: center;
 	
 }
+#notifications{
+	background-image: url('images/bandiera.png');
+	margin-left: 200px;
+	
+}
+
 
 #app-list:hover,
 #app-roles:hover{
@@ -65,7 +72,8 @@ body{
 }
 
 #app-list strong,
-#app-roles strong{
+#app-roles strong,
+#notifications strong{
 	
 	display: block;
 	width: 150px;
@@ -78,7 +86,8 @@ body{
 	margin-left: 200px;
 }
 #app-list ul,
-#app-roles ul{
+#app-roles ul,
+#notifications ul{
 	display: none;
 	position: fixed;
 	border: 1px solid #ccc;
@@ -92,14 +101,21 @@ body{
 	-moz-border-radius: 5px;
 }
 
+#notifications ul{
+	margin-top: 20px;
+	margin-left: -100px;
+	width: 300px;
+}
 #app-list:hover strong,
-#app-roles:hover strong{
+#app-roles:hover strong,
+#notifications:hover strong{
 	display: block;
 	visibility: visible;
 }
 
 	#app-list ul li,
-	#app-roles ul li{
+	#app-roles ul li,
+	#notifications ul li{
 		padding: 0;
 		margin: 0;
 		list-style: none;
@@ -108,7 +124,8 @@ body{
 	}
 	
 	#app-list ul li a,
-	#app-roles ul li a{
+	#app-roles ul li a,
+	#notifications ul li a{
 		display: block;
 		float: left;
 		clear: both;
@@ -116,12 +133,14 @@ body{
 		border-bottom: 1px dotted #ddd;
 	}
 	#app-list ul li img,
-	#app-roles ul li img{
+	#app-roles ul li img,
+	#notifications ul li img{
 		display: block;
 		float: left;
 	}
 
 #app-list:hover ul,
-#app-roles:hover ul{
+#app-roles:hover ul,
+#notifications:hover ul{
 	display: block;
 }

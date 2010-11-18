@@ -439,7 +439,8 @@ if(!class_exists('ociConnector')){
 				array(
 					'before'=>$before,
 					'after'=>$after,
-				 	'value'=>$value
+				 	//'value'=>$value
+				 	'value'=>($table!='log')?utf8_decode($value):$value
 				);
 			
 			
