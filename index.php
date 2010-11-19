@@ -138,7 +138,7 @@ if(!class_exists('core12')){
 					Impossibile reperire le informazioni sul file da includere
 					<strong><?php echo $fullPath?></strong><br />
 					<p>
-					<?
+					<?php
 					
 					$result = print_r(func_get_args(), true);
 					echo( nl2br(htmlspecialchars($result)));
