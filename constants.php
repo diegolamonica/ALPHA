@@ -8,8 +8,7 @@
  */
 
 
-
-require_once CORE_ROOT. 'includes/debugging.php';
+if(!defined('OUTPUT_DEBUG_INFO') || OUTPUT_DEBUG_INFO) require_once CORE_ROOT. 'includes/debugging.php';
 
 $tmpScriptPath = $_SERVER['DOCUMENT_ROOT']. $_GET['__url']; //$_SERVER['SCRIPT_FILENAME'];
 $tmpScriptPath = preg_replace('/\/[^\/]+$/i','/', $tmpScriptPath);
