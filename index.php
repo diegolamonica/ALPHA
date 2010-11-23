@@ -104,9 +104,9 @@ if(!class_exists('core')){
 			isset($a['application']['paths']['functions']) 	&& define('APPLICATION_CUSTOM_FUNCTION_BASEDIR',ROOT. 	$a['application']['paths']['functions']	);
 			
 			# Costanti per la gestione del Frontend 
-			isset($a['application']['paths']['css']) 		&& define('CSS_BASEDIR', 			$a['application']['paths']['css']);
-			isset($a['application']['paths']['ajax']) 		&& define('AJAX_BASEDIR', 			$a['application']['paths']['ajax']);
-			isset($a['application']['paths']['scripts']) 	&& define('SCRIPTS_BASEDIR', 		$a['application']['paths']['scripts']);
+			#isset($a['application']['paths']['css']) 		&& define('CSS_BASEDIR', 			$a['application']['paths']['css']);
+			#isset($a['application']['paths']['ajax']) 		&& define('AJAX_BASEDIR', 			$a['application']['paths']['ajax']);
+			#isset($a['application']['paths']['scripts']) 	&& define('SCRIPTS_BASEDIR', 		$a['application']['paths']['scripts']);
 			
 			# Costante per la gestione della Cache
 			isset($a['application']['paths']['cache'])		&& define('CACHE_DEFAULT_FOLDER',			ROOT. $a['application']['paths']['cache']);
