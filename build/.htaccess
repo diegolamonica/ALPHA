@@ -17,4 +17,4 @@ DirectoryIndex index.php
 RewriteEngine on
 
 RewriteCond	%{REQUEST_FILENAME}		!/%PARAM1%/index.php
-RewriteRule	^(.*)$	/siwenna/index.php?__fn=%{REQUEST_FILENAME}&__url=$1	[L,QSA]
+RewriteRule	^(.*)$	/%PARAM1%/index.php?__fn=%{REQUEST_FILENAME}&__url=$1	[L,QSA]
