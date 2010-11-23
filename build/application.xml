@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<application id="%PARAM1%">
+	<core>12</core>
+	<required>app/local.functions.php</required>
+	<paths>
+		<controller>app/controller</controller>
+		<view>app/views</view>
+		<cache>app/cache</cache>
+		<input>app/input</input>
+		<functions>app/functions</functions>
+		<repository>app/files</repository>
+	</paths>
+	<constants>
+		<!-- 
+		Fill with your application constants
+		 -->		
+	</constants>
+</application>

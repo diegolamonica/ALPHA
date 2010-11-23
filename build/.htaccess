@@ -1,0 +1,20 @@
+# Application controller-alpha
+Header unset Pragma
+FileETag None
+Header unset ETag
+
+AddType  application/octet-stream  .txt .doc .xls .pdf
+
+# BEGIN Compress text files
+<IfModule mod_deflate.c>
+	<FilesMatch "\.(css|js|x?html?|php)$">
+		SetOutputFilter DEFLATE
+	</FilesMatch>
+</IfModule>
+# END Compress text files
+
+DirectoryIndex index.php
+RewriteEngine on
+
+RewriteCond	%{REQUEST_FILENAME}		!/%PARAM1%/index.php
+RewriteRule	^(.*)$	/siwenna/index.php?__fn=%{REQUEST_FILENAME}&__url=$1	[L,QSA]
