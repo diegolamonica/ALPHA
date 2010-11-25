@@ -208,7 +208,7 @@ function errhandler($type, $msg, $file, $line, $context) {
 	#print "---------------------.";
 	#print_r($GLOBALS['backtrace_printed_a_lot']); # just for debugging the reminder-var
 	#print ".---------------------";
-	
+	!defined('E_DEPRECATED') && define('E_DEPRECATED',E_NOTICE); // compatibility with PHP ver < 5.3.0 
 	switch($type) {
 		case E_ERROR:
 		case E_USER_ERROR:  # php4
@@ -232,7 +232,7 @@ function errhandler($type, $msg, $file, $line, $context) {
 	}
 }
 #-------------------------------------------------------------------------------------
-error_reporting(E_ALL-E_DEPRECATED);
+error_reporting(E_ALL);
 
 ini_set("display_errors", 1);
 set_error_handler("errhandler"); # finally enable the new errorhandler

@@ -19,13 +19,14 @@
  */
 
 if(!defined('OUTPUT_FILE_INFO')) define('OUTPUT_FILE_INFO', true);
-if(!defined('OUTPUT_DEBUG_INFO')) define('OUTPUT_FILE_INFO', true);
+if(!defined('OUTPUT_DEBUG_INFO')) define('OUTPUT_DEBUG_INFO', true);
 require_once('classes/Xml2array.php');
 
 if(!class_exists('core')){
 	class core{
 		
 		static function startup(){
+			
 			if(isset($_GET['core_info']) && $_GET['core_info'] == 'php_info' && OUTPUT_DEBUG_INFO){
 				phpinfo();
 				exit();

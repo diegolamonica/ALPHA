@@ -63,6 +63,14 @@ if($argc!=2){
 	
 	$scriptDir = dirname(__FILE__);
 	$parentDir = dirname($scriptDir);
+	
+	fwrite(STDOUT, "Please enter the core framework working dir [leave empty if: $parentDir]: ");
+	$workingDir = trim(fgets(STDIN));
+	if($workingDir!= ''){
+
+		$parentDir = $workingDir;
+	}
+	
 	$arguments = array();
 	foreach($argv as $key=>$value)
 		$arguments[$key] = $value;
@@ -77,7 +85,7 @@ if($argc!=2){
 	}
 	if(!isset($_SERVER['PWD'])){
 		fwrite(STDOUT, "Please enter the working dir (upper directory in which build the application): ");
-		$workingDir = trim(fread(STDIN));
+		$workingDir = trim(fgets(STDIN));
 		if(!file_exists($workingDir)){
 			writeErrorMessage('Invalid Working dir, directory does not exists');
 			exit();
