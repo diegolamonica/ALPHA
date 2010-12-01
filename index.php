@@ -24,25 +24,59 @@ require_once('classes/Xml2array.php');
 
 if(!class_exists('core')){
 	class core{
-		
+
 		static function startup(){
+			
+			/*
+			 * Security issue, blocking to override the __fn and the __url $_GET variables
+			 * solution taken from: http://www.php.net/manual/en/function.parse-str.php#76792
+			 * 
+			 * We should migrate that in the .htaccess, much more secure.
+			 */
+			$str = $_SERVER['QUERY_STRING'];
+			$arr = array();
+
+			# split on outer delimiter
+			$pairs = explode('&', $str);
+
+			# loop through each pair
+			foreach ($pairs as $i) {
+				# split into name and value
+				list($name,$value) = explode('=', $i, 2);
+				# if name already exists
+				if( isset($arr[$name]) ) {
+					# stick multiple values into an array
+					if( is_array($arr[$name]) ) {
+						$arr[$name][] = $value;
+					} else {
+						$arr[$name] = array($arr[$name], $value);
+					}
+				}else {
+					# otherwise, simply stick it in a scalar
+					$arr[$name] = $value;
+				}
+			}
+			if(is_array($arr['__url']))	$_GET['__url'] = $arr['__url'][0];
+			if(is_array($arr['__fn'])) 	$_GET['__fn'] = $arr['__fn'][0];
+			
+			/*
+			 * ===================================================================================
+			 */
 			
 			if(isset($_GET['core_info']) && $_GET['core_info'] == 'php_info' && OUTPUT_DEBUG_INFO){
 				phpinfo();
 				exit();
 			}
 			
-			// Identifica quale core applicativo utilzizare e cosa fare
+			/*
+			 * Correct some possible unexpected behavior of the url
+			 */
 			if(!isset($_GET['__url'])) $_GET['__url'] = '/';
 			if(!isset($_GET['__fn'])) $_GET['__fn'] =$_SERVER['SCRIPT_FILENAME'];
-			
-			if(substr($_GET['__url'],strlen($_GET['__url'])-1)=='/'){
-				$_GET['__url'] .= 'index.php';
-			}
-			if(substr($_GET['__fn'],strlen($_GET['__fn'])-1)=='/'){
-				$_GET['__fn'] .='index.php';
-			}
+			if(substr($_GET['__url'],strlen($_GET['__url'])-1)=='/') $_GET['__url'] .= 'index.php';
+			if(substr($_GET['__fn'],strlen($_GET['__fn'])-1)=='/')	$_GET['__fn'] .='index.php';
 			$fileNameOnServer = $_GET['__fn'];
+			
 			if($_GET['__url']!=''){
 				$requestedUrl = $_GET['__url'];
 			}else{
@@ -50,6 +84,13 @@ if(!class_exists('core')){
 				$requestedUrl = $_GET['__url'];
 			}
 		
+			/*
+			 * Removing __fn from the QueryString to avoid
+			 * security issues
+			 */
+			unset($_GET['__fn']);
+			unset($_GET['__url']);
+			/* ----------------------------------------  */
 			$baseDir = dirname($fileNameOnServer) .'/';
 			define('ROOT', $baseDir);
 			
@@ -69,14 +110,14 @@ if(!class_exists('core')){
 			$baseDir = join($baseDir, $pathSeparator).$pathSeparator;
 			define('APPLICATION_SUBCORE_DIRECTORY', $baseDir);
 			
-			$url = $_GET['__url'];
+			$url = $requestedUrl;
 			if($url!=''){
 				$url = preg_replace("/([^\/]+\/)/",'../', $url);
 				if(substr($url,-1)!='/') $url = preg_replace("/([^\/]*)$/",'', $url);
 				if($url =='/') $url = '';
 			}
-			
-			define('APPLICATION_URL', $url);
+			define('REQUESTED_URL',			$requestedUrl);
+			define('APPLICATION_URL', 		$url);
 			
 			define('CORE_ROOT' , dirname(__FILE__).'/');
 			require_once CORE_ROOT. 'global-functions.php';
@@ -103,11 +144,6 @@ if(!class_exists('core')){
 			# Costanti per la customizzazione dei widget e dei metodi
 			isset($a['application']['paths']['input']) 		&& define('APPLICATION_CUSTOM_INPUT_BASEDIR',	ROOT. $a['application']['paths']['input']	);
 			isset($a['application']['paths']['functions']) 	&& define('APPLICATION_CUSTOM_FUNCTION_BASEDIR',ROOT. 	$a['application']['paths']['functions']	);
-			
-			# Costanti per la gestione del Frontend 
-			#isset($a['application']['paths']['css']) 		&& define('CSS_BASEDIR', 			$a['application']['paths']['css']);
-			#isset($a['application']['paths']['ajax']) 		&& define('AJAX_BASEDIR', 			$a['application']['paths']['ajax']);
-			#isset($a['application']['paths']['scripts']) 	&& define('SCRIPTS_BASEDIR', 		$a['application']['paths']['scripts']);
 			
 			# Costante per la gestione della Cache
 			isset($a['application']['paths']['cache'])		&& define('CACHE_DEFAULT_FOLDER',			ROOT. $a['application']['paths']['cache']);
@@ -147,14 +183,14 @@ if(!class_exists('core')){
 					echo "regular expression: $regExp \n";
 					echo "Redirect to: $redirectTo \n\n";
 					
-					echo "Verify url: ". $_GET['__url'] . "\n";
-					if(substr( $_GET['__url'],0, strlen($startsWith))  == $startsWith &&
-								substr( $_GET['__url'],strlen($_GET['__url'])- strlen($endsWith))  == $endsWith){
+					echo "Verify url: ". $requestedUrl . "\n";
+					if(substr( $requestedUrl,0, strlen($startsWith))  == $startsWith &&
+								substr( $requestedUrl,strlen($requestedUrl)- strlen($endsWith))  == $endsWith){
 						echo "  Url matches start + end\n";
-						if(preg_match_all('@'.$regExp . '@', $_GET['__url'], $matches)){
+						if(preg_match_all('@'.$regExp . '@', $requestedUrl, $matches)){
 							echo("  RegEx matched the given url\n");
 							
-							$_GET['__url'] = $redirectTo;
+							$requestedUrl = $redirectTo;
 							if(isset($rule['params'])){
 								$params = $rule['params']['param'];
 								if(isset($params['attributes'])) $params = array($params);
@@ -180,7 +216,7 @@ if(!class_exists('core')){
 			}
 			// Verifica il tipo di file per applicare i criteri di ricerca e inclusione
 			$subBaseDir = '';
-			if(preg_match('/\.(.+)$/',$_GET['__url'], $ext)){
+			if(preg_match('/\.(.+)$/',$requestedUrl, $ext)){
 				
 				$ext = $ext[1];
 				
@@ -214,10 +250,10 @@ if(!class_exists('core')){
 						}
 						
 						$defaultBaseDir = APPLICATION_CONTROLLER_BASEDIR;
-						#echo(substr($_GET['__url'], strpos('/', $_GET['__url'])));
-						if(substr($_GET['__url'], strpos('/', $_GET['__url']))=='ajax'){
+						#echo(substr($requestedUrl, strpos('/', $requestedUrl)));
+						if(substr($requestedUrl, strpos('/', $requestedUrl))=='ajax'){
 							$subBaseDir = '/'.AJAX_BASEDIR;
-							$_GET['__url'] = substr($_GET['__url'], 5);
+							$requestedUrl = substr($requestedUrl, 5);
 						}
 						break;
 					default:
@@ -244,7 +280,8 @@ if(!class_exists('core')){
 					}
 				}
 			}
-			self::doRequireOnce($defaultBaseDir, $subBaseDir, $_GET['__url']);
+			
+			self::doRequireOnce($defaultBaseDir, $subBaseDir, $requestedUrl);
 
 					
 		}

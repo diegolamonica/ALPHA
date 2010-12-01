@@ -35,7 +35,12 @@ if(!class_exists('Debugger')){
 			$m->setVar('calledFunction', $functionName);
 			$m->setVar('calledClass', get_class($this));
 			$m->setVar('calledFunctionArguments',$arguments);
-			$m->setVar('script', $_GET['__url']);
+			/*
+			 * Variable $_GET['__url'] no more used related to security issue
+			 * https://github.com/diegolamonica/ALPHA/issues#issue/1
+			 */
+			$m->setVar('script', REQUESTED_URL);
+			/*$m->setVar('script', $_GET['__url']);*/
 			$m->setVar('uri', $_SERVER['REQUEST_URI']);
 			$m->process();
 			$m->render();

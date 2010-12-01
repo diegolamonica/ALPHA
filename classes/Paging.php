@@ -36,8 +36,8 @@ class Paging extends Debugger {
 		$c->query($tmpSql);
 		$count = $c->getCount();
 		ClassFactory::destroy('pagingConnector');
-		
-		$uri = $_GET['__url'];
+		# used new constant REQUESTED_URL instead of $_GET['__url'] to improove framework security.
+		$uri = REQUESTED_URL;
 		$queryStringStart = strpos($uri,'?');
 		if($queryStringStart===false) $queryStringStart = strlen($uri);
 		$uri = substr($uri,0, $queryStringStart) . '?'; 
@@ -46,11 +46,14 @@ class Paging extends Debugger {
 		$uri = APPLICATION_URL . $uri; #substr($uri,1);
 		
 		foreach($_GET as $key=>$value){
-			
+			/*
+			 * Removed the check on __fn and __url key in the $_GET object because them no longer exists.
+			 * 
+			 */
 			if($value!='' && 
-				$key != $this->pagingObjectName .PAGING_CURRENT_PAGE_VARIABLE_NAME && 
+				$key != $this->pagingObjectName .PAGING_CURRENT_PAGE_VARIABLE_NAME /* && 
 				$key!='__url' &&
-				$key!='__fn'){
+				$key!='__fn'*/){
 				if($params!='') $params.='&amp;';
 				$params .= urlencode($key) . '=' . urlencode($value);
 			}

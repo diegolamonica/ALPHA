@@ -10,7 +10,11 @@
 
 if(!defined('OUTPUT_DEBUG_INFO') || OUTPUT_DEBUG_INFO) require_once CORE_ROOT. 'includes/debugging.php';
 
-$tmpScriptPath = $_SERVER['DOCUMENT_ROOT']. $_GET['__url']; //$_SERVER['SCRIPT_FILENAME'];
+
+/**
+ * Changed $_GET['__url'] in REQUESTED_URL introduced in /index.php
+ */
+$tmpScriptPath = $_SERVER['DOCUMENT_ROOT']. REQUESTED_URL; //$_SERVER['SCRIPT_FILENAME'];
 $tmpScriptPath = preg_replace('/\/[^\/]+$/i','/', $tmpScriptPath);
 
 define('CURRENT_SCRIPT_PATH', $tmpScriptPath);
