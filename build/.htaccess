@@ -1,7 +1,10 @@
 # Application controller-alpha
-Header unset Pragma
+
+<IfModule mod_headers.c>
+	Header unset Pragma
+	Header unset ETag
+</IfModule>
 FileETag None
-Header unset ETag
 
 AddType  application/octet-stream  .txt .doc .xls .pdf
 
