@@ -343,7 +343,10 @@ class Binder extends Debugger implements iBinder {
 			foreach($newRs as $key => $value){
 				if($keys!='') 	$keys	.=',';
 				if($values!='') $values	.=',';
-				$keys .=  $key;
+				/**
+				 * Bugfix: during update query building SQL_FIELD_PREFIX e SQL_FIELD_SUFFIX were not considered.
+				 */
+				$keys .=  SQL_FIELD_PREFIX .  $key . SQL_FIELD_POSTFIX;
 				
 				$value = $c->processDataValue($value, $key, $this->tableName);
 				if($value['before'] . $value['value'] .$value['after']==''){
@@ -406,7 +409,6 @@ class Binder extends Debugger implements iBinder {
 				}
 			}
 		}
-		
 		$dbg->write('Exiting ' . __FUNCTION__, DEBUG_REPORT_FUNCTION_EXIT);
 
 	}

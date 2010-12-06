@@ -26,7 +26,6 @@ class Ldap  extends Debugger{
 	 */
 	public function connect(){
 		/*
-		 * @todo impostare il livello di debug e il protocollo a livello di costanti
 		 * @todo identificare il significato dei valori che può assumere l'opzione LDAP_OPT_DEBUG_LEVEL. 
 		 */
 		ldap_set_option(NULL, LDAP_OPT_DEBUG_LEVEL, 7);
