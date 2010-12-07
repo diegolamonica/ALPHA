@@ -9,6 +9,7 @@
 </IfModule>
 FileETag None
 
+AddType  application/octet-stream  .txt .doc .xls .pdf
 
 # BEGIN Compress text files
 <IfModule mod_deflate.c>
