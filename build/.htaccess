@@ -20,7 +20,8 @@ AddType  application/octet-stream  .txt .doc .xls .pdf
 # END Compress text files
 
 DirectoryIndex index.php
-RewriteEngine on
-
-RewriteCond	%{REQUEST_FILENAME}		!/%PARAM1%/index.php
-RewriteRule	^(.*)$	/%PARAM1%/index.php?__fn=%{REQUEST_FILENAME}&__url=$1	[L,QSA]
+<IfModule mod_rewrite.c>
+	RewriteEngine on
+	RewriteCond	%{REQUEST_FILENAME}		!/%PARAM1%/index.php
+	RewriteRule	^(.*)$	/%PARAM1%/index.php?__fn=%{REQUEST_FILENAME}&__url=$1	[L,QSA]
+</IfModule>
