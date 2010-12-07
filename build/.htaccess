@@ -2,13 +2,13 @@
 
 <IfModule mod_headers.c>
 	Header unset Pragma
-	<IfModule mod_mime.c>
-		FileETag None
-	</IfModule>
 	Header unset ETag
+	<IfModule mod_mime.c>
+		AddType  application/octet-stream  .txt .doc .xls .pdf
+	</IfModule>
 </IfModule>
+FileETag None
 
-AddType  application/octet-stream  .txt .doc .xls .pdf
 
 # BEGIN Compress text files
 <IfModule mod_deflate.c>
