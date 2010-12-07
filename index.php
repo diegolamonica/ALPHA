@@ -28,6 +28,14 @@ if(!class_exists('core')){
 		static function startup(){
 			
 			/*
+			 * Issue 0000002: http://alpha.diegolamonica.info/issues/view.php?id=2
+			 */
+			$ext = apache_get_modules();
+			if(!array_search('mod_rewrite', $ext)){
+				echo('Apache Module: <strong>mod_rewrite</strong> not loaded.');
+				exit();
+			}
+			/*
 			 * Security issue, blocking to override the __fn and the __url $_GET variables
 			 * solution taken from: http://www.php.net/manual/en/function.parse-str.php#76792
 			 * 
