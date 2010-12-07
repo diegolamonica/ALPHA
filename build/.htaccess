@@ -2,9 +2,11 @@
 
 <IfModule mod_headers.c>
 	Header unset Pragma
+	<IfModule mod_mime.c>
+		FileETag None
+	</IfModule>
 	Header unset ETag
 </IfModule>
-FileETag None
 
 AddType  application/octet-stream  .txt .doc .xls .pdf
 
