@@ -39,7 +39,8 @@ _.extend('Date',{
 	},
 	getDateElements: function(date){
 
-	var dateFormat = this.autodetectFormat(date);
+		var dateFormat = this.autodetectFormat(date);
+		if(dateFormat==null) return null;
 		return dateFormat[1];
 	},
 	autodetectFormat: function(dateFormat){
@@ -51,13 +52,13 @@ _.extend('Date',{
 		if(baseFormatArray.length==dateFormatArray.length){
 			var result = [];
 			for(var i = 0; i<baseFormatArray.length; i++){
-				if(baseFormatArray[i]==o.dayPlaceholder) 	result[2] = dateFormatArray[i]; 
+				if(baseFormatArray[i]==o.dayPlaceholder) 	result[0] = dateFormatArray[i]; 
 				if(baseFormatArray[i]==o.monthPlaceholder) 	result[1] = dateFormatArray[i];
-				if(baseFormatArray[i]==o.yearPlaceholder) 	result[0] = dateFormatArray[i];
+				if(baseFormatArray[i]==o.yearPlaceholder) 	result[2] = dateFormatArray[i];
 			}
-			if(!isNaN(parseInt(result[2])) &&
-					!isNaN(parseInt(result[2])) &&
-					!isNaN(parseInt(result[2])))
+			if(!isNaN(Number(result[0])) &&
+					!isNaN(Number(result[1])) &&
+					!isNaN(Number(result[2])))
 			return [o.format, result];
 		}
 		var result = _.Date._replaceInDate(dateFormat, o.daysExtended, o.xtDayPlaceholder);
@@ -69,6 +70,7 @@ _.extend('Date',{
 		if(identifiedMonth==0){
 			var re = /([^\d]|^)((0?[1-9])|(1[0-2]))([^\d]+|$)/;
 			var result = re.exec(dateFormat);
+			if(result==null) return null;
 			identifiedMonth = result[2];
 			dateFormat = dateFormat.replace(/([^\d]|^)((0?[1-9])|(1[0-2]))([^\d]+|$)/,'$1'+o.monthPlaceholder+'$5');
 		}
@@ -96,9 +98,9 @@ _.extend('Date',{
 				
 				var c = combos[key];
 				
-				var idGiorno = _.strings.parseInt(c[0]);
-				var idMese = _.strings.parseInt(c[1]);
-				var idAnno = _.strings.parseInt(c[2]);
+				var idGiorno = Number(c[0]);
+				var idMese = Number(c[1]);
+				var idAnno = Number(c[2]);
 				
 				if(e[idGiorno]<0 || e[idGiorno]>31 || e[idMese]<0 || e[idMese]>12){
 				}else{
@@ -132,6 +134,7 @@ _.extend('Date',{
 	isDate: function(date){
 		var o = this.options;
 		var dmy = this.getDateElements(date);
+		if(dmy==null) return false;
 		var day = dmy[0];
 		var month = dmy[1];
 		var year = dmy[2];
@@ -149,6 +152,7 @@ _.extend('Date',{
 		var oldDay=dataElements[0];
 		var oldMonth=dataElements[1];
 		var item = [];
+		
 		switch(type)
 		{
 			case o.dayPlaceholder:
@@ -163,7 +167,7 @@ _.extend('Date',{
 		}
 		for(i=0; i<3; i++){
 			
-			dataElements[i] = parseInt(dataElements[i].toString().replace(/^0+/,'')) + item[i];
+			dataElements[i] = Number(dataElements[i].toString().replace(/^0+/,'')) + Number(item[i]);
 		}
 		
 		var day 	= dataElements[0];
@@ -172,31 +176,76 @@ _.extend('Date',{
 		var months = o.daysPerMonth;
 		
 		if (this.isLeap(year)) months[1]=29;
-		if(increment>0){
-			while(day>months[month-1]){
-				day -= months[month-1];
-				month++;
-				if(month>12){
-					month -= 12;
-					year += 1;
-				}
-			} 
+		else months[1]=28;
+		
+		//Incremento o decremento la data a seconda del tipo
+		if(increment>0){ 
+			switch(type)
+			{
+				case o.dayPlaceholder:
+					while(day>months[month-1]){
+						day -= months[month-1];
+						month++;
+						if(month>12){
+							month -= 12;
+							year += 1;
+						}
+						if (this.isLeap(year)) months[1]=29;
+						else months[1]=28;
+					} 
+				break;
+				
+				case o.monthPlaceholder:
+					while(month>12)
+					{
+						month -= 12;
+						year += 1;
+					}
+					
+				break;
+				
+				case o.yearPlaceholder:
+					year += increment;
+				break;
+			}
 		}
 		else{
-			while(day<1){
-				month--;
-				if(month<1){
-					month += 12;
-					year -= 1;
-				}
-				day += months[month-1];
-				 
-			} 
+			switch(type)
+			{
+				case o.dayPlaceholder:
+					while(day<1){
+						month--;
+						if(month<1){
+							month += 12;
+							year -= 1;
+						}
+						if (this.isLeap(year)) months[1]=29;
+						else months[1]=28;
+						day += months[month-1];
+						 
+					} 
+				break;
+				
+				case o.monthPlaceholder:
+					while(month<12)
+					{
+						month += 12;
+						year -= 1;
+					}
+				break;
+				
+				case o.yearPlaceholder:
+					year -= increment;
+				break;
+			}
 		}
-		if(item[1]!=0 && (o.sameDay==true) && (oldDay==months[oldMonth-1])) {
-			if(increment>0) month--;
-			day = months[month-1];
-		}
+		
+		if (this.isLeap(year)) months[1]=29;
+		else months[1]=28;
+
+		if(day>months[month-1])
+			day=months[month-1];
+		
 		return this.make(year, month, day);
 	},
 	dateSubtract: function(date, increment, type){
@@ -219,8 +268,8 @@ _.extend('Date',{
 		var dmy2 = this.getDateElements(date2);
 		
 		for(var i=0; i<3;i++){
-			dmy1[i] = parseInt((dmy1[i]+'').replace(/^0+/,''));
-			dmy2[i] = parseInt((dmy2[i]+'').replace(/^0+/,''));
+			dmy1[i] = Number((dmy1[i]+'').replace(/^0+/,''));
+			dmy2[i] = Number((dmy2[i]+'').replace(/^0+/,''));
 		}
 		
 		if(dmy1[0]<100) dmy1[2]+= (dmy1[0]>o.year2DigitLimit?1900:2000);
@@ -254,7 +303,7 @@ _.extend('Date',{
 			days=days-(7-start-first);
 			
 		}
-		var weeks = parseInt(days/7);
+		var weeks = Number(days/7);
 		return weeks;
 	},
 	days: function(date){
@@ -262,14 +311,14 @@ _.extend('Date',{
 		var year = this.year(date);
 		var month = this.month(date);
 		var days = this.daysOfTheYear(year, month-1);
-		return days+_.strings.parseInt(this.day(date));
+		return days+Number(this.day(date));
 	},
 	nDay: function(date){
 		// Giorno della settimana (numero)
 		// (calcolato con data di riferimento: Martedì 1 Gennaio 1980)
 		var o = this.options;
 		var daysDiff=this.dateDiff(this.make(1980,1,1),date);
-		var dayOfTheWeek=2+parseInt(daysDiff%7)-1;
+		var dayOfTheWeek=2+Number(daysDiff%7)-1;
 		if (dayOfTheWeek>6) dayOfTheWeek=dayOfTheWeek-7;
 		return dayOfTheWeek;
 	},
