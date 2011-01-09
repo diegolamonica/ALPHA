@@ -784,6 +784,8 @@ class Model extends Debugger {
 							$lastVariables = $value;
 							# Modifica del 26-02-2010 di Diego La Monica
 							# $m->clearAllVar();
+							$m->clearVar('iterator.value');
+							$m->clearVar($blockName);
 							$m->clearVar('iterator');
 							# Fine Modifica del 26-02-2010 di Diego La Monica
 							
@@ -1323,7 +1325,7 @@ class Model extends Debugger {
 	 * @param $prefix <b>string</b> il prefisso delle variabili da rimuovere
 	 * @return null
 	 */
-	function clearVar($prefix = ''){
+	function clearVar($prefix = '', $exactToo = false ){
 		$dbg = ClassFactory::get('Debug');
 		$dbg->setGroup(__CLASS__);
 		$dbg->write('Entering ' . __FUNCTION__, DEBUG_REPORT_FUNCTION_ENTER);
@@ -1335,10 +1337,15 @@ class Model extends Debugger {
 		#	if(substr($key,0, strlen($prefix)+1 )== $prefix .'.') unset($this->variables[$key]);
 		# }
 		foreach(self::$variables as $key => $value){
-			if(substr($key,0, strlen($prefix)+1 )== $prefix .'.') unset(self::$variables[$key]);
+			if(
+			(substr($key,0, strlen($prefix)+1 )== $prefix .'.') ||
+			($key ==$prefix && $exactToo)
+			
+			) unset(self::$variables[$key]);
 		}
 		# Fine Modifica
 		$dbg->write('Exiting ' . __FUNCTION__, DEBUG_REPORT_FUNCTION_EXIT);
+		
 	}
 	
 	/**

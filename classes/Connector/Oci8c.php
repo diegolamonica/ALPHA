@@ -187,7 +187,6 @@ if(!class_exists('ociConnector')){
 							$limit = $p->buildLimitClause();
 							$sql = 'select * from (select rownum as limitCountColumn, x.* from(' . $sql . ') x where ' . $limit;
 							
-							
 						}
 					}
 					
