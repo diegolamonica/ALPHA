@@ -282,11 +282,10 @@ function implementDefaultView($viewToUse, $querySQL = '', $itemListNameOnTemplat
 		}
 		
 		$c = ClassFactory::get('connector');
-		#echo('2.1 '.date('Y-m-d H:i:s') .'<br />');
 		$c->query($querySQL);
-		#echo('2.2 '.date('Y-m-d H:i:s') .'<br />');
 		
 		$recordset = $c->allResults();
+		
 		$m->setVar($itemListNameOnTemplate, $recordset);
 	}
 	if($beforeProcessMethod!=null){

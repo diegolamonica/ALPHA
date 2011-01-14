@@ -32,12 +32,19 @@ class mysqlConnector extends Debugger implements iConnector {
 		if($this->isConnected()){
 			mysql_close($this->conn);
 		}
-		
 	}
 	function CustomConnector(){
-		
 		$this->__construct();
-		$this->connect(CONNECTOR_HOST, CONNECTOR_INSTANCE, CONNECTOR_USERNAME, CONNECTOR_PASSWORD);
+		/**
+		 * Issue 15 - Calling connector via ClassFactory raise some errors if any connection settings given in the application.xml file
+		 * Issue 16 - Calling MysqlConnector via ClassFactory raise some errors if any connection settings given in the application.xml file  
+		 */
+		
+		# If at least one of the connector data is given to xml file we should use the auto-connect mode.
+		if(CONNECTOR_HOST. CONNECTOR_INSTANCE. CONNECTOR_USERNAME. CONNECTOR_PASSWORD!='')
+			$this->connect(CONNECTOR_HOST, CONNECTOR_INSTANCE, CONNECTOR_USERNAME, CONNECTOR_PASSWORD);
+			
+		/* End Issue 15/16 */
 	}
 	
 	function getLimitClause($fromRow, $rowCount){
@@ -112,7 +119,10 @@ class mysqlConnector extends Debugger implements iConnector {
 				$dbg->write('executing query with result');
 				
 				$p = ClassFactory::get('Paging',false);
+				if($this->pagingIsEnabled) $dbg->write("Paging is enabled on $sql");
+					
 				if($p!=null && $this->pagingIsEnabled) {
+					$dbg->write('Paging is enabled and $p is not null');
 					if(strpos('LIMIT',strtoupper($sql))!==false){
 						
 						$dbg->write('paging cannot be enabled');
@@ -120,6 +130,7 @@ class mysqlConnector extends Debugger implements iConnector {
 						
 						$p->updateCount($sql);
 						$sql .= ' ' . $p->buildLimitClause();
+						$dbg->write('Rebuilded query: ' . $sql);
 						
 					}
 				}
@@ -255,7 +266,16 @@ class mysqlConnector extends Debugger implements iConnector {
 			$value = customProcessDataValue($value, $key, $table);
 		}
 		if(is_array($value)) return $value;
-		
+		/**
+		 * Issue 14 - mysql should escape char with its own method
+		 */
+		# Only if magic quotes is active we should strip the slashes from the value.
+		# Else it's sufficient to escape the string using mysql_escape_string.
+		if(get_magic_quotes_runtime()=='1') $value = stripslashes($value);
+		$value = mysql_escape_string($value);
+		/**
+		 * End Issue 14
+		 */
 		return array('before'=>"'", 'value'=>$value, 'after'=>"'");
 		
 	}
