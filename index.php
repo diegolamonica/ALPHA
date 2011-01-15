@@ -220,7 +220,7 @@ if(!class_exists('core')){
 			}
 			$rulesTesting = ob_get_clean();
 			if(OUTPUT_FILE_INFO){
-				file_put_contents(ROOT.'rules-log.txt', $rulesTesting, FILE_APPEND );
+				file_put_contents(DEBUG_FILE_PATH.'rules-log.txt', $rulesTesting, FILE_APPEND);
 			}
 			// Verifica il tipo di file per applicare i criteri di ricerca e inclusione
 			$subBaseDir = '';
