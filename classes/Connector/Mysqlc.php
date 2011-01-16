@@ -271,7 +271,7 @@ class mysqlConnector extends Debugger implements iConnector {
 		 */
 		# Only if magic quotes is active we should strip the slashes from the value.
 		# Else it's sufficient to escape the string using mysql_escape_string.
-		if(get_magic_quotes_runtime()=='1') $value = stripslashes($value);
+		if(get_magic_quotes_gpc()=='1') $value = stripslashes($value);
 		$value = mysql_escape_string($value);
 		/**
 		 * End Issue 14
