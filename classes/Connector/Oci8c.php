@@ -44,15 +44,19 @@ if(!class_exists('ociConnector')){
 			$this->connector_instance = $connector_instance;
 			$this->connector_username = $connector_username;
 			$this->connector_password = $connector_password;
-			
-			
-			$this->connect($connector_host, $connector_instance, $connector_username, $connector_password);
+			/*
+			 *  Resolution of issue #17 - http://alpha.diegolamonica.info/issues/view.php?id=17
+			 *  if at least one of the given parameters are defined you can make the autoconnection.
+			 */
+			if($this->connector_host.$this->connector_instance.$this->connector_username.$this->connector_password!='')
+				$this->connect($connector_host, $connector_instance, $connector_username, $connector_password);
 		}
 		
 		function __destruct(){
-			ocicommit($this->conn);	
-			if($this->conn!=null)
+			if($this->conn!=null){
+				ocicommit($this->conn);	
 				ocilogoff($this->conn);
+			}
 			$dbg = ClassFactory::get('Debug');
 			$dbg->write('Class ' . get_class($this) . ' destructed' , DEBUG_REPORT_CLASS_DESTRUCTION);
 		}
