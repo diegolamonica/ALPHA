@@ -87,12 +87,22 @@ class mysqlConnector extends Debugger implements iConnector {
 		$dbg->write('Entering ' . __FUNCTION__, DEBUG_REPORT_FUNCTION_ENTER);
 		$dbg->writeFunctionArguments(func_get_args());
 		
-		//if(function_exists('mysql_pconnect') ){
-		//	$conn = mysql_pconnect($host, $user, $password);
-		//}else{
-		$conn = mysql_connect($host, $user, $password, true);
-		//}
-		 mysql_select_db($db, $conn) or die(mysql_error($conn));
+		
+		/**
+		 * Issue 20 - MysqlConnector must use pconnect instead of connect as default
+		 * 
+		 * 1. the mysql_pconnect as default connector (checking if that method exists)
+		 * 2. the boolean constant USE_PERSISTENT_CONNECTION to switch between pconnect and connect methods.
+		 */
+		if(function_exists('mysql_pconnect') && (!defined('USE_PERSISTENT_CONNECTION') || USE_PERSISTENT_CONNECTION)){
+			$conn = mysql_pconnect($host, $user, $password);
+		}else{
+			/*
+			 * 3. the fallback support using mysql_connect
+			 */
+			$conn = mysql_connect($host, $user, $password, true);
+		}
+		mysql_select_db($db, $conn) or die(mysql_error($conn));
 		 
 #		 if ( function_exists( 'mysql_set_charset' ) ) {
 #			mysql_set_charset( 'utf8', $conn );

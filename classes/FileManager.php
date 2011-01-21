@@ -19,6 +19,10 @@ class FileRule{
 }
 
 class FileManager extends Debugger{
+	/**
+	 * 
+	 * @var unknown_type
+	 */
 	private $errors = array(
 		FILEMANAGER_ERROR_NO_ERROR				=> '',
 		FILEMANAGER_ERROR_NO_RIGHT_NAME 	 	=> 'Il nome del file specificato non è corretto',
@@ -38,16 +42,26 @@ class FileManager extends Debugger{
 	private $watcherFileName = '___FileManagerUploadMonitor.dat';
 	private $currentUploadingFile = false;
 	private $_rules = array();
-	
+	/**
+	 * 
+	 * @return unknown_type
+	 */
 	function getLastError(){
 		return $this->errors[$this->lastError];
 	}
 	
+	/**
+	 * 
+	 * @return unknown_type
+	 */
 	function getUploadingFileSize() {
 		return ($this->currentUploadingFile === false ? false : filesize($this->currentUploadingFile));
 	}
 	
-	
+	/**
+	 * 
+	 * @return unknown_type
+	 */
 	function watchProgressiveUpload(){
 		$tempDir = ini_get('upload_tmp_dir');
 		$this->watcher = $tempDir.$this->watcherFileName;
@@ -59,7 +73,12 @@ class FileManager extends Debugger{
 				$_SESSION[FILEMANAGER_PROGRESSIVE_UPLOAD_SESSION_VAR] = $this->currentUploadingFile;
 		
 	}
-	
+	/**
+	 * 
+	 * @param unknown_type $tmpfolder
+	 * @param unknown_type $pattern
+	 * @return unknown_type
+	 */
 	private function getCurrentUploadingFile($tmpfolder, $pattern) {
 		$found = false;
 		if(is_dir($tmpfolder)) {
@@ -78,6 +97,11 @@ class FileManager extends Debugger{
 		}
 		return $found;
 	}
+	/**
+	 * 
+	 * @param $phptempfiles
+	 * @return unknown_type
+	 */
 	function checkUploadWatcher(&$phptempfiles) {
 		$found = false;
 		if(file_exists($this->watcher)) {
@@ -98,7 +122,11 @@ class FileManager extends Debugger{
 		}
 		return $found;
 	}
-	
+	/**
+	 * 
+	 * @param unknown_type $file_post
+	 * @return unknown_type
+	 */
 	function rearrangeFileObject(&$file_post) {
 	
 	    $file_array = array();
@@ -115,13 +143,27 @@ class FileManager extends Debugger{
 		}
 	    return $file_array;
 	}
-	
+	/**
+	 * 
+	 * @return unknown_type
+	 */
 	public function FileManager(){
+		/*
+		 * Initializing the default variables
+		 */
 		$this->folder = FILEMANAGER_DEFAULT_FOLDER;
 		$this->fileName = FILEMANAGER_DEFAULT_FILENAME_EXPRESSION;
 	}
-	
+	/**
+	 * 
+	 * @param unknown_type $file
+	 * @param unknown_type $rules
+	 * @return unknown_type
+	 */
 	public function defineRule($file, $rules){
+		/*
+		 * Create a rule for the file upload validation
+		 */
 		if($file==null) $file = '.#.GLOBAL.#.';
 		if(!isset($this->_rules[$file])){
 			$this->_rules[$file] = array($rules);
@@ -129,6 +171,13 @@ class FileManager extends Debugger{
 			$this->_rules[$file][] = $rules;
 		}
 	}
+	/**
+	 * 
+	 * @param unknown_type $rule
+	 * @param unknown_type $value
+	 * @param unknown_type $caseSensitive
+	 * @return unknown_type
+	 */
 	public function checkRule($rule, $value, $caseSensitive = true){
 		if($rule == null || $rule =='') return true; 
 		if(!is_array($rule)) $rule = array($rule);
@@ -182,24 +231,58 @@ class FileManager extends Debugger{
 		 * X%name%; = Original File Name Without extension (full data before last dot)
 		 * X%now%;	= data e ora corrente nel formato YYYYMMDDHHMMSS
 		 */
-		
+			
 		foreach($_FILES as $item => $structure){
+			/*
+			 * Rebulid each $_FILES item to have a much more usable 
+			 * structure. It comes useful when we are managing array of files
+			 */
 			$structure = $this->rearrangeFileObject($structure);
 			$this->currentFileStructure = $structure;
 			$fileName= strrev( $structure['name'] );
 			$i = strpos($fileName,'.');
 			$fileExtension = strrev(substr($fileName, 0, $i));
 			$fileName = strrev(substr($fileName, $i+1));
+			/*
+			 * Here we add two extra information to the default file structure:
+			 * extension (pdf) and the file name without extension and path
+			 */
 			$structure['extension'] = $fileExtension;
 			$structure['fileName'] = $fileName;
+			
+			/*
+			 * Only if the validation against the specified rules for that file passes
+			 * we will proceed to the saving 
+			 */
 			if($this->check($item, $structure)){
 				$save = true;
+				/**
+				 * if the $beforeSaveMethod is passed to the function and
+				 * it exists then we must call it.
+				 */
 				if($beforeSaveMethod!='' && function_exists($beforeSaveMethod)) $save = $beforeSaveMethod($item, $structure);
+				/**
+				 * We expect that the $beforeSaveMethod returns a boolean value (true or false)
+				 */
 				if($save){
+					/*
+					 * We build the fileInfo array and using it with the replacement callback
+					 * to generate the right filename for that uploaded file. 
+					 */
 					$this->fileInfo = array('ext' => $fileExtension, 'name' => $fileName, 'now'=>date('YmdHis'));
 					$fn = preg_replace_callback('/(C|F|G|P|S|X)\%([^%]+)\%\;/i', array(&$this,'replace'),  $this->fileName );
+					/*
+					 * If no filename was given we set the filename to its original file name.
+					 */
 					if($fn=='') $fn = $fileName;
+					/*
+					 * Then moving the uploaded file to the right folder
+					 */
 					move_uploaded_file($structure['tmp_name'], $this->folder . $fn);
+					
+					/*
+					 * And after we call the $afterSaveMethod if passed to the function (and exists).
+					 */
 					if($afterSaveMethod!='' && function_exists($afterSaveMethod)) $afterSaveMethod($item, $structure, $fn); 
 				}
 			}
