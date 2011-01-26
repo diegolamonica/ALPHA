@@ -222,7 +222,7 @@ function errhandler($type, $msg, $file, $line, $context) {
 		case E_USER_NOTICE: # php4
 		case E_DEPRECATED: # php5.3.1 (split used in global functions)
 			# this might be annoying, but usually indicates non-fatal errors...
-			#backtrace(false,"INFO:",$msg,false);
+			backtrace(false,"INFO:",$msg,false);
 			#print "<b>Hint:</b> use the @ symbol in front of function or brackets to suppress unavoidable errors.<br>";
 			break;
 		default:

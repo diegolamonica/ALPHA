@@ -352,6 +352,7 @@ if(!class_exists('core')){
 				'swf' =>array('application/x-shockwave-flash', false),
 				'doc' =>array('application/octet-stream', false)
 			);
+			
 			foreach($headers as $header => $mime){
 				if( preg_match('/\.' . $header . '/', $url)){
 					$mimeType = $mime[0];
@@ -368,6 +369,7 @@ if(!class_exists('core')){
 					break;
 				}
 			}
+			if(!isset($debugOutput)) $debugOutput = false;
 			$debugOutput = $debugOutput && OUTPUT_FILE_INFO ;
 			$mime[0] = '';
 			$mime[1] = '';

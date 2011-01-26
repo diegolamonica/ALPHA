@@ -5,7 +5,8 @@
  * @author Diego La Monica
  * @desc Si preoccupa di istanziare le classi necessarie al funzionamento del framework.
  */
-class ClassFactory{
+
+class ClassFactory {
 	public static $classes = array();
 	/**
 	 * Include e richiama la classe il cui nome è passato come parametro se non è stata ancora allocata.
