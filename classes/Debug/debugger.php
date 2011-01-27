@@ -5,9 +5,11 @@ if(!class_exists('Debugger')){
 		/**
 		 * @ignore
 		 */
-		function __construct(){		
+		function __construct(){	
 			$dbg = ClassFactory::get('Debug');
 			$dbg->setGroup(get_class( $this) );
+	
+			
 			$dbg->write('Class ' . get_class($this) . ' created' , DEBUG_REPORT_CLASS_DESTRUCTION, FirePHP_WARN);
 			
 			

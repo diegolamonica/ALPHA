@@ -212,22 +212,28 @@ function errhandler($type, $msg, $file, $line, $context) {
 	switch($type) {
 		case E_ERROR:
 		case E_USER_ERROR:  # php4
-			backtrace(false,"ERROR:",$msg, true);	# DO NOT DISABLE THIS LINE
+			# Ensuring that only in debug contest the error messages were sent to the standard output 
+			if(OUTPUT_DEBUG_INFO) backtrace(false,"ERROR:",$msg, true);	# DO NOT DISABLE THIS LINE
 			break;
 		case E_WARNING:
 		case E_USER_WARNING: # php4
-			backtrace(false,"WARNING:",$msg,true);	# Think before disabling this one 
+			# Ensuring that only in debug contest the error messages were sent to the standard output
+			if(OUTPUT_DEBUG_INFO) backtrace(false,"WARNING:",$msg,true);	# Think before disabling this one 
 			break;
 		case E_NOTICE; 
 		case E_USER_NOTICE: # php4
 		case E_DEPRECATED: # php5.3.1 (split used in global functions)
 			# this might be annoying, but usually indicates non-fatal errors...
-			#backtrace(false,"INFO:",$msg,false);
+			# Ensuring that only in debug contest the error messages were sent to the standard output
+			if(OUTPUT_DEBUG_INFO) backtrace(false,"INFO:",$msg,false);
 			#print "<b>Hint:</b> use the @ symbol in front of function or brackets to suppress unavoidable errors.<br>";
 			break;
 		default:
-			backtrace(false,"TYPE ".$type.":",$msg,false);
-			print "<b>Hint:</b> lookup the errorcode <a target=_new href='http://php.net/manual/en/ref.errorfunc.php#errorfunc.constants'> HERE </a><br>";
+			# Ensuring that only in debug contest the error messages were sent to the standard output
+			if(OUTPUT_DEBUG_INFO){
+				backtrace(false,"TYPE ".$type.":",$msg,false);
+				print "<b>Hint:</b> lookup the errorcode <a target=_new href='http://php.net/manual/en/ref.errorfunc.php#errorfunc.constants'> HERE </a><br>";
+			}
 			break;
 	}
 }
