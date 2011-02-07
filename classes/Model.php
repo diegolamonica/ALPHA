@@ -900,13 +900,18 @@ class Model extends Debugger {
 					# Modifica di Diego del 05-03-2010
 					if($result[0]=='\{var\:input\.html\}')
 						$buffer = preg_replace('/' . $result[0] . '/', print_r($result[1], true) ,$buffer,1);
-					else
+					else{
 						$unescaped = stripslashes($result[0]);
+						
+						$dbg->write('data used for the $unescaped variable:');
+						$dbg->write(print_r($result, true));
+						if(!isset($unescaped)) $dbg->write('WARNING: $unescaped is not set!');
 						if(array_search($unescaped, self::$disallowedEscapeOn)!==false){
 							$buffer = preg_replace('/' . $result[0] . '/', print_r($result[1], true),$buffer,1);
 						}else{
 							$buffer = preg_replace('/' . $result[0] . '/', str_replace('"', '&quot;', print_r($result[1], true) ),$buffer,1);
 						}
+					}
 					# Fine modifica
 					
 					break;
