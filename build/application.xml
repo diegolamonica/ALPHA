@@ -10,9 +10,18 @@
 		<functions>app/functions</functions>
 		<repository>app/files</repository>
 	</paths>
+	<debug>
+	    <class_construct set="on" />
+	    <class_destruct set="on" />
+	    <function_enter set="on" />
+	    <function_params set="on" />
+	    <function_exit set="on" />
+	    <other_data set="on" />
+	</debug>
 	<constants>
 		<!-- 
 		Fill with your application constants
-		 -->		
+		 -->
+		<APPLICATION_DEBUG_MODULE>SilentDebug</APPLICATION_DEBUG_MODULE>
 	</constants>
 </application>
