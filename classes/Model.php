@@ -336,12 +336,16 @@ class Model extends Debugger {
 						$myFile = file($file);	
 						if(count($myFile)>0){
 							# La prima riga contiene la data di expires
+							
 							if(date('Y-m-d H:i:s')>$myFile[0]){
 								$expired = true;
 								#print_r($myFile);
 								unlink($myFile[count($myFile)-1]);
 								unlink($file);
 								
+							}else{
+								# Issue #27: $expired is undefined 
+								$expired = false;
 							}
 							
 							# Dalla seconda riga ci sono 
@@ -501,7 +505,9 @@ class Model extends Debugger {
 		$dbg->write('Entering ' . __FUNCTION__, DEBUG_REPORT_FUNCTION_ENTER);
 		$dbg->writeFunctionArguments(func_get_args());
 		if($buffer == null) $buffer = $this->buffer;
-		if(!$this->storedFromCache) $tempBuffer = $this->retrieveFromCache($buffer);
+		# Issue #27: $tempBuffer is undefined
+		$tempBuffer = '';
+		if(!$this->storedFromCache) $tempBuffer = $this->retrieveFromCache($buffer); 
 		if($tempBuffer !=''){
 			$buffer = $tempBuffer;
 		}else{
