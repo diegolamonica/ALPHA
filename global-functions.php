@@ -160,7 +160,13 @@ function includeFrom($subFolder, $fileName, $append ='', $includeAll = false){
  */
 function mailSend($from, $to, $cc, $bcc, $subject, $body, $replyTo=null){
 	if(function_exists('customMailSend')) return customMailSend($from, $to, $cc, $bcc, $subject, $body, $replyTo);
-	ini_set(sendmail_from, $from);
+	# ---
+	# issue 0000025 resolution: Use of undefined constant sendmail_from - assumed 'sendmail_from'
+	# Note:
+	# I've forgotten to enclose sendmail_from between the quotes
+	# ini_set(sendmail_from, $from);   
+	ini_set('sendmail_from', $from);
+	# ---
 	if($replyTo==null) $replyTo = $from;
 	$smtp = $_SERVER['SERVER_NAME']; 
 	//if(function_exists('imap_8bit')) $body = imap_8bit($body);

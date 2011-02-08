@@ -336,12 +336,16 @@ class Model extends Debugger {
 						$myFile = file($file);	
 						if(count($myFile)>0){
 							# La prima riga contiene la data di expires
+							
 							if(date('Y-m-d H:i:s')>$myFile[0]){
 								$expired = true;
 								#print_r($myFile);
 								unlink($myFile[count($myFile)-1]);
 								unlink($file);
 								
+							}else{
+								# Issue #27: $expired is undefined 
+								$expired = false;
 							}
 							
 							# Dalla seconda riga ci sono 
@@ -501,7 +505,9 @@ class Model extends Debugger {
 		$dbg->write('Entering ' . __FUNCTION__, DEBUG_REPORT_FUNCTION_ENTER);
 		$dbg->writeFunctionArguments(func_get_args());
 		if($buffer == null) $buffer = $this->buffer;
-		if(!$this->storedFromCache) $tempBuffer = $this->retrieveFromCache($buffer);
+		# Issue #27: $tempBuffer is undefined
+		$tempBuffer = '';
+		if(!$this->storedFromCache) $tempBuffer = $this->retrieveFromCache($buffer); 
 		if($tempBuffer !=''){
 			$buffer = $tempBuffer;
 		}else{
@@ -900,13 +906,18 @@ class Model extends Debugger {
 					# Modifica di Diego del 05-03-2010
 					if($result[0]=='\{var\:input\.html\}')
 						$buffer = preg_replace('/' . $result[0] . '/', print_r($result[1], true) ,$buffer,1);
-					else
+					else{
 						$unescaped = stripslashes($result[0]);
+						
+						$dbg->write('data used for the $unescaped variable:');
+						$dbg->write(print_r($result, true));
+						if(!isset($unescaped)) $dbg->write('WARNING: $unescaped is not set!');
 						if(array_search($unescaped, self::$disallowedEscapeOn)!==false){
 							$buffer = preg_replace('/' . $result[0] . '/', print_r($result[1], true),$buffer,1);
 						}else{
 							$buffer = preg_replace('/' . $result[0] . '/', str_replace('"', '&quot;', print_r($result[1], true) ),$buffer,1);
 						}
+					}
 					# Fine modifica
 					
 					break;
