@@ -17,4 +17,12 @@ _define('LDAP_PORT', NULL);
  */
 _define('LDAP_BASEDN', "dc=host, dc=domain, dc=tld");
 
+
+/**
+ * Issue #28: The LDAP class defines LOG Level to maximum for openLDAP
+ * Sets the DEBUG_OPT_ERROR_LEVEL option value
+ * @var Integer 
+ */
+_define('LDAPT_DEBUG_LEVEL', 0);
+
 ?>
