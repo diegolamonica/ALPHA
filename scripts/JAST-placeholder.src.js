@@ -64,6 +64,8 @@ _.extend('Placeholder', {
 		switch(src.tagName.toUpperCase()){
 			case 'IMG':
 				txt = src.src;
+				txt+=(/\?/.test(txt))?'&':'?';    
+				txt+=Math.random();
 				break;
 			case 'SELECT':
 				txt = src.options[src.selectedIndex].text;

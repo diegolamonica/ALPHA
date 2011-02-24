@@ -25,10 +25,16 @@ class Ldap  extends Debugger{
 	 * @return bool
 	 */
 	public function connect(){
+<<<<<<< HEAD
 		/*
 		 * @todo identificare il significato dei valori che può assumere l'opzione LDAP_OPT_DEBUG_LEVEL. 
 		 */
 		ldap_set_option(NULL, LDAP_OPT_DEBUG_LEVEL, 7);
+=======
+		
+		ldap_set_option(NULL, LDAP_OPT_DEBUG_LEVEL, LDAPT_DEBUG_LEVEL);
+		#ldap_set_option(NULL, LDAP_OPT_DEBUG_LEVEL, 7);
+>>>>>>> 3d8cea3224676cc824085d77b0a666dd343073ac
 		$ds= ldap_connect(LDAP_HOST);
 		ldap_set_option($ds, LDAP_OPT_PROTOCOL_VERSION, 3);
 		$anon = @ldap_bind( $ds );

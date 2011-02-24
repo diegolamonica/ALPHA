@@ -6,6 +6,7 @@ class RSS extends Debugger{
 	private $generator =  'ALPHA-1.2'; #'ALPHA 1.2 RSS Builder';
 	public $language = 'it';
 	public $description = '';
+	public $link = '';
 	
 	private $items = array();
 	
