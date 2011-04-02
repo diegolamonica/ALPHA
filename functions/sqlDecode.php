@@ -31,6 +31,7 @@ class sqlDecode implements iFunction{
 		$c = ClassFactory::get('connector');
 		$rs = $c->getFirstRecord($sql);
 		if($rs == null) return '';
+		$buffer = '';
 		foreach($rs as $key => $value){
 			if($buffer !='') $buffer .= ' ';
 			$buffer .= $value;

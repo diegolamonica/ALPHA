@@ -20,6 +20,8 @@ _define('CONNECTOR_HOST',		'');
  */
 _define('CONNECTOR_INSTANCE',	'');
 
+_define('SQL_CHARSET', 		'utf8');
+_define('SQL_COLLATION', 		'utf8_general_ci');
 
 _define('SQL_TABLE_PREFIX', 		'');
 _define('SQL_TABLE_POSTFIX',		'');

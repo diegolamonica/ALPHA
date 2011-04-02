@@ -109,8 +109,12 @@ class mysqlConnector extends Debugger implements iConnector {
 
 		
 #		} else {
-		mysql_query( "SET NAMES utf8 COLLATE utf8_general_ci", $conn );
-		mysql_query( "SET CHARACTER SET utf8", $conn );
+
+		$dbg->write('Setting charset to ' . SQL_CHARSET, DEBUG_REPORT_OTHER_DATA);
+		$dbg->write('Setting collation to ' . SQL_COLLATION, DEBUG_REPORT_OTHER_DATA);
+
+		mysql_query( "SET NAMES " . SQL_CHARSET . " COLLATE " . SQL_COLLATION, $conn );
+		mysql_query( "SET CHARACTER SET " . SQL_CHARSET, $conn );
 			#		}
 		$this->conn = $conn;
 	}
