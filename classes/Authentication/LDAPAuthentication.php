@@ -28,18 +28,22 @@ class CustomAuthentication implements iAuthentication{
 		$dbg->writeFunctionArguments(func_get_args());
 		if ($user != "" && $password != "") {
 			$l = ClassFactory::get('Ldap');
-			
+			$dbg->write('Trying to connect as anonymous user');
 			if(@$l->connect()){
+				$dbg->write("Trying to connect as given user($user, $password)");
 				if($l->authenticateAs($user, $password)){
-					
+					$dbg->write("Authentication sucessfull!");
 					$_SESSION[SESSION_USER_KEY_VAR] = $user;
 					$_SESSION[SESSION_USER_TOKEN_VAR] = $password;
 					$dbg->write('Exiting ' . __FUNCTION__, DEBUG_REPORT_FUNCTION_EXIT);
 					return $l->lastEntry;
 				}else{
+					$dbg->write("Bad username or password!");
 					if($l->findFor('uid', $user)){
+						$dbg->write("User name correct, password is wrong");
 						$this->lastError = AUTHENTICATION_ERROR_WRONG_PASSWORD;
 					}else{
+						$dbg->write("User name does not exists in LDAP");
 						$this->lastError = AUTHENTICATION_ERROR_WRONG_USER;
 					}
 				}

@@ -35,7 +35,6 @@ class Paging extends Debugger {
 			foreach($value as $index => $newValue){
 				if($retBuffer!='') $retBuffer.='&';
 				$retBuffer .= $this->makeQueryStringParam("{$key}[]", $newValue);
-				
 			}
 			return $retBuffer;
 		}else{
