@@ -28,6 +28,21 @@ class Paging extends Debugger {
 		}
 	}
 	
+	private function makeQueryStringParam($key, $value){
+		
+		if(is_array($value)){
+			$retBuffer ='';
+			foreach($value as $index => $newValue){
+				if($retBuffer!='') $retBuffer.='&';
+				$retBuffer .= $this->makeQueryStringParam("{$key}[]", $newValue);
+				
+			}
+			return $retBuffer;
+		}else{
+			return urlencode($key) . '=' . urlencode($value);
+		}
+	}
+	
 	public function updateCount($sql){
 		$mt = microtime();
 		$tmpSql = $sql;
@@ -55,7 +70,7 @@ class Paging extends Debugger {
 				$key!='__url' &&
 				$key!='__fn'*/){
 				if($params!='') $params.='&amp;';
-				$params .= urlencode($key) . '=' . urlencode($value);
+				$params .= $this->makeQueryStringParam($key, $value);
 			}
 		}
 		if($params!='') $params .= '&amp;';
