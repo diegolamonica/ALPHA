@@ -11,6 +11,114 @@
 
 // {var:([a-z]+)(\|(@(from)\s+"([^"\\]*(?:\\.[^"\\]*)*)"\s?)?(\s?@(to)\s+"([^"\\]*(?:\\.[^"\\]*)*)")?)?}
 
+if(!defined('MODEL_KEYWORD_PHP_BLOCK_START')) 	define('MODEL_KEYWORD_PHP_BLOCK_START',	'php');
+if(!defined('MODEL_KEYWORD_PHP_BLOCK_END')) 	define('MODEL_KEYWORD_PHP_BLOCK_END',	'phpend');
+
+/**
+ * Keyword to identify the start of a loop block
+ * <code>
+ * {foreach:item}
+ * 		...
+ * {loop}
+ * </code>
+ * @var String
+ */
+if(!defined('MODEL_KEYWORD_LOOP_START')) 	define('MODEL_KEYWORD_LOOP_START', 			'foreach');
+
+/**
+ * Keyword to identify the end of a loop block.
+ * <code>
+ * {foreach:item}
+ * 		...
+ * {loop}
+ * </code>
+ * @var String
+ */
+if(!defined('MODEL_KEYWORD_LOOP_END')) 		define('MODEL_KEYWORD_LOOP_END',		 	'loop');
+/**
+ * Keyword to identify a variable in the template
+ * @var String
+ */
+if(!defined('MODEL_KEYWORD_VAR')) 			define('MODEL_KEYWORD_VAR',					'var');
+
+/**
+ * Keyword to identify a set variable action in the template
+ * @var String
+ */
+if(!defined('MODEL_KEYWORD_SETVAR')) 		define('MODEL_KEYWORD_SETVAR',				'setvar');
+
+/**
+ * Conditional block keyword start
+ * <code>
+ * {if: <i>inline php block code</i>}
+ * {endif}
+ * @var String
+ * @see MODEL_KEYWORD_IF_END
+ * @see MODEL_KEYWORD_IF_ELSE
+ */
+if(!defined('MODEL_KEYWORD_IF_START')) 		define('MODEL_KEYWORD_IF_START',			'if');
+
+
+/**
+ * Conditional block keyword else
+ * <code>
+ * {if: <i>inline php block code</i>}
+ * {endif}
+ * @var String
+ * @see MODEL_KEYWORD_IF_START
+ * @see MODEL_KEYWORD_IF_END
+ */
+if(!defined('MODEL_KEYWORD_IF_ELSE'))		define('MODEL_KEYWORD_IF_ELSE', 			'else');
+
+if(!defined('MODEL_KEYWORD_IFVAR_START')) 	define('MODEL_KEYWORD_IFVAR_START',			'ifv');
+
+/**
+ * Conditional block keyword end
+ * <code>
+ * {if: <inline php block code>}
+ * {endif}
+ * @var String
+ * @see MODEL_KEYWORD_IF_START
+ * @see MODEL_KEYWORD_IF_ELSE
+ */
+if(!defined('MODEL_KEYWORD_IF_END')) 		define('MODEL_KEYWORD_IF_END',				'endif');
+
+/**
+ * Parloa chiave che identifica un blocco di codice PHP (esecuzione inline).
+ * @var String
+ */
+if(!defined('MODEL_KEYWORD_PHP')) 			define('MODEL_KEYWORD_PHP',					'php');
+/**
+ * Parola chiave che identifica una funzione custom
+ * @var String
+ * @see FUNCTIONSROOT
+ */
+if(!defined('MODEL_KEYWORD_FUNCTION')) 		define('MODEL_KEYWORD_FUNCTION',			'fn');
+/**
+ * Parola chiave che identifica l'inclusione di un file.
+ * L'output generato dal file incluso verrà elaborato e
+ * sostituirà l'include.
+ * La differenza tra l'uso di include e include-static è
+ * nel fatto che include richiede la presenza del file sul server
+ * corrente, perchè lo script viene eseguito nel contesto applicativo
+ * e quindi è in grado di modificare tutte le proprietà in uso.
+ * Diversamente static viene eseguito in una sandbox quindi non ha 
+ * possibilità di alterare le variabili di processo attuale. 
+ * @var String
+ */
+if(!defined('MODEL_KEYWORD_INCLUDE')) 			define('MODEL_KEYWORD_INCLUDE',			'include');
+/**
+ * Parola chiave che identifica l'inclusione di un file statico.
+ * Tipicamente è un file html che può risiedere sullo stesso 
+ * server applicativo o su un server remoto
+ * @var String
+ */
+if(!defined('MODEL_KEYWORD_INCLUDE_STATIC')) 	define('MODEL_KEYWORD_INCLUDE_STATIC',	'include-static');
+if(!defined('MODEL_KEYWORD_REDIRECT'))			define('MODEL_KEYWORD_REDIRECT',		'redirect');
+
+
+
+
 
 class Model extends Debugger {
 	private $viewFileName = '';
@@ -818,15 +926,28 @@ class Model extends Debugger {
 				case MODEL_KEYWORD_IF_START:
 					
 					$block = $this->endBlockSearch($buffer, $items[0],MODEL_KEYWORD_IF_START, MODEL_KEYWORD_IF_END);
+					
+					
 					$replacement = $items[0].$block.'{'.MODEL_KEYWORD_IF_END .'}';
+					
+					$ifBlock = $this->endBlockSearch( $replacement, $items[0], MODEL_KEYWORD_IF_START, MODEL_KEYWORD_IF_ELSE);
+					
+					if($ifBlock!=''){
+						$elseBlock = substr($block, strlen($ifBlock) + strlen('{'.MODEL_KEYWORD_IF_ELSE.'}') );
+
+					}else{
+						$elseBlock = '';
+						$ifBlock = $block;
+					}
+					
 					# Modifica del 26-02-2010 di Diego La Monica
 					# if($this->evaluate($value, $this->variables)){
 					if($this->evaluate($value, self::$variables)){
 					# Fine Modifica
-						$buffer = str_replace($replacement, $block, $buffer);
+						$buffer = str_replace($replacement, $ifBlock, $buffer);
 						
 					}else{
-						$buffer = str_replace($replacement, '', $buffer);
+						$buffer = str_replace($replacement, $elseBlock, $buffer);
 						
 					};
 					break;
@@ -1398,11 +1519,13 @@ class Model extends Debugger {
 		$i = strpos($buffer, $item);
 		$j = strpos($buffer, '{' . $keyword_end . '}');
 		$i = $i+ strlen($item);
-		
+		# Changes for if then else
+		if($j===false) return '';
+
 		$block = substr($buffer, $i, $j- $i);
 		$endLoopIndex	= preg_match_all('/{' . $keyword_end .'}/', $block, $matches);
 		$startLoopIndex = preg_match_all('/{' . $keyword_start .':([^}]+)}/', $block, $matches);
-		
+
 		while($startLoopIndex!=$endLoopIndex){
 			$j = strpos($buffer, '{' . $keyword_end . '}',$j+1);
 			$block = substr($buffer, $i, $j- $i);
