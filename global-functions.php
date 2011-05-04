@@ -88,7 +88,7 @@ function _defineApplyAll(){
 function findPathRecursive($files){
 	if(!is_array($files)) $files = array($files);
 	$tmpScriptPath = CURRENT_SCRIPT_PATH;
-	$path = split('/',$tmpScriptPath);
+	$path = preg_split('/\//',$tmpScriptPath);
 	
 	while( count($path)>0 ){
 		$myPath = join('/',$path);
@@ -124,7 +124,7 @@ function includeFrom($subFolder, $fileName, $append ='', $includeAll = false){
 	}
 	$pathToSplit = CURRENT_SCRIPT_PATH .$append;
 	
-	$path = split('/',$pathToSplit);
+	$path = preg_split('/\//',$pathToSplit);
 	for($i=0; count($path)>0; $i++){
 		
 		$myPath = join('/',$path);
@@ -462,13 +462,13 @@ function formattaDateTime($valore){
 	$valore = str_replace('00:00:00', '', $valore);
 	$valore = trim($valore);
 	if(strpos($valore, ' ') !== false ){
-		$valori = split(" ", $valore);
+		$valori = preg_split(" ", $valore);
 		$valori[0] = formattaDateTime( $valori[0] );
 		$valore = $valori[0] . ' ' . $valori[1];
 	}else{
 		$isDate = ( strlen( $valore ) == 10 );			// L'orario può essere scritto nel formato 00.00.00 oppure
 		if($isDate){
-			$valori = split("-", $valore);
+			$valori = preg_split("/-/", $valore);
 			
 			$valore = $valori[2] . "/" . $valori[1] . "/" . $valori[0];
 		}

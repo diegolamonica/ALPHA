@@ -113,7 +113,7 @@ if(!class_exists('core')){
 			$pathSeparator = ($isWin?'\\':'/');
 			
 			$baseDir = dirname(__FILE__);
-			$baseDir = split(addslashes($pathSeparator), $baseDir);
+			$baseDir = preg_split(addslashes($pathSeparator), $baseDir);
 			
 			array_pop($baseDir);
 			$baseDir = join($baseDir, $pathSeparator).$pathSeparator;
@@ -396,7 +396,7 @@ if(!class_exists('core')){
 			isset($debugOutput) && $debugOutput && print('/* defined path: ' . $fullPath . "*/\r\n");
 			
 			if(file_exists($fullPath)){
-				if(isset($mimeType)) $mimeType = split($mimeType,'/');
+				if(isset($mimeType)) $mimeType = preg_split('/\//',$mimeType);
 				if(!isset($mimeType) || $mimeType[0]=='text'){
 					require_once($fullPath);
 										

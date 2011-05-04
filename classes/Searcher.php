@@ -17,7 +17,7 @@ class Searcher extends Debugger{
 			} 
 			
 			if(isset($_GET[SEARCHER_FORM_APPLY_TABLES]) && $_GET[SEARCHER_FORM_APPLY_TABLES]!='*'){
-				$this->applyToTables = split(',', $_GET[SEARCHER_FORM_APPLY_TABLES]);
+				$this->applyToTables = preg_split('/,/', $_GET[SEARCHER_FORM_APPLY_TABLES]);
 			}
 			
 			$this->searchEnabled = true;
@@ -29,7 +29,7 @@ class Searcher extends Debugger{
 		if(preg_match('/from\s+(.+)(\s+where|\s+order by|\s+group by|\s*;|\s*$)/is',$sql, $tabella)){
 			$tabella = $tabella[1];
 			
-			$tabella = split(',', $tabella);
+			$tabella = preg_split('/,/', $tabella);
 			foreach($tabella as $key => $value){
 				$tabella[$key] = preg_replace('/\s.*/','',$value);
 			}

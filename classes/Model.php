@@ -409,7 +409,7 @@ class Model extends Debugger {
 			// 2. verifico se mi trovo in una condizione di flush
 			$fromCache = true;
 			if(isset($cacheAttribs['flushon'])){
-				$flushOns = split(',',$cacheAttribs['flushon']);
+				$flushOns = preg_split('/,/',$cacheAttribs['flushon']);
 				foreach($flushOns as $cacheIndex => $flushOn){
 					eval('$obj = $_'.$flushOn.';');
 					
@@ -418,7 +418,7 @@ class Model extends Debugger {
 						foreach(glob("$cacheDirectory{$cacheAttribs['cachefilename']}-*.*") as $file){
 							unlink($file);
 						}
-						$removeOnFlush = split(',',$cacheAttribs['removeonflush']);
+						$removeOnFlush = preg_split(',',$cacheAttribs['removeonflush']);
 						foreach($removeOnFlush as $key => $filePrefix)
 							foreach(glob("$cacheDirectory$filePrefix-*.*") as $file)
 								unlink($file);
@@ -461,7 +461,7 @@ class Model extends Debugger {
 							 
 							if(!$expired){
 								$ok = true;
-								$modelKeyVars = split(',',$cacheAttribs['modelkeyvar']);
+								$modelKeyVars = preg_split('/,/',$cacheAttribs['modelkeyvar']);
 								foreach($modelKeyVars as $cacheIndex => $keyVar){
 									if(substr($myFile[$cacheIndex+1],0,-1) != serialize($this->getVar($keyVar))) $ok = false;
 									
@@ -546,7 +546,7 @@ class Model extends Debugger {
 			$cacheFile = array();
 			$cacheFile[] = date('Y-m-d H:i:s', dateAdd($expireUnit, $expireValue, date('Y-m-d H:i:s')));
 			
-			$modelKeyVars = split(',',$cacheAttribs['modelkeyvar']);
+			$modelKeyVars = preg_split('/,/',$cacheAttribs['modelkeyvar']);
 			foreach($modelKeyVars as $cacheIndex => $keyVar){
 				$cacheFile[] = serialize($this->getVar($keyVar));
 				
@@ -707,7 +707,7 @@ class Model extends Debugger {
 							}else{
 								$startupScripts = '';
 							}
-							$headingArea = split("\n",$headingArea);
+							$headingArea = preg_split("/\n/",$headingArea);
 							Model::appendHeaders($headingArea);
 							Model::appendScripts($headingScripts);
 							Model::appendScripts($startupScripts, true);
@@ -745,6 +745,7 @@ class Model extends Debugger {
 		$dbg->write('Entering ' . __FUNCTION__, DEBUG_REPORT_FUNCTION_ENTER);
 		$dbg->writeFunctionArguments(func_get_args());
 		$buffer = $this->buffer;
+		$tempBuffer = '';
 		if(!$this->storedFromCache) $tempBuffer = $this->retrieveFromCache($buffer);
 		if($tempBuffer !='') $buffer = $tempBuffer;
 		if($this->storedFromCache){
@@ -972,7 +973,7 @@ class Model extends Debugger {
 					$block = $this->endBlockSearch($buffer, $items[0],MODEL_KEYWORD_IFVAR_START, MODEL_KEYWORD_IF_END);
 					$replacement = $items[0].$block.'{'.MODEL_KEYWORD_IF_END .'}';
 					$value = trim($value);
-					$evaluation = split(' ',$value); 
+					$evaluation = preg_split(' ',$value); 
 					$ifvVar1 = $this->parseVar($evaluation[0]);
 					$ifvVar2 = $this->parseVar($evaluation[2]);
 					$replaceSuccess = false;
@@ -1185,7 +1186,7 @@ class Model extends Debugger {
 		}else{
 			
 			$value = '';
-			$var = split('\.', $key);
+			$var = preg_split('/\./', $key);
 			# Modifica del 26-02-2010 di Diego La Monica
 			# $tmpVar = $this->variables;
 			$tmpVar = self::$variables;

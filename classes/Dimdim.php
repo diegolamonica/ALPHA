@@ -155,7 +155,7 @@ class Dimdim{
 	 */
 	public function parseDate($date){
 		$months = explode(",",',January,February,March,April,May,June,July,August,September,October,November,December');
-		list($year, $month, $day) = split('-',$date);
+		list($year, $month, $day) = preg_split('-',$date);
 		
 		$dateParsed = $months[$month] . ' ' . $day .', ' . $year;
 		
