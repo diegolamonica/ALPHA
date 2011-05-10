@@ -104,18 +104,16 @@ class mysqlConnector extends Debugger implements iConnector {
 		}
 		mysql_select_db($db, $conn) or die(mysql_error($conn));
 		 
-#		 if ( function_exists( 'mysql_set_charset' ) ) {
-#			mysql_set_charset( 'utf8', $conn );
-
-		
-#		} else {
-
+#		
 		$dbg->write('Setting charset to ' . SQL_CHARSET, DEBUG_REPORT_OTHER_DATA);
 		$dbg->write('Setting collation to ' . SQL_COLLATION, DEBUG_REPORT_OTHER_DATA);
 
 		mysql_query( "SET NAMES " . SQL_CHARSET . " COLLATE " . SQL_COLLATION, $conn );
 		mysql_query( "SET CHARACTER SET " . SQL_CHARSET, $conn );
-			#		}
+		# Issue #22 - Note #23
+		if ( function_exists( 'mysql_set_charset' ) ) {
+			mysql_set_charset(SQL_CHARSET, $conn);
+		}
 		$this->conn = $conn;
 	}
 	
