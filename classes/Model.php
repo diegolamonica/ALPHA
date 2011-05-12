@@ -1,6 +1,6 @@
 <?php
 /**
- * 
+ *
  * @author Diego La Monica
  * @version 1.0
  * @name Model
@@ -68,7 +68,8 @@ if(!defined('MODEL_KEYWORD_IF_START')) 		define('MODEL_KEYWORD_IF_START',			'if'
  * @see MODEL_KEYWORD_IF_START
  * @see MODEL_KEYWORD_IF_END
  */
-if(!defined('MODEL_KEYWORD_IF_ELSE'))		define('MODEL_KEYWORD_IF_ELSE', 			'else');
+
+if(!defined('MODEL_KEYWORD_IF_ELSE'))	define('MODEL_KEYWORD_IF_ELSE', 			'else');
 
 if(!defined('MODEL_KEYWORD_IFVAR_START')) 	define('MODEL_KEYWORD_IFVAR_START',			'ifv');
 
@@ -87,7 +88,7 @@ if(!defined('MODEL_KEYWORD_IF_END')) 		define('MODEL_KEYWORD_IF_END',				'endif'
  * Parloa chiave che identifica un blocco di codice PHP (esecuzione inline).
  * @var String
  */
-if(!defined('MODEL_KEYWORD_PHP')) 			define('MODEL_KEYWORD_PHP',					'php');
+//if(!defined('MODEL_KEYWORD_PHP')) 			define('MODEL_KEYWORD_PHP',					'php');
 /**
  * Parola chiave che identifica una funzione custom
  * @var String
@@ -102,14 +103,14 @@ if(!defined('MODEL_KEYWORD_FUNCTION')) 		define('MODEL_KEYWORD_FUNCTION',			'fn'
  * nel fatto che include richiede la presenza del file sul server
  * corrente, perchè lo script viene eseguito nel contesto applicativo
  * e quindi è in grado di modificare tutte le proprietà in uso.
- * Diversamente static viene eseguito in una sandbox quindi non ha 
- * possibilità di alterare le variabili di processo attuale. 
+ * Diversamente static viene eseguito in una sandbox quindi non ha
+ * possibilità di alterare le variabili di processo attuale.
  * @var String
  */
 if(!defined('MODEL_KEYWORD_INCLUDE')) 			define('MODEL_KEYWORD_INCLUDE',			'include');
 /**
  * Parola chiave che identifica l'inclusione di un file statico.
- * Tipicamente è un file html che può risiedere sullo stesso 
+ * Tipicamente è un file html che può risiedere sullo stesso
  * server applicativo o su un server remoto
  * @var String
  */
@@ -127,16 +128,16 @@ class Model extends Debugger {
 	private $storedFromCache = false;
 	private $_doNotSendHeader = false;
 	/**
-	 * @var <b>array</b> è un array associativo che contiene tutte le variabili da applicare sul tempalte 
+	 * @var <b>array</b> è un array associativo che contiene tutte le variabili da applicare sul tempalte
 	 */
 	# Modifica del 26-02-2010 di Diego La Monica
 	#public $variables = array();
 	static $variables = array();
 	static $disallowedEscapeOn = array();
 	/**
-	 * @var <b>boolean</b> indica se al modello corrente è applicabile la cache 
+	 * @var <b>boolean</b> indica se al modello corrente è applicabile la cache
 	 */
-	public $isPlugin = false;	
+	public $isPlugin = false;
 	/**
 	 * @var <b>array</b> contiene tutti gli header da passare al client
 	 */
@@ -146,39 +147,39 @@ class Model extends Debugger {
 	 */
 	public static $startupScripts = array();
 	/**
-	 * 
+	 *
 	 * @var <b>array</b> contiene tutti gli script da inserire nell'header
 	 */
 	public static $headerScripts = array();
-	
+
 	/**
-	 * 
-	 * @var <b>boolean</b> indica se la classe è stata istanziata all'interno di un loop <code>{foreach}...{loop}</code> 
+	 *
+	 * @var <b>boolean</b> indica se la classe è stata istanziata all'interno di un loop <code>{foreach}...{loop}</code>
 	 */
 	public $inLoop = false;
-	
-	
+
+
 	/**
 	 * Questo metodo indica al Modello di non inviare al browser nessun header
 	 * @return null
 	 */
 	function doNotSendHeader(){
-		$this->_doNotSendHeader = true;	
+		$this->_doNotSendHeader = true;
 	}
-	
+
 	function disallowEscapeOn($varName){
-		
+
 		self::$disallowedEscapeOn[] = "{var:$varName}";
-		
+
 	}
-	
+
 	/**
-	 * Costruttore di classe, viene richiamato in automatico dall'oggetto ClassFactory 
+	 * Costruttore di classe, viene richiamato in automatico dall'oggetto ClassFactory
 	 * quando viene istanziata la classe.<br />
 	 * Il metodo si preoccupa di istanziare alcune variabili di base sul modello:<br />
 	 * <ul><li>URI = $_SERVER['REQUEST_URI']</li>
 	 * <li>REFERER = $_SERVER['HTTP_REFERER'] oppure una stringa vuota se non è presente il referer</li>
-	 * <li>URIE = l'encode di URI utilizzabile quindi nei link</li> 
+	 * <li>URIE = l'encode di URI utilizzabile quindi nei link</li>
 	 * @return null
 	 */
 	public function Model(){
@@ -188,23 +189,23 @@ class Model extends Debugger {
 			'REFERER'=> isset($_SERVER['HTTP_REFERER'])?$_SERVER['HTTP_REFERER']:'',
 			'URIE' => rawurlencode(rawurlencode($_SERVER['REQUEST_URI']))
 		), 'alpha');
-		
+
 	}
-	
+
 	/**
-	 * Aggiunge il codice Javascript nel blocco di startup se <b>$startup = true</b> altrimenti 
+	 * Aggiunge il codice Javascript nel blocco di startup se <b>$startup = true</b> altrimenti
 	 * lo inserisce come codice javascript generale nella pagina (inserito sempre nel blocco head della pagina).
 	 * @param $value <b>string</b> Codice Javascript
 	 * @param $startup <b>boolean</b> <code>default è false</code> se impostato a true la stringa viene considerato codice Javascript da inserire nel blocco di startup
 	 * @return null
 	 */
 	public static function appendScripts($value, $startup = false){
-		
+
 		$dbg = ClassFactory::get('Debug');
 		$dbg->setGroup(__CLASS__);
 		$dbg->write('Entering ' . __FUNCTION__, DEBUG_REPORT_FUNCTION_ENTER);
 		$dbg->writeFunctionArguments(func_get_args());
-		
+
 		if($startup){
 			$h = Model::$startupScripts;
 		}else{
@@ -221,31 +222,31 @@ class Model extends Debugger {
 			}
 			if(!$found) $h[] = $value;
 		}
-		
+
 		if($startup){
 			Model::$startupScripts = $h;
 		}else{
-			 Model::$headerScripts = $h;
-		}	
+			Model::$headerScripts = $h;
+		}
 		$dbg->write('Exiting ' . __FUNCTION__, DEBUG_REPORT_FUNCTION_EXIT);
 	}
-	
+
 	/**
 	 * Aggiunge la riga di inclusione per integrare fogli di stile, javascript o meta tag customizzati.
-	 * Se la riga già esiste negli headers non viene inclusa.  
+	 * Se la riga già esiste negli headers non viene inclusa.
 	 * @param $headers <b>string</b> è la riga da aggiungere nel blocco <code>head</code>
 	 * @return null
 	 */
-	
+
 	public static function appendHeaders($headers){
 		$dbg = ClassFactory::get('Debug');
 		$dbg->setGroup(__CLASS__);
 		$dbg->write('Entering ' . __FUNCTION__, DEBUG_REPORT_FUNCTION_ENTER);
 		$dbg->writeFunctionArguments(func_get_args());
 		$h = Model::$headers;
-		
+
 		foreach($headers as $key => $value){
-			
+				
 			$value = trim($value);
 			if($value!=''){
 				$found = false;
@@ -260,17 +261,17 @@ class Model extends Debugger {
 		}
 		Model::$headers = $h;
 		$dbg->write('Exiting ' . __FUNCTION__, DEBUG_REPORT_FUNCTION_EXIT);
-		
+
 	}
-	
-	
+
+
 	/**
 	 * Imposta il modello HTML/CUTEML da utilizzare sulla pagina.
 	 * Il nome della vista deve coincidere con il percorso a partire dalle indicazioni
 	 * della costante <code>APPLICATION_VIEW_BASEDIR</code> senza l'estensione.
 	 * Una vista deve avere estensione <strong>.htm</strong>
-	 * 
-	 * @param $viewName <b>string</b> il nome della vista da utilizzare 
+	 *
+	 * @param $viewName <b>string</b> il nome della vista da utilizzare
 	 * @return null
 	 */
 	function setView($viewName){
@@ -285,11 +286,11 @@ class Model extends Debugger {
 		fclose($h);
 		$dbg->write('Exiting ' . __FUNCTION__, DEBUG_REPORT_FUNCTION_EXIT);
 	}
-	
-	
+
+
 	/**
 	 * Imposta il modello da HTML/CUTEML da utilizzare adottando la stringa $buffer.
-	 * @param $buffer <b>string</b> Il buffer del modello da utilizzare 
+	 * @param $buffer <b>string</b> Il buffer del modello da utilizzare
 	 * @return null
 	 */
 	function setViewFromBuffer($buffer){
@@ -300,14 +301,14 @@ class Model extends Debugger {
 		$this->buffer = $buffer;
 		$dbg->write('Exiting ' . __FUNCTION__, DEBUG_REPORT_FUNCTION_EXIT);
 	}
-	
+
 	/**
 	 * Imposta una variabile sul modello. Se la variabile già esiste, viene sovrascritta con il nuovo valore.
-	 * @param $key <b>string</b> è la chiave con il quale si farà riferimento sul modello utilizzando la sintassi CUTEML 
+	 * @param $key <b>string</b> è la chiave con il quale si farà riferimento sul modello utilizzando la sintassi CUTEML
 	 * @param $value <b>mixed</b> è il valore da associare alla variabile
 	 * @return null
 	 */
-	
+
 	function setVar($key, $value){
 		$dbg = ClassFactory::get('Debug');
 		$dbg->setGroup(__CLASS__);
@@ -319,11 +320,11 @@ class Model extends Debugger {
 		self::$variables[$key] = $value;
 		$dbg->write('Exiting ' . __FUNCTION__, DEBUG_REPORT_FUNCTION_EXIT);
 	}
-	
+
 	/**
-	 * Applica una trasformazione <em>Perl RegExp</em> immediata alla chiave specificata adottando la sintassi  
+	 * Applica una trasformazione <em>Perl RegExp</em> immediata alla chiave specificata adottando la sintassi
 	 * @param $key <b>string</b> il nome della variabile sul modello
-	 * @param $from <b>string</b> il pattern di ricerca 
+	 * @param $from <b>string</b> il pattern di ricerca
 	 * @param $to <b>string</b> il pattern di sostituzione
 	 * @return null
 	 */
@@ -337,26 +338,26 @@ class Model extends Debugger {
 	/**
 	 * Metodo interno per aggiustare la selezione del tag html è utilizzato internamente.
 	 * dal metodo pubblico <code>process</code>
-	 *  
-	 * @param $buffer <b>string</b> 
+	 *
+	 * @param $buffer <b>string</b>
 	 * @param $item <b>string</b>
 	 * @return null
 	 */
 	private function getHtmlTag($buffer, $item){
 		$i = strpos($buffer, $item);
 		$i = $i+strlen($item);		// Mi posiziono alla fine del tag di apertura
-		
+
 		if (preg_match('/<([a-z]+)[^>]*>/s', $item, $tag)) {
 			$tag = $tag[1];
 		} else {
 			return array($item, '');
 		}
-		
+
 		$j = strpos($buffer, '</' . $tag . '>', $i);
 		$k = strpos($buffer, '<' . $tag, $i);
 		while($k<$j && $k>$i){
 			// c'è un elemento intermedio, quindi devo cercare un tag di chiusura successivo.
-			
+				
 			$j = strpos($buffer, '</' . $tag . '>', $j+1);
 			$k = strpos($buffer, '<' . $tag, $k+1);
 			if($j===false){
@@ -368,7 +369,7 @@ class Model extends Debugger {
 		$html = substr($buffer, $i, ($j-$i) -1);
 		return array($item, $html);
 	}
-	
+
 	/**
 	 * Preleva il rendering della vista dalla cache
 	 * @return string
@@ -381,8 +382,8 @@ class Model extends Debugger {
 
 		if (preg_match('/<!--\\s+CACHE MANAGER(.*?)-->\s*/si', $buffer, $defaultCacheBuffer)) {
 			$buffer = '';
-			// Esiste un controllo per la cache 
-			
+			// Esiste un controllo per la cache
+				
 			// 1. estraggo i parametri che fanno il controllo della cache
 			# La sintassi dell'header di cache è:
 			# <!-- CACHE MANAGER
@@ -405,14 +406,14 @@ class Model extends Debugger {
 				$cacheAttribs[$defaultCacheKey] = $m->render(true);
 				$m = null;
 			}
-			
+				
 			// 2. verifico se mi trovo in una condizione di flush
 			$fromCache = true;
 			if(isset($cacheAttribs['flushon'])){
 				$flushOns = preg_split('/,/',$cacheAttribs['flushon']);
 				foreach($flushOns as $cacheIndex => $flushOn){
 					eval('$obj = $_'.$flushOn.';');
-					
+						
 					if(isset($obj) && count($obj)>0){
 						$fromCache = false;
 						foreach(glob("$cacheDirectory{$cacheAttribs['cachefilename']}-*.*") as $file){
@@ -420,58 +421,58 @@ class Model extends Debugger {
 						}
 						$removeOnFlush = preg_split(',',$cacheAttribs['removeonflush']);
 						foreach($removeOnFlush as $key => $filePrefix)
-							foreach(glob("$cacheDirectory$filePrefix-*.*") as $file)
-								unlink($file);
-						
-						
-						break; 
+						foreach(glob("$cacheDirectory$filePrefix-*.*") as $file)
+						unlink($file);
+
+
+						break;
 					}
 				}
 			}
 			// 3. cerco il file nella directory opportuna
 			if($fromCache){
-				
-				
+
+
 				# La sintassi del file è:
-				# 	- prefisso definito negli attributi di cache (o nulla) 
+				# 	- prefisso definito negli attributi di cache (o nulla)
 				# 	- microtime (di generazione della cache)
 				# 	- .cache
 				$ok = false;
 				foreach(glob("$cacheDirectory{$cacheAttribs['cachefilename']}-*.cache") as $file){
-					
-					if(file_exists($file)){
 						
-						$myFile = file($file);	
+					if(file_exists($file)){
+
+						$myFile = file($file);
 						if(count($myFile)>0){
 							# La prima riga contiene la data di expires
-							
+								
 							if(date('Y-m-d H:i:s')>$myFile[0]){
 								$expired = true;
 								#print_r($myFile);
 								unlink($myFile[count($myFile)-1]);
 								unlink($file);
-								
+
 							}else{
-								# Issue #27: $expired is undefined 
+								# Issue #27: $expired is undefined
 								$expired = false;
 							}
-							
-							# Dalla seconda riga ci sono 
+								
+							# Dalla seconda riga ci sono
 							# i valori serializzati delle variabili che ho indicato come chiavi
-							 
+
 							if(!$expired){
 								$ok = true;
 								$modelKeyVars = preg_split('/,/',$cacheAttribs['modelkeyvar']);
 								foreach($modelKeyVars as $cacheIndex => $keyVar){
 									if(substr($myFile[$cacheIndex+1],0,-1) != serialize($this->getVar($keyVar))) $ok = false;
-									
+										
 									if(!$ok){
 										break;
 									}
 								}
 								if($ok) break;
 							}
-							
+								
 						}
 					}
 				}
@@ -479,33 +480,33 @@ class Model extends Debugger {
 				if($ok){
 					# Il file è quello giusto, posso utilizzarlo come cache
 					$buffer = file_get_contents($myFile[count($myFile)-1]);
-					
+						
 					$this->storedFromCache = true;
 				}
 			}
 		}else{
 			$buffer = '';
 		}
-		
+
 		$dbg->write('Exiting ' . __FUNCTION__, DEBUG_REPORT_FUNCTION_EXIT);
-		
+
 		return $buffer;
 	}
-	
+
 	/**
 	 * Salva l'output della vista corrente nella cache.
 	 * @param $buffer <b>string</b> è il buffer della vista da salvare nel file di cache
 	 * @return null
 	 */
 	function saveCache($buffer){
-		
+
 		$dbg = ClassFactory::get('Debug');
 		$dbg->setGroup(__CLASS__);
 		$dbg->write('Entering ' . __FUNCTION__, DEBUG_REPORT_FUNCTION_ENTER);
 		$dbg->writeFunctionArguments(func_get_args());
 		if (preg_match('/<!--\\s+CACHE MANAGER(.*?)-->\s*/si', $buffer, $defaultCacheBuffer)) {
-			// Esiste un controllo per la cache 
-			
+			// Esiste un controllo per la cache
+				
 			// 1. estraggo i parametri che fanno il controllo della cache
 			# La sintassi dell'header di cache è:
 			# <!-- CACHE MANAGER
@@ -521,66 +522,66 @@ class Model extends Debugger {
 				$defaultCacheValue 	= $defaultCacheAttributes[2][$attributesLoop];
 				$cacheAttribs[$defaultCacheKey] = $defaultCacheValue;
 			}
-			
+				
 			$buffer = preg_replace('/<!--\\s+CACHE MANAGER(.*?)-->\s*/si','', $buffer);
-			
+				
 			// Identifico il nome corretto (e univoco) del nuovo file di cache da generare
 			$cachedName = CACHE_DEFAULT_FOLDER .'/'. $cacheAttribs['cachefilename'] . '-' . date('YmdHis') . '-';
 			$nextIndex = 1;
 			foreach(glob($cachedName.'*') as $file){
-				
+
 				if(preg_match('/\-.*-(.*)\.cache/i',$file, $items)){
-					
+						
 					$nextIndex = $items[1]+1;
-					
+						
 				}
 					
 			}
 			// Definisco il nome del file di cache e del file indice di cache
-			$htmlCachedName = $cachedName . $nextIndex .'.html'; 
+			$htmlCachedName = $cachedName . $nextIndex .'.html';
 			$cachedName .= $nextIndex .'.cache';
 			$expireUnit = substr($cacheAttribs['expiresafter'],-1);
 			$expireValue = substr($cacheAttribs['expiresafter'],0,-1);
-			
+				
 			// Scrivo le righe per il file di cache in un array
 			$cacheFile = array();
 			$cacheFile[] = date('Y-m-d H:i:s', dateAdd($expireUnit, $expireValue, date('Y-m-d H:i:s')));
-			
+				
 			$modelKeyVars = preg_split('/,/',$cacheAttribs['modelkeyvar']);
 			foreach($modelKeyVars as $cacheIndex => $keyVar){
 				$cacheFile[] = serialize($this->getVar($keyVar));
-				
+
 			}
 			$cacheFile[] = $htmlCachedName;
-			
+				
 			// Trasformo l'array in un buffer
 			$cacheFile = implode("\n", $cacheFile);
 			file_put_contents($cachedName, $cacheFile);
 			file_put_contents($htmlCachedName, $buffer);
-			
+				
 		}
-		 
-		
+			
+
 		$dbg->write('Exiting ' . __FUNCTION__, DEBUG_REPORT_FUNCTION_EXIT);
 	}
-	
+
 	/**
 	 * Effettua il rendering del plugin sul modello
-	 * @param $mBuffer <b>string</b> è il buffer corrispondente al contenuto del file di plugin.   
+	 * @param $mBuffer <b>string</b> è il buffer corrispondente al contenuto del file di plugin.
 	 * @param $attribs <b>array</b> è l'elenco di attributi acquisiti dal tag plugin sulla vista
 	 * @return string
 	 */
 	private function renderPlugin($mBuffer, $attribs){
-		
+
 		foreach($attribs as $key => $value){
 			if(substr($value, 0, strlen(MODEL_KEYWORD_VAR)+2) == '{' . MODEL_KEYWORD_VAR .':'){
 				$result = $this->parseVar($value);
 				$attribs[$key]= $result[1];
-			} 
-			
+			}
+				
 		}
 
-		
+
 		$m = new Model();
 		$m->doNotSendHeader();
 		$m->isPlugin = true;
@@ -592,22 +593,22 @@ class Model extends Debugger {
 		$m->setMultipleVar($attribs,'input');
 		$mBuffer = $m->render(true);
 		$mBuffer = $m->process($mBuffer);
-		
+
 		# Modifica del 26-02-2010 di Diego La Monica
 		$m->clearVar('input');
 		# Fine Modifica
 		return $mBuffer;
 	}
-	
-	
-	
+
+
+
 	/**
 	 * Elabora la vista sostituendo tutte le occorrenze del codice CUTEML con gli opportuni valori
 	 * @param $buffer <b>string</b> <code>default null</code> se non impostato elabora il buffer corrispondente alla vista corrente altrimenti elabora il buffer passato come parametro
 	 * @return string restituisce l'elaborazione del buffer
 	 */
 	function process($buffer = null){
-		
+
 		$dbg = ClassFactory::get('Debug');
 		$dbg->setGroup(__CLASS__);
 		$dbg->write('Entering ' . __FUNCTION__, DEBUG_REPORT_FUNCTION_ENTER);
@@ -615,14 +616,14 @@ class Model extends Debugger {
 		if($buffer == null) $buffer = $this->buffer;
 		# Issue #27: $tempBuffer is undefined
 		$tempBuffer = '';
-		if(!$this->storedFromCache) $tempBuffer = $this->retrieveFromCache($buffer); 
+		if(!$this->storedFromCache) $tempBuffer = $this->retrieveFromCache($buffer);
 		if($tempBuffer !=''){
 			$buffer = $tempBuffer;
 		}else{
 			/*
-			 * Gestisce tutti gli input di type="custom" 
+			 * Gestisce tutti gli input di type="custom"
 			 */
-			
+				
 			$count = preg_match_all('/<(\w+[^>]*?type="custom".*?)\/?>/si', $buffer, $input, PREG_PATTERN_ORDER);
 			$input = $input[0];
 			for($i=0; $i<count($input); $i++){
@@ -633,19 +634,19 @@ class Model extends Debugger {
 					for($j=0; $j<count($attributes[0]); $j++){
 						$attribs[$attributes[1][$j]] = str_replace('\"','"', $attributes[2][$j]);
 					}
-					
-					
+						
+						
 					if(substr($theInput,-2,2)!='/>'){
 						// Devo prendere anche il contenuto e metterlo nell'attributo html
-						
+
 						$inputResult = $this->getHtmlTag($buffer, $input[$i]);
 						$input[$i] = $inputResult[0];
 						$attribs['html'] = $inputResult[1];
 					}
 					if(!isset($attribs['inloop']) && !$this->inLoop || (($attribs['inloop']=="true") && $this->inLoop)){
-					
+							
 						// Cerca prima se esiste un input customizzato rilasciato con l'applicazione
-						
+
 						if(defined('APPLICATION_CUSTOM_INPUT_BASEDIR')){
 							$nomeFile = APPLICATION_CUSTOM_INPUT_BASEDIR . '/'.$attribs['model'] . '.htm';
 							if(!file_exists($nomeFile)){
@@ -654,13 +655,13 @@ class Model extends Debugger {
 						}else{
 							$nomeFile = INPUTROOT. $attribs['model'] . '.htm';
 						}
-						
+
 						$renderingArea = '';
-						
+
 						if(file_exists($nomeFile)){
-	
+
 							$mBuffer = file_get_contents($nomeFile);
-							
+								
 							// Acquisisco gli attributi di default
 							unset($defaultAttributes);
 							if (preg_match('/<!--\\s+DEFAULT ATTRIBUTES(.*?)-->/si', $mBuffer, $defaultAttributesBuffer)) {
@@ -674,23 +675,23 @@ class Model extends Debugger {
 							} else {
 								unset($defaultAttributes);
 							}
-							
+								
 							// Renderizzo l'oggetto
 							$chiaveLastKey = 'input.lastkey' . md5(date('Y-m-d h:i:s')) . '_' . sha1(date('Y-m-d h:i:s'));
 							$mBuffer .='{var:'.$chiaveLastKey. '}';
 							$this->setVar($chiaveLastKey, '');
 							$mBuffer = $this->renderPlugin($mBuffer, $attribs);
-							
+								
 							/*
 							 * A questo punto devo prendere solo le porzioni di codice che mi servono
 							 */
-							
+								
 							if (preg_match('/<!-- RENDER:BEGIN -->(.*)<!-- RENDER:END -->/s', $mBuffer, $renderingArea)){
 								$renderingArea = $renderingArea[1];
 							}else{
 								$renderingArea = '';
 							}
-	
+
 							if(preg_match('/<!-- HEADER:BEGIN -->(.*)<!-- HEADER:END -->/s', $mBuffer, $headingArea)){
 								$headingArea = $headingArea[1];
 							}else{
@@ -701,7 +702,7 @@ class Model extends Debugger {
 							} else {
 								$headingScripts = "";
 							}
-							
+								
 							if(preg_match('/\/\\* init-script:begin \\*\/(.*)\/\\* init-script:end \\*\//si', $mBuffer, $startupScripts)){
 								$startupScripts = $startupScripts[1];
 							}else{
@@ -714,12 +715,12 @@ class Model extends Debugger {
 						}else{
 							$input[$i] = '<strong>custom model for ' . $attribs['model'] . ' does not exists</strong>';
 						}
-						
+
 						$buffer = str_replace($input[$i], $renderingArea, $buffer, $cnt);
 					}
 				}
 			}
-		}			
+		}
 		$this->buffer = $buffer;
 		$dbg->write('Exiting ' . __FUNCTION__, DEBUG_REPORT_FUNCTION_EXIT);
 		return $buffer;
@@ -733,7 +734,7 @@ class Model extends Debugger {
 	}
 	/**
 	 * Cerca tutti i token nel buffer HTML e le converte nei valori opportuni
-	 * @param $bufferedOutput <b>boolean</b> <code>default false</code> se impostato a true il metodo restituirà in output il buffer elaborato  
+	 * @param $bufferedOutput <b>boolean</b> <code>default false</code> se impostato a true il metodo restituirà in output il buffer elaborato
 	 * @return <b>string</b> solo se <code>$bufferedOutput = true</code> altrimenti null
 	 */
 	function render($bufferedOutput=false){
@@ -749,21 +750,21 @@ class Model extends Debugger {
 		if(!$this->storedFromCache) $tempBuffer = $this->retrieveFromCache($buffer);
 		if($tempBuffer !='') $buffer = $tempBuffer;
 		if($this->storedFromCache){
-			
+				
 			if($bufferedOutput) return $buffer;
 			echo($buffer);
 			return $buffer;
 		}
-		
+
 		$savedBuffer = '';
 		$first_position = 0;
 		$last_first_position = 0;
 		# 2008-11-29: Ho scoperto un errore: l'ultima variabile {var:...} non viene considerata
 		# quindi per consentirne l'elaborazione aggiungo per ora una variabile con indicazione
 		# random del suo nome
-		
+
 		#$chiaveLastKey = 'lastkey' . md5(date('Y-m-d h:i:s')) . '_' . sha1(date('Y-m-d h:i:s'));
-		
+
 		#$buffer .='{var:'. $chiaveLastKey . '}';
 		#$this->setVar($chiaveLastKey,'');
 		#print_r(array($buffer,preg_match('/{([a-z\-_]+):(.*)}/', $buffer, $items, null, $first_position), $first_position, $items));
@@ -774,13 +775,13 @@ class Model extends Debugger {
 				$dbg->write('last first position:' . $first_position);
 				$dbg->write('first position:' . $first_position);
 				$lastItem = $items[0];
-				 
+					
 				$result = preg_match('/{([a-z\-_]+):(.*)}/', $buffer, $items, null, $first_position);
-				
+
 				if($result==0){
 					break;
 				}else{
-				#	$first_position = $last_first_position+1;
+					#	$first_position = $last_first_position+1;
 				}
 				$dbg->write('match on: ' . $items[0]);
 			}
@@ -788,21 +789,18 @@ class Model extends Debugger {
 			$keyword = $items[1];
 			$value = $items[2];
 			if(preg_match('/{([a-z\-_]+):(.*)}/', $value)!==false){
-				
+
 				$tm = new Model();
 				$tm->doNotSendHeader();
 				# Modifica del 26-02-2010 di Diego La Monica
 				#$tm->setMultipleVar($this->variables);
 				#Fine Modifica
 				$tm->setViewFromBuffer($value);
-				$value = $tm->render(true); 
+				$value = $tm->render(true);
 				unset($tm);
 			}
-			
 			switch($items[1]){
 				case MODEL_KEYWORD_REDIRECT:
-					
-					
 					$fileToRedirect = APPLICATION_URL.$value;
 					header('Location: ' . $fileToRedirect, true);
 					exit();
@@ -821,7 +819,6 @@ class Model extends Debugger {
 					$buffer = str_replace($items[0], $tmpBuffer,$buffer);
 					break;
 				case MODEL_KEYWORD_INCLUDE_STATIC:
-						
 					if(!preg_match('/^https?\:\/\//',$value)){
 						$fileToInclude = ROOT.$value;
 					}else{
@@ -831,18 +828,17 @@ class Model extends Debugger {
 					$buffer = str_replace($items[0], $tmpBuffer,$buffer);
 					break;
 				case MODEL_KEYWORD_LOOP_START:
-					
 					$tmpBuffer = '';
-					
+						
 					$loopBlock = $this->endBlockSearch($buffer, $items[0],MODEL_KEYWORD_LOOP_START, MODEL_KEYWORD_LOOP_END);
 					$blockName = $value;
 					$idJSBlock = microtime();
-					
-					
-					
+						
+						
+						
 					if(preg_match('/SQL\(([^\)]+)\)::(.*)/',$blockName, $sqlResults )){
 						$c = ClassFactory::get('connector');
-						
+
 						$c->query($sqlResults[2]);
 						$this->setVar($sqlResults[1], $c->allResults());
 
@@ -858,44 +854,44 @@ class Model extends Debugger {
 						self::$variables["$blockName"] =$temporaryObject;
 					}
 					# Fine Modifica
-					
-					$tempResult = $this->getVar($blockName);
-					$lastVariables = ''; 
-					if($tempResult!='' && $tempResult!=null){
 						
+					$tempResult = $this->getVar($blockName);
+					$lastVariables = '';
+					if($tempResult!='' && $tempResult!=null){
+
 						$m = new Model();
 						$m->doNotSendHeader();
 						$m->inLoop = true;
 						$i = 0;
-						
+
 						$tempIterator 		= $m->getVar('iterator');
 						$tempIteratorKey 	= $m->getVar('iterator.key');
 						$tempIteratorValue 	= $m->getVar('iterator.value');
 						$tempIteratorLast 	= $m->getVar('iterator.last');
 						$tempIteratorPrev 	= $m->getVar('iterator.prev');
-						
+
 						foreach($tempResult as $key => $value){
-							
-							
+								
+								
 							$m->setViewFromBuffer($loopBlock);
 							# Modifica del 26-02-2010 di Diego La Monica
 							# $m->setMultipleVar($this->variables);
 							# Fine Modifica del 26-02-2010 di Diego La Monica
-							
-							
+								
+								
 							$i+=1;
-														
+
 							$m->setVar('iterator', $i);
 							$m->setVar('iterator.key', $key);
 							$m->setVar('iterator.value', $value);
 							$m->setVar('iterator.last', ($i == count($tempResult)));
 							$m->setVar('iterator.prev', $lastVariables);
-							
-							
+								
+								
 							$m->setMultipleVar($value, $blockName);
 							$m->process();
 							$tmpBuffer .= $m->render(true);
-							
+								
 							$lastVariables = $value;
 							# Modifica del 26-02-2010 di Diego La Monica
 							# $m->clearAllVar();
@@ -903,11 +899,11 @@ class Model extends Debugger {
 							$m->clearVar($blockName);
 							$m->clearVar('iterator');
 							# Fine Modifica del 26-02-2010 di Diego La Monica
-							
+								
 						}
 						$m->inLoop = false;
 						$m->setMultipleVar(
-							array(
+						array(
 								'iterator'=> $tempIterator,
 								'iterator.key' => $tempIteratorKey,
 								'iterator.value' => $tempIteratorValue,
@@ -915,49 +911,37 @@ class Model extends Debugger {
 								'iterator.prev' => $tempIteratorPrev)
 						);
 						unset($m);
-						
-						
+
+
 					}else{
 						$tmpBuffer = '';
 					}
 					$buffer = str_replace($items[0].$loopBlock.'{' . MODEL_KEYWORD_LOOP_END.'}', $tmpBuffer, $buffer);
-					
+						
 					break;
-				
+
 				case MODEL_KEYWORD_IF_START:
 					
-					$block = $this->endBlockSearch($buffer, $items[0],MODEL_KEYWORD_IF_START, MODEL_KEYWORD_IF_END);
+					list($ifBlock, $elseBlock) = $this->ifBlockSearch($buffer, $items[0], MODEL_KEYWORD_IF_START, MODEL_KEYWORD_IF_END, MODEL_KEYWORD_IF_ELSE);
 					
-					
-					$replacement = $items[0].$block.'{'.MODEL_KEYWORD_IF_END .'}';
-					
-					$ifBlock = $this->endBlockSearch( $replacement, $items[0], MODEL_KEYWORD_IF_START, MODEL_KEYWORD_IF_ELSE);
-					
-					if($ifBlock!=''){
-						$elseBlock = substr($block, strlen($ifBlock) + strlen('{'.MODEL_KEYWORD_IF_ELSE.'}') );
-
-					}else{
-						$elseBlock = '';
-						$ifBlock = $block;
+					$replacement = $items[0];
+					$replacement .= $ifBlock;
+					if($elseBlock!=''){ 
+						$replacement .= '{'. MODEL_KEYWORD_IF_ELSE.'}';
+						$replacement .= $elseBlock;
 					}
+					$replacement .= '{'.MODEL_KEYWORD_IF_END .'}';
 					
-					# Modifica del 26-02-2010 di Diego La Monica
-					# if($this->evaluate($value, $this->variables)){
 					if($this->evaluate($value, self::$variables)){
-					# Fine Modifica
-						$buffer = str_replace($replacement, $ifBlock, $buffer);
-						
+						$buffer = str_replace($replacement, $ifBlock, $buffer); 
 					}else{
 						$buffer = str_replace($replacement, $elseBlock, $buffer);
-						
 					};
 					break;
 				case MODEL_KEYWORD_PHP_BLOCK_START:
-					
 					$block = $this->endBlockSearch($buffer, $items[0],MODEL_KEYWORD_PHP_BLOCK_START, MODEL_KEYWORD_PHP_BLOCK_END);
 					$replacement = $items[0].$block.'{'.MODEL_KEYWORD_PHP_BLOCK_END .'}';
-					
-					
+						
 					ob_start();
 					eval($block);
 					$block = ob_get_clean();
@@ -965,21 +949,21 @@ class Model extends Debugger {
 						$this->setVar($value, $block);
 						$block = '';
 					}
-						$buffer = str_replace($replacement, $block, $buffer);
-
+					$buffer = str_replace($replacement, $block, $buffer);
+						
 					break;
 				case MODEL_KEYWORD_IFVAR_START:
-					
+						
 					$block = $this->endBlockSearch($buffer, $items[0],MODEL_KEYWORD_IFVAR_START, MODEL_KEYWORD_IF_END);
 					$replacement = $items[0].$block.'{'.MODEL_KEYWORD_IF_END .'}';
 					$value = trim($value);
-					$evaluation = preg_split(' ',$value); 
+					$evaluation = preg_split(' ',$value);
 					$ifvVar1 = $this->parseVar($evaluation[0]);
 					$ifvVar2 = $this->parseVar($evaluation[2]);
 					$replaceSuccess = false;
 					switch($evaluation[1]){
 						case 'equal-to':
-							$replaceSuccess = ($ifvVar1 == $ifvVar2); 
+							$replaceSuccess = ($ifvVar1 == $ifvVar2);
 							break;
 						case 'less-than':
 							$replaceSuccess = ($ifvVar1 < $ifvVar2);
@@ -988,13 +972,13 @@ class Model extends Debugger {
 							$replaceSuccess = ($ifvVar1 > $ifvVar2);
 							break;
 						case 'less-or-equal':
-							$replaceSuccess = ($ifvVar1 <= $ifvVar2); 
+							$replaceSuccess = ($ifvVar1 <= $ifvVar2);
 							break;
 						case 'greater-or-equal':
-							$replaceSuccess = ($ifvVar1 >= $ifvVar2); 
+							$replaceSuccess = ($ifvVar1 >= $ifvVar2);
 							break;
 						case 'different-to':
-							$replaceSuccess = ($ifvVar1 != $ifvVar2); 
+							$replaceSuccess = ($ifvVar1 != $ifvVar2);
 							break;
 						case 'exists':
 							# Modifica del 26-02-2010 di Diego La Monica
@@ -1003,34 +987,37 @@ class Model extends Debugger {
 							# Fine Modifica
 							break;
 					}
-					
+						
 					if($replaceSuccess){
 						$buffer = str_replace($replacement, $block, $buffer);
 					}else{
 						$buffer = str_replace($replacement, '', $buffer);
-						
+
 					};
 					break;
-				case MODEL_KEYWORD_PHP:
-					preg_match('/{php:\\s*"([^"\\\]*(?:\\\.[^"\\\]*)*)"\\s*}/is', $buffer, $items);
-					$value = $items[1];
-					# Modifica del 26-02-2010 di Diego La Monica 
-					# $value = $this->evaluate($value, $this->variables);
-					$value = $this->evaluate($value, self::$variables);
-					# Fine Modifica
-					$items[0] = preg_replace('/[^a-z0-9]/i', '\\\\\0', $items[0]);
-					
-					$buffer = preg_replace('/' . $items[0] . '/', $value,$buffer);
-					break;
+					/*case MODEL_KEYWORD_PHP:
+					 print_r($items);
+					 exit();
+					 	
+					 preg_match('/{php:\\s*"([^"\\\]*(?:\\\.[^"\\\]*)*)"\\s*}/is', $buffer, $items);
+					 $value = $items[1];
+					 # Modifica del 26-02-2010 di Diego La Monica
+					 # $value = $this->evaluate($value, $this->variables);
+					 $value = $this->evaluate($value, self::$variables);
+					 # Fine Modifica
+					 $items[0] = preg_replace('/[^a-z0-9]/i', '\\\\\0', $items[0]);
+					 	
+					 $buffer = preg_replace('/' . $items[0] . '/', $value,$buffer);
+					 break;*/
 				case MODEL_KEYWORD_VAR:
 					$result = $this->parseVar($buffer);
-					
+						
 					# Modifica di Diego del 05-03-2010
 					if($result[0]=='\{var\:input\.html\}')
-						$buffer = preg_replace('/' . $result[0] . '/', print_r($result[1], true) ,$buffer,1);
+					$buffer = preg_replace('/' . $result[0] . '/', print_r($result[1], true) ,$buffer,1);
 					else{
 						$unescaped = stripslashes($result[0]);
-						
+
 						$dbg->write('data used for the $unescaped variable:');
 						$dbg->write(print_r($result, true));
 						if(!isset($unescaped)) $dbg->write('WARNING: $unescaped is not set!');
@@ -1041,7 +1028,7 @@ class Model extends Debugger {
 						}
 					}
 					# Fine modifica
-					
+						
 					break;
 				case MODEL_KEYWORD_SETVAR:
 					$result = $this->setVarRuntime($buffer);
@@ -1050,35 +1037,35 @@ class Model extends Debugger {
 				case MODEL_KEYWORD_FUNCTION:
 					$tmpValue = $value;
 					$value = trim($value);
-					
+						
 					$c = preg_match('/([a-z0-9]+)\\((.*)\\)$/i', $value, $subItems);
 					$error =false;
 
-					# Se la funzione si trova in linea con altri parametri potrebbe causare un errore di runtime, 
+					# Se la funzione si trova in linea con altri parametri potrebbe causare un errore di runtime,
 					# quindi provo a correggere l'errore ma se non riuscissi a risolverlo notifico con un messaggio
 					# user-friendly quanto accaduto e come è possibile risolvere il problema.
-				
+
 					if(count($subItems)<2){
-						$error = true; 
+						$error = true;
 						while($i = strrpos($tmpValue, '}')){
 							$tmpValue = substr($tmpValue,0, $i);
 							$value = trim($tmpValue);
-							
+								
 							$c = preg_match('/([a-z0-9]+)\\((.*)\\)/i', $value, $subItems);
 							if(count($subItems)<2){
 								$error = true;
-								
+
 							}else{
 								$items[0] = '{' . MODEL_KEYWORD_FUNCTION . ':' . $value .'}';
-								
+
 								$error =false;
-								
+
 							}
-							
+								
 						}
-						
+
 					}
-					
+						
 					if(!$error){
 						$fnName = $subItems[1];
 						$params = $subItems[2];
@@ -1089,52 +1076,52 @@ class Model extends Debugger {
 						applicationError(
 							'Definizione errato della chiamata al metodo', 
 							'&Egrave; stata definita nel modello una chiamata ad una funzione custom in modo inappropriato.', 
-							$items[0], 
+						$items[0],
 							'Le cause di questo errore possono essere diverse:</p>
 							<ul>
 								<li>La riga del modello su cui è richiamata la funzione è troppo compelssa</li>
 								<li>Una funzione deve cotnenere (anche in assenza di parametri) le parentesi tonde aperte e chiuse</li>
 								 
 							</ul>.');
-				
+
 					}
 					break;
-					
+						
 			}
 		};
-		
+
 		if(count(Model::$headers)>0 && !$this->isPlugin){
 			$h = implode(Model::$headers,"\n") . "\n";
-			
+				
 			$s = '	<script type="text/javascript"><!--' ."\n";
 			$s .= implode(Model::$headerScripts,"\n") . "\n";
-			
+				
 			$s .='		_.extend(\'alpha-startup\', {
 							startup: function(){';
 			$s .= implode(Model::$startupScripts,"\n") . "\n";
 			$s .= "} });\n\n";
 			$s .= '--></script>';
-			
+				
 			$h .= $s;
-			
+				
 			$buffer = str_replace('</head>', $h . "\n</head>", $buffer );
 		}
-		
+
 		$buffer = str_replace('href="/', 'href="' . APPLICATION_URL,  $buffer);
 		$buffer = str_replace('src="/', 'src="' . APPLICATION_URL,  $buffer);
-		
+
 		$dbg->write('Exiting ' . __FUNCTION__, DEBUG_REPORT_FUNCTION_EXIT);
-		
-		
+
+
 		$buffer = str_replace('@@ROOT/', APPROOT, $buffer);
-		
+
 		// Salvo il buffer in cache
-		
+
 		$this->saveCache($buffer);
-		
+
 		if($bufferedOutput) return $buffer;
 		echo($buffer);
-		
+
 	}
 	private function replaceNestedVar($value){
 		if(preg_match_all('/\[\*([a-z0-9_\-\.]+)\*\]/i',  $value, $subItems)){
@@ -1143,15 +1130,15 @@ class Model extends Debugger {
 				#$value = str_replace($subItems[0][$i], $this->variables[$subItems[1][$i]], $value);
 				$value = str_replace($subItems[0][$i], self::$variables[$subItems[1][$i]], $value);
 				# Fine Modifica
-				
+
 			}
 		}
-		
+
 		return $value;
-		
+
 	}
 	private function setVarRuntime($buffer){
-		
+
 		if(preg_match('/{' .MODEL_KEYWORD_SETVAR.':([a-z0-9_\-\.]+) ([^{}]+)}/i', $buffer, $items)){
 
 			$newVar = $items[1];
@@ -1165,26 +1152,26 @@ class Model extends Debugger {
 			self::$variables[$newVar] =  $value;
 			# Fine Modifica
 			$result = array(
-				preg_replace('/[^a-z0-9]/i', '\\\\\0', $items[0]), 
+			preg_replace('/[^a-z0-9]/i', '\\\\\0', $items[0]),
 				''
-			) ;
-			
+				) ;
+					
 		}else{
-			
+				
 			$result = '';
 		}
 		return $result;
 	}
-	
+
 	public function getVar($key){
 		# Modifica del 26-02-2010 di Diego La Monica
 		#if(isset($this->variables[$key])){
 		#	$value = $this->variables[$key];
 		if(isset(self::$variables[$key])){
 			$value = self::$variables[$key];
-		# Fine Modifica
+			# Fine Modifica
 		}else{
-			
+				
 			$value = '';
 			$var = preg_split('/\./', $key);
 			# Modifica del 26-02-2010 di Diego La Monica
@@ -1197,7 +1184,7 @@ class Model extends Debugger {
 					if($tmpVarName!='') $tmpVarName.='.';
 					$tmpVarName .= $var[$i];
 					if(isset($tmpVar[$var[$i]])){
-						
+
 						$tmpVar = $tmpVar[$var[$i]];
 					}else{
 						# Modifica del 26-02-2010 di Diego La Monica
@@ -1207,7 +1194,7 @@ class Model extends Debugger {
 						#	unset($tmpVar);
 						#	break;
 						# }
-						
+
 						if(isset(self::$variables[$tmpVarName])){
 							$tmpVar = self::$variables[$tmpVarName];
 						}else{
@@ -1218,33 +1205,33 @@ class Model extends Debugger {
 					}
 				}
 				if(isset($tmpVar)) $value = $tmpVar;
-				
+
 			}
 		}
-		return $value; 
+		return $value;
 	}
-	
+
 	/**
 	 * Cerca la prima occorrenza di variabile CUTEML nel buffer
 	 * applicando (se specificata) la trasformazione dal valore "@from" al valore "@to"
-	 * @example {var:myVariable|@from "[A-Z]" @to "\1"}  
+	 * @example {var:myVariable|@from "[A-Z]" @to "\1"}
 	 * @param $buffer <b>string</b> è il buffer corrispondente alla vista corrente
 	 * @return array [0] la trasformazione della variabile riscontrata in un formato accettato dalla sintassi Perl RegEx [1] il valore da sostituire
 	 */
 	private function parseVar($buffer){
 		global $formatArray;
-		
+
 
 		$dbg = ClassFactory::get('Debug');
 		$dbg->setGroup(__CLASS__);
 		$dbg->write('Entering ' . __FUNCTION__, DEBUG_REPORT_FUNCTION_ENTER);
 		$dbg->writeFunctionArguments(func_get_args());
-		
+
 		preg_match('/{' .MODEL_KEYWORD_VAR.':([a-z0-9_\-\.]+)(\\|(@(from)\\s+"([^"\\\]*(?:\\\.[^"\\\]*)*)"\\s?)?(\\s?@(to)\\s+"([^"\\\]*(?:\\\.[^"\\\]*)*)")?)?}/i', $buffer, $items);
 		$value = $items[1];
 		$value = $this->getVar($value);
-		
-		$from =''; $to = '';					
+
+		$from =''; $to = '';
 		if(count($items)>2){
 			if($items[4]=='from'){
 				$from = $items[5];
@@ -1265,23 +1252,23 @@ class Model extends Debugger {
 		if($from!='' && $to!=''){
 
 			global $formatArray;
-			
+				
 			if(key_exists($from, $formatArray)) $from = $formatArray[$from];
 			if(key_exists($to,   $formatArray)) $to = $formatArray[$to];
 
 			$value = preg_replace('/'. $from.'/', $to, $value);
 		}
-		
+
 		if($value==null || !isset($value)) $value ='';
 		$result = array(
-					preg_replace('/[^a-z0-9]/i', '\\\\\0', $items[0]), 
-					$value
-				);
+		preg_replace('/[^a-z0-9]/i', '\\\\\0', $items[0]),
+		$value
+		);
 
 		$dbg->write('Exiting ' . __FUNCTION__, DEBUG_REPORT_FUNCTION_EXIT);
 		return 	$result;
 	}
-	
+
 	/**
 	 * Elabora l'oggetto funzione CUTEML e ne restituisce il risultato
 	 * @param $fnName <b>string</b> nome della funzione da eseguire presente nel path delle funzioni custom (o nelle funzioni di sistema se la custom non è presente)
@@ -1293,12 +1280,12 @@ class Model extends Debugger {
 		$dbg->setGroup(__CLASS__);
 		$dbg->write('Entering ' . __FUNCTION__, DEBUG_REPORT_FUNCTION_ENTER);
 		$dbg->writeFunctionArguments(func_get_args());
-		
+
 		preg_match_all('/("[^"\\\]*(?:\\\.[^"\\\]*)*")|(\'[^\'\\\]*(?:\\\.[^\'\\\]*)*\')|([^,]+)/i', $params, $params);
 		$params = $params[0];
-						
+
 		for($i=0; $i<count($params);$i++){
-			
+				
 			$params[$i] = trim($params[$i]);
 			if(substr($params[$i],0, strlen(MODEL_KEYWORD_FUNCTION)+1) == MODEL_KEYWORD_FUNCTION .':'){
 				// è una funzione devo rielaborarla ricorsivamente
@@ -1311,7 +1298,7 @@ class Model extends Debugger {
 					if(substr($params[$j],0, strlen(MODEL_KEYWORD_FUNCTION)+1) == MODEL_KEYWORD_FUNCTION .':') $nestingLevel+=1;
 					if(substr($value,-1,1)==')'){
 						$checkClosures = strrev($value);
-						while(substr($checkClosures,0,1)==')'){ 
+						while(substr($checkClosures,0,1)==')'){
 							$nestingLevel-=1;
 							$checkClosures = substr($checkClosures,1);
 						}
@@ -1327,86 +1314,86 @@ class Model extends Debugger {
 						}
 
 					}
-					
+						
 				}
 				$c = preg_match('/([a-z0-9]+)\\((.*)\\)$/s', $value, $subItems);
 				$subFnName = $subItems[1];
 				$subParams = $subItems[2];
-				
+
 				$params[$i]= $this->parseFunction($subFnName, $subParams);
 			}else if(
-					substr($params[$i], 0, 1)=='"' || 
-					substr($params[$i], 0, 1)=='\'' ||
-					preg_match('/^\d+$/', $params[$i])){
-						#Forse da qui non è necessario passare, verificare
-						if(
-							(substr($params[$i], 0, 1)=='"' &&  ((substr( strrev($params[$i]),0, 1)!= '"') || substr( strrev($params[$i]),1, 1)=='\\')) ||
-							(substr($params[$i], 0, 1)=='\'' && ((substr( strrev($params[$i]),0, 1)!='\'') || substr( strrev($params[$i]),1, 1)=='\\')) ||
-							(substr( strrev($params[$i]),0, 1)=='\\') ){
-								if((substr( strrev($params[$i]),0, 1)=='\\')){
-									$params[$i] =  substr($params[$i], 0, strlen($params[$i])-1) . ','.$params[$i+1];
-									$params[$i+1] = null;
-									$i = $i-1;
-								}else{
-									if(isset($params[$i+1])){
-										$params[$i] .= $params[$i+1];
-										$params[$i+1] = null;
-										$i = $i-1;
-									}
-								}
-								$tmpParams = $params;
-								$params = array();
-								$offset=0;
-								for($j = 0; $j<count($tmpParams); $j++){
-									
-									if($tmpParams[$j]==null && $j>$i)			$offset += 1; 
-													else						$params[$j-$offset] = $tmpParams[$j];
-								}
-								
-							} 
-						
+			substr($params[$i], 0, 1)=='"' ||
+			substr($params[$i], 0, 1)=='\'' ||
+			preg_match('/^\d+$/', $params[$i])){
+				#Forse da qui non è necessario passare, verificare
+				if(
+				(substr($params[$i], 0, 1)=='"' &&  ((substr( strrev($params[$i]),0, 1)!= '"') || substr( strrev($params[$i]),1, 1)=='\\')) ||
+				(substr($params[$i], 0, 1)=='\'' && ((substr( strrev($params[$i]),0, 1)!='\'') || substr( strrev($params[$i]),1, 1)=='\\')) ||
+				(substr( strrev($params[$i]),0, 1)=='\\') ){
+					if((substr( strrev($params[$i]),0, 1)=='\\')){
+						$params[$i] =  substr($params[$i], 0, strlen($params[$i])-1) . ','.$params[$i+1];
+						$params[$i+1] = null;
+						$i = $i-1;
+					}else{
+						if(isset($params[$i+1])){
+							$params[$i] .= $params[$i+1];
+							$params[$i+1] = null;
+							$i = $i-1;
+						}
+					}
+					$tmpParams = $params;
+					$params = array();
+					$offset=0;
+					for($j = 0; $j<count($tmpParams); $j++){
+							
+						if($tmpParams[$j]==null && $j>$i)			$offset += 1;
+						else						$params[$j-$offset] = $tmpParams[$j];
+					}
+
+				}
+
 				// è una stringa o un numero quindi devo passare il suo valore tramite eval
 				if($params[$i]=='')$params[$i] = '""';
 				$params[$i] = '$params[$i] = ' . $params[$i] . ';';
 				eval($params[$i]);
-				
+
 			}else{
 				$params[$i] = $this->getVar($params[$i]);
 			}
 		}
-		
+
 		$fnRoot = APPLICATION_CUSTOM_FUNCTION_BASEDIR .'/';
 		if(!file_exists($fnRoot.$fnName . '.php')) $fnRoot = FUNCTIONSROOT;
-		
+
 		if(file_exists($fnRoot.$fnName . '.php')){
 			$dbg->write('Including ' . $fnRoot.$fnName . '.php', DEBUG_REPORT_OTHER_DATA);
 			require_once $fnRoot.$fnName . '.php';
-			
+				
 			$dbg->write('Creating the class ' . $fnName . '()', DEBUG_REPORT_OTHER_DATA);
 			$f = new $fnName();
 			for($i=0;$i<count($params) ; $i++){
 				$dbg->write('Adding parameter #' .$i . ': ' . $params[$i], DEBUG_REPORT_OTHER_DATA);
 				$f->addParameter($params[$i]);
 			}
-				$dbg->write('Executing method '  .$fnName . '->execute();', DEBUG_REPORT_OTHER_DATA);
+			$dbg->write('Executing method '  .$fnName . '->execute();', DEBUG_REPORT_OTHER_DATA);
 			$result = $f->execute();
-			
+				
 		}else{
 			applicationError(
 				'Il metodo chiamato non è disponibile nelel funzioni custom o nelle funzioni core', 
 				'&Egrave; stata definita nel modello una chiamata ad una funzione non esistente.', 
-				$fnName, 
+			$fnName,
 				'Verificare se il file di funzione è presente nel core (' . CORE_ROOT .'/functions/) oppure
 				nella cartella dell\'applicazione (' . APPLICATION_CUSTOM_FUNCTION_BASEDIR . ')');
 		}
-		
+
 		$dbg->write('Exiting ' . __FUNCTION__, DEBUG_REPORT_FUNCTION_EXIT);
 		return $result;
 	}
 	/**
 	 * Imposta una serie di variabili sul modello corrente da un array associativo
-	 * @param $array <b>array</b> array associativo corrispondente all'elenco di variabili da impostare 
-	 * @param $prefix <b>string</b> <code>default = ''</code> se specificato alle variabili sarà applicato il prefisso nella forma <code>"prefisso.chiave"</code>  
+	 * @param $array <b>array</b> array associativo corrispondente all'elenco di variabili da impostare
+	 * @param $prefix <b>string</b> <code>default = ''</code> se specificato alle variabili sarà applicato il prefisso nella forma <code>"prefisso.chiave"</code>
 	 * @return null
 	 */
 	function setMultipleVar($array, $prefix=''){
@@ -1414,7 +1401,7 @@ class Model extends Debugger {
 		$dbg->setGroup(__CLASS__);
 		$dbg->write('Entering ' . __FUNCTION__, DEBUG_REPORT_FUNCTION_ENTER);
 		$dbg->writeFunctionArguments(func_get_args());
-		
+
 		if($prefix!='') $prefix.='.';
 		if(is_array($array)){
 			foreach($array as $key => $value){
@@ -1432,7 +1419,7 @@ class Model extends Debugger {
 		$dbg->setGroup(__CLASS__);
 		$dbg->write('Entering ' . __FUNCTION__, DEBUG_REPORT_FUNCTION_ENTER);
 		$dbg->writeFunctionArguments(func_get_args());
-		
+
 		Model::$headers = array();
 		Model::$headerScripts = array();
 		Model::$startupScripts =array();
@@ -1463,7 +1450,7 @@ class Model extends Debugger {
 		$dbg->setGroup(__CLASS__);
 		$dbg->write('Entering ' . __FUNCTION__, DEBUG_REPORT_FUNCTION_ENTER);
 		$dbg->writeFunctionArguments(func_get_args());
-		
+
 		if($prefix=='') return $this->clearAllVar();
 		# Modifica del 26-02-2010 di Diego La Monica
 		# foreach($this->variables as $key => $value){
@@ -1473,14 +1460,14 @@ class Model extends Debugger {
 			if(
 			(substr($key,0, strlen($prefix)+1 )== $prefix .'.') ||
 			($key ==$prefix && $exactToo)
-			
+				
 			) unset(self::$variables[$key]);
 		}
 		# Fine Modifica
 		$dbg->write('Exiting ' . __FUNCTION__, DEBUG_REPORT_FUNCTION_EXIT);
-		
+
 	}
-	
+
 	/**
 	 * Metodo interno per la valutazione di una condizione
 	 * @param $condition <b>string</b> codice PHP della condizione da valutare
@@ -1492,50 +1479,138 @@ class Model extends Debugger {
 		$dbg->setGroup(__CLASS__);
 		$dbg->write('Entering ' . __FUNCTION__, DEBUG_REPORT_FUNCTION_ENTER);
 		$dbg->writeFunctionArguments(func_get_args());
-		
+
 		if($condition!=''){
 			$c = "\$___ModelEvaluationCondition= ($condition);";
 			@eval($c);
 		}
-		
+
 		$dbg->write('Exiting ' . __FUNCTION__, DEBUG_REPORT_FUNCTION_EXIT);
 		return isset($___ModelEvaluationCondition)?$___ModelEvaluationCondition:false;
-		
+
 	}
-	
+
 	/**
-	 * Cerca la chiusura di un blocco strutturato CUTEML 
+	 * Cerca la chiusura di un blocco strutturato CUTEML
 	 * @param $buffer <b>string</b> il buffer della vista corrente
 	 * @param $item <b>string</b> l'elemento di inizio blocco dal quale partire
-	 * @param $keyword_start <b>string</b> Keyword che identifica l'apertura del blocco 
+	 * @param $keyword_start <b>string</b> Keyword che identifica l'apertura del blocco
 	 * @param $keyword_end <b>string</b> Keyword che identifica la chiusura del blocco
-	 * @return <b>string</b> il contenuto del blocco esclusi gli elementi di apertura e chiusura 
+	 * @return <b>string</b> il contenuto del blocco esclusi gli elementi di apertura e chiusura
 	 */
 	private function endBlockSearch($buffer, $item , $keyword_start, $keyword_end){
 		$dbg = ClassFactory::get('Debug');
 		$dbg->setGroup(__CLASS__);
 		$dbg->write('Entering ' . __FUNCTION__, DEBUG_REPORT_FUNCTION_ENTER);
 		$dbg->writeFunctionArguments(func_get_args());
-		
+
 		$i = strpos($buffer, $item);
 		$j = strpos($buffer, '{' . $keyword_end . '}');
 		$i = $i+ strlen($item);
 		# Changes for if then else
-		if($j===false) return '';
 
+		if($j===false) return '';
 		$block = substr($buffer, $i, $j- $i);
 		$endLoopIndex	= preg_match_all('/{' . $keyword_end .'}/', $block, $matches);
 		$startLoopIndex = preg_match_all('/{' . $keyword_start .':([^}]+)}/', $block, $matches);
 
 		while($startLoopIndex!=$endLoopIndex){
+			//echo($j . ' - ' . strlen($buffer).'<br />');
+			
 			$j = strpos($buffer, '{' . $keyword_end . '}',$j+1);
+				
+			if($j===false) $j=strlen($buffer)+ $i-$j;
 			$block = substr($buffer, $i, $j- $i);
 			$endLoopIndex	= preg_match_all('/{' . $keyword_end .'}/', $block, $matches);
+				
 			$startLoopIndex = preg_match_all('/{' . $keyword_start .':([^}]+)}/', $block, $matches);
+				
+			/*
+			 echo var_dump($endLoopIndex);
+			 echo var_dump($startLoopIndex);
+			 print_r($matches);
+			 echo("<hr />");
+			 	
+			 echo nl2br(htmlspecialchars($block) . "<hr />");
+			 */
 		}
 		$dbg->write('Exiting ' . __FUNCTION__, DEBUG_REPORT_FUNCTION_EXIT);
+
 		return $block;
 	}
+
+	private function ifBlockSearch($buffer, $item , $keyword_start, $keyword_end, $keyword_else){
+		$dbg = ClassFactory::get('Debug');
+		$dbg->setGroup(__CLASS__);
+		$dbg->write('Entering ' . __FUNCTION__, DEBUG_REPORT_FUNCTION_ENTER);
+		$dbg->writeFunctionArguments(func_get_args());
+		
+		
+		// Identify the endif related to this if/endif block  
+		$block = $this->endBlockSearch($buffer, $item, $keyword_start, $keyword_end);
+		
+		$blocks = array();
+		$blocks[0] = array (
+			'if' => array('starts' => 0, 'ends' => strlen($block)),
+			'else' => null
+		);
+		
+		// Search all nested if
+		if(preg_match_all('/{' . $keyword_start .':([^}]+)}/', $block, $matches, PREG_OFFSET_CAPTURE)){
+			#print_r($matches);
+			
+			foreach($matches[0] as $index => $match){
+				$subBlock = $this->endBlockSearch($block, $match[0], $keyword_start, $keyword_end);
+				$blockEndsTo = strlen($subBlock)+ strlen($match[0]) + strlen('{'.$keyword_end.'}')+$match[1];
+				
+				$blocks[$match[1]] = array(
+					'if' => array( 'starts'=> $match[1], 'ends' => $blockEndsTo),
+					'else' => null
+				);
+			}
+		}
+		$return = array('if' => '', 'else' => '');
+		if(preg_match_all('/{' . $keyword_else .'}/',$block, $matches, PREG_OFFSET_CAPTURE)){
+			// There are a lot of else (or at least 1)
+			$current = 0;
+			foreach($matches[0] as $current => $else){
+				// Scan all else
+			
+				$elseOffset = $else[1];
+				$maybe= 0;
+				foreach($blocks as $startRow => $data){
+					if(	$data['if']['starts']<$elseOffset && 
+						$data['if']['ends']>$elseOffset
+					) $maybe = $startRow;
+					
+					
+				}
+				$blocks[$maybe]['else'] = array('starts' => $elseOffset+ strlen("{".$keyword_else."}"), 'ends' => $blocks[$maybe]['if']['ends']);
+				$blocks[$maybe]['if']['ends'] = $elseOffset;
+				 
+			}
+			
+			$return[0] = substr($block, $blocks[0]['if']['starts'], $blocks[0]['if']['ends']);
+			if($blocks[0]['else']!=null){
+				$return[1] = substr($block, $blocks[0]['else']['starts'], $blocks[0]['else']['ends']);
+			}else{
+				$return[1] = '';
+			}
+			
+			
+		}else{
+		
+		 	$return[0]   = $block;
+			$return[1] = '';
+		
+		}
+		
+		return $return;
+		
+
+
+	}
+
 }
 
 ?>
