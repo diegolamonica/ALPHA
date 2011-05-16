@@ -62,6 +62,7 @@ _.extend('AjaxSubmit', {
 			if(!f.onBeforeSubmit || f.onBeforeSubmit && f.onBeforeSubmit(formId)){
 				theFields = _.mergeOptions(theFields, f.ajaxParams, true);
 				_.xhttp.sendRequest(g.attributes['method'].value.toUpperCase(), g.attributes["action"].value, theFields, _.AjaxSubmit.done, formId);
+				
 				if(f.onDataSent) f.onDataSent(formId);
 			}
 		}
@@ -72,6 +73,7 @@ _.extend('AjaxSubmit', {
 		return true;
 	},
 	addValue: function(theFields, key, value ){
+		//value = escape(value);
 		if(key.substr(key.length-2,2) == '[]'){
 			if(!_.Array.is(theFields[key])) theFields[key] = [];
 			theFields[key].push(value);

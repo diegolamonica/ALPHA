@@ -828,12 +828,12 @@ var JASTEggIt = {
 					
 					if(!_.Array.is(parameters[keys])){
 						if(params!='')params += '&';
-						params += encodeURI(keys) + '=' + encodeURI(parameters[keys]);
+						params += encodeURIComponent(keys) + '=' + encodeURIComponent(parameters[keys]);
 					}else{
 						
 						for(var i=0; i<parameters[keys].length; i++){
 							if(params!='')params += '&';
-							params += encodeURI(keys) + '=' + encodeURI(parameters[keys][i]);
+							params += encodeURIComponent(keys) + '=' + encodeURIComponent(parameters[keys][i]);
 						}
 					}
 				};
