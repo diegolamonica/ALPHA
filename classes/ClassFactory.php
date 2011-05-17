@@ -65,7 +65,17 @@ class ClassFactory {
 	 */
 	static function create($className, $name){
 		
-		require_once($className .'.php');
+		$theClassFile = "$className.php";
+		# Issue #8 resolution: Using ClassFactory with custom classes requires too many code
+		/*
+		 * If it was defined a custom class base directory it will override the core directory
+		 * class path but only if the class file exists. 
+		 */
+		if(	defined('APPLICATION_CUSTOM_CLASS_BASEDIR') &&
+			file_exists(APPLICATION_CUSTOM_CLASS_BASEDIR . "/$className.php") )
+			$theClassFile = APPLICATION_CUSTOM_CLASS_BASEDIR . "/$className.php";
+		# End Issue #8
+		require_once($theClassFile);
 		$obj = new $className();
 		ClassFactory::$classes[$name] = array('type' => $className , 'instance' =>& $obj);
 		

@@ -73,7 +73,6 @@ _.extend('AjaxSubmit', {
 		return true;
 	},
 	addValue: function(theFields, key, value ){
-		//value = escape(value);
 		if(key.substr(key.length-2,2) == '[]'){
 			if(!_.Array.is(theFields[key])) theFields[key] = [];
 			theFields[key].push(value);
