@@ -83,7 +83,7 @@ JASTEggIt.extend('PopupBox', {
 		var options = JASTEggIt._id(id).options;
 		
 		if(options.cancel.onClick){
-			if(!options.cancel.onClick(id)) return false;
+			if(!options.cancel.onClick(id)) return;
 		}			
 		JASTEggIt.DOM.setStyle(id,{ display: 'none' } );
 		JASTEggIt.DOM.setStyle(options.shadowElementId,{ display: 'none' } );
