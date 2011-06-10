@@ -26,13 +26,28 @@ if(!class_exists('core')){
 	class core{
 
 		static function startup(){
-			if(function_exists('apache_get_modules')){
+			
+			if(function_exists('xapache_get_modules')){
 				/*
 				 * Issue 0000002: http://alpha.diegolamonica.info/issues/view.php?id=2
 				 */
 				$ext = apache_get_modules();
 				if(!array_search('mod_rewrite', $ext)){
 					echo('Apache Module: <strong>mod_rewrite</strong> not loaded.');
+					exit();
+				}
+			}else{
+				# Issue 0000021: Check for the module mod_rewrite (when apache_get_modules does not exists)
+				// Check if the request is coming from a rewrite rule or is direct.
+				if(
+					isset($_SERVER['REDIRECT_STATUS']) &&
+					isset($_SERVER['REDIRECT_QUERY_STRING']) &&
+					isset($_SERVER['REDIRECT_URL'])
+				){
+					// OK: The request is correctly performed
+				}else{
+					// KO: no mod rewrite is used or the mod rewrite is misconfigured
+					echo('Apache Module: <strong>mod_rewrite</strong> not loaded, does not works or is misconfigured.');
 					exit();
 				}
 			}
@@ -113,8 +128,7 @@ if(!class_exists('core')){
 			$pathSeparator = ($isWin?'\\':'/');
 			
 			$baseDir = dirname(__FILE__);
-			#echo('/'. addslashes($pathSeparator) .'/');
-			$baseDir = preg_split('/'. preg_quote($pathSeparator,'/') .'/', $baseDir);
+			$baseDir = preg_split('/'. addslashes($pathSeparator) .'/', $baseDir);
 			
 			array_pop($baseDir);
 			$baseDir = join($baseDir, $pathSeparator).$pathSeparator;
@@ -158,10 +172,6 @@ if(!class_exists('core')){
 			# Costante per la gestione della Cache
 			isset($a['application']['paths']['cache'])		&& define('CACHE_DEFAULT_FOLDER',			ROOT. $a['application']['paths']['cache']);
 			
-			# Issue #8 resolution: Using ClassFactory with custom classes requires too many code
-			# Custom classes configuration setting
-			isset($a['application']['paths']['classes'])	&& define('APPLICATION_CUSTOM_CLASS_BASEDIR',	ROOT.	$a['application']['paths']['classes']);
-			# ----
 			
 			# Creazione delle costanti applicative
 			foreach($a['application']['constants'] as $constant => $value){
