@@ -366,12 +366,28 @@ if(!class_exists('ociConnector')){
 				$field = array();
 				if(isset($rs['COLUMN_NAME'])){
 					$field[DB_DESCRIPTOR_COLUMN_FIELD] = $rs['COLUMN_NAME'];
-					#if($tab=='RUOLI_APPLICAZIONI') echo($rs['DATA_DEFAULT'] .'<br/>');
-					$field[DB_DESCRIPTOR_COLUMN_DEFAULT_VALUE] = $rs['DATA_DEFAULT'];
+					
+					// issue #38: Oci8c default value of a field keep a single quote if it is a char
+					if($rs['DATA_DEFAULT'] != null && $rs['DATA_DEFAULT'] != ''){
+						$dv = $rs['DATA_DEFAULT'];
+						// If the default value starts with an "'" we need to remove the first and the last quote
+						if($dv{0} == "'"){
+							$dv = substr($dv,1, strlen($dv)-3 );
+							// In Oracle the quotes is stored and retrieved as two single quote character so we need to replace it with the \' char.
+							$dv = str_replace("''", "'", $dv);
+							
+						} 
+						$field[DB_DESCRIPTOR_COLUMN_DEFAULT_VALUE] = $dv;
+						
+					}else{
+						$field[DB_DESCRIPTOR_COLUMN_DEFAULT_VALUE] = null;
+					}
 					# ***** PULISCO IL VALORE PREDEFINITO ****
+					/*
 					if( substr($field[DB_DESCRIPTOR_COLUMN_DEFAULT_VALUE],0,1)=="'"){
 						$field[DB_DESCRIPTOR_COLUMN_DEFAULT_VALUE] = substr($field[DB_DESCRIPTOR_COLUMN_DEFAULT_VALUE],1, strlen($field[DB_DESCRIPTOR_COLUMN_DEFAULT_VALUE])-2);
 					}
+					*/
 					# ***** NECESSARIO ****
 					# todo: devo vedere come un campo si identifica come primary key!!! 
 					 $field[DB_DESCRIPTOR_COLUMN_KEY] = '';
