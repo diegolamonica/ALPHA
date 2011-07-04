@@ -128,8 +128,7 @@ if(!class_exists('core')){
 			$pathSeparator = ($isWin?'\\':'/');
 			
 			$baseDir = dirname(__FILE__);
-			$baseDir = preg_split('/'. addslashes($pathSeparator) .'/', $baseDir);
-			
+			$baseDir = preg_split('/'. preg_quote($pathSeparator,'/') .'/', $baseDir);
 			array_pop($baseDir);
 			$baseDir = join($baseDir, $pathSeparator).$pathSeparator;
 			define('APPLICATION_SUBCORE_DIRECTORY', $baseDir);
@@ -170,9 +169,13 @@ if(!class_exists('core')){
 			isset($a['application']['paths']['functions']) 	&& define('APPLICATION_CUSTOM_FUNCTION_BASEDIR',ROOT. 	$a['application']['paths']['functions']	);
 			
 			# Costante per la gestione della Cache
-			isset($a['application']['paths']['cache'])		&& define('CACHE_DEFAULT_FOLDER',			ROOT. $a['application']['paths']['cache']);
+			isset($a['application']['paths']['cache'])		&& define('CACHE_DEFAULT_FOLDER',				ROOT. $a['application']['paths']['cache']);
 			
-			
+			# Issue #8 resolution: Using ClassFactory with custom classes requires too many code
+			# Custom classes configuration setting
+			isset($a['application']['paths']['classes'])  && define('APPLICATION_CUSTOM_CLASS_BASEDIR',  ROOT.  $a['application']['paths']['classes']);
+			# ---
+		
 			# Creazione delle costanti applicative
 			foreach($a['application']['constants'] as $constant => $value){
 				
