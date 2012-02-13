@@ -1,3 +1,4 @@
+AddDefaultCharset UTF-8
 # Application controller-alpha
 
 <IfModule mod_headers.c>
@@ -8,8 +9,6 @@
 	</IfModule>
 </IfModule>
 FileETag None
-
-AddType  application/octet-stream  .txt .doc .xls .pdf
 
 # BEGIN Compress text files
 <IfModule mod_deflate.c>
@@ -22,6 +21,6 @@ AddType  application/octet-stream  .txt .doc .xls .pdf
 DirectoryIndex index.php
 <IfModule mod_rewrite.c>
 	RewriteEngine on
-	RewriteCond	%{REQUEST_FILENAME}		!/%PARAM1%/index.php
-	RewriteRule	^(.*)$	/%PARAM1%/index.php?__fn=%{REQUEST_FILENAME}&__url=$1	[L,QSA]
+	RewriteCond	%{SCRIPT_FILENAME}		!/index.php		
+	RewriteRule	^(.*)$	index.php?__fn=%{REQUEST_FILENAME}&__url=$1	[L,QSA]
 </IfModule>
