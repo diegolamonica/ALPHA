@@ -5,12 +5,16 @@ require_once  CORE_ROOT. 'classes/interfaces/iDebug.php';
 require_once CORE_ROOT.'includes/FirePHPCore/FirePHP.class.php';
 if(!class_exists('FireDebug')){
 	class FireDebug implements iDebug{
+	
 		private $fb = null;
 		private $groupName = '';
 		private $nextGroupToWrite = '';
 		private $disallowedGroups = array();
+		private $maniacalDebug = false;
+		
 		function __construct(){
-			ini_set('max_execution_time',0);
+			!defined('DEBUG_FIREDEBUG_TIMEOUT') && define('DEBUG_FIREDEBUG_TIMEOUT', 180);
+			ini_set('max_execution_time', DEBUG_FIREDEBUG_TIMEOUT);
 			if($this->fb==null){
 				$f = new FirePHP();
 				$this->fb  = $f;
@@ -25,7 +29,7 @@ if(!class_exists('FireDebug')){
 			);
 			$table[] = array(
 				'DEBUG_REPORT_CLASS_DESCTRUCTION',
-				(((DEBUG_REPORT_LEVEL & DEBUG_REPORT_CLASS_DESCTRUCTION)!=0)?'On':'Off')
+				(((DEBUG_REPORT_LEVEL & DEBUG_REPORT_CLASS_DESTRUCTION)!=0)?'On':'Off')
 			);
 			$table[] = array(
 				'DEBUG_REPORT_CLASS_FUNCTION_INFO',
@@ -59,8 +63,8 @@ if(!class_exists('FireDebug')){
 		function __destruct(){
 			$this->write('*** Debug end', DEBUG_REPORT_CLASS_DESTRUCTION, FirePHP_INFO );
 		}
-		public function write($data, $level= DEBUG_REPORT_OTHER_DATA, $type= FirePHP_LOG ){
-			if(!$this->maniacalDebug && isset($this->disallowedGroups[$groupName]) && $this->disallowedGroups[$groupName] ) return false; 
+		public function write($data, $level= DEBUG_REPORT_OTHER_DATA, $type = FirePHP_LOG ){
+			if(!$this->maniacalDebug && isset($this->disallowedGroups[$this->groupName]) && $this->disallowedGroups[$this->groupName] ) return false; 
 			if(($level & DEBUG_REPORT_LEVEL) !== 0 || $this->maniacalDebug){
 
 				if($this->nextGroupToWrite !=$this->groupName){
