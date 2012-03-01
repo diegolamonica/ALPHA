@@ -268,6 +268,7 @@ if(!class_exists('core')){
 							if(isset($dbg['skip']) && count($dbg['skip'])>0){
 								$d = ClassFactory::get('Debug');
 								$skip = $dbg['skip'];
+								if(!is_array($skip)) $skip = array($skip);
 								foreach($skip as $key => $skipDebugger){
 									$d->skipGroup($skip[$key]);
 								}
