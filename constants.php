@@ -7,6 +7,7 @@
  * @package ALPHA
  */
 
+define('ALPHA_FRAMEWORK_VERSION','1.2');
 
 if(!defined('OUTPUT_DEBUG_INFO') || OUTPUT_DEBUG_INFO) require_once CORE_ROOT. 'includes/debugging.php';
 

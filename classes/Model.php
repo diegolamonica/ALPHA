@@ -1089,23 +1089,32 @@ class Model extends Debugger {
 						
 			}
 		};
-
-		if(count(Model::$headers)>0 && !$this->isPlugin){
+		if(!$this->isPlugin){
 			$h = implode(Model::$headers,"\n") . "\n";
-				
-			$s = '	<script type="text/javascript"><!--' ."\n";
-			$s .= implode(Model::$headerScripts,"\n") . "\n";
-				
-			$s .='		_.extend(\'alpha-startup\', {
-							startup: function(){';
-			$s .= implode(Model::$startupScripts,"\n") . "\n";
-			$s .= "} });\n\n";
-			$s .= '--></script>';
-				
-			$h .= $s;
-				
+			
+			if((count(Model::$headerScripts)>0 || count(Model::$startupScripts)>0)  ){
+				$s = '	<script type="text/javascript"><!--' ."\n";
+				if(count(Model::$headerScripts)>0){
+					$s .= implode(Model::$headerScripts,"\n") . "\n";
+				}
+				if(count(Model::$startupScripts)>0){
+					if(defined('HEADER_SCRIPT_USE_JQUERY') && HEADER_SCRIPT_USE_JQUERY ){
+						$s .="jQuery('document').ready(function($){\n";
+						$s .= implode(Model::$startupScripts,"\n") . "\n"; 
+						$s .="});";
+					}else{
+						$s .='		_.extend(\'alpha-startup\', {
+										startup: function(){';
+						$s .= implode(Model::$startupScripts,"\n") . "\n";
+						$s .= "} });\n\n";
+					}
+				}
+				$s .= '--></script>';
+				$h .= $s;
+			}
 			$buffer = str_replace('</head>', $h . "\n</head>", $buffer );
 		}
+				
 
 		$buffer = str_replace('href="/', 'href="' . APPLICATION_URL,  $buffer);
 		$buffer = str_replace('src="/', 'src="' . APPLICATION_URL,  $buffer);
