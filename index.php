@@ -238,7 +238,7 @@ if(!class_exists('core')){
 				
 			}
 			$rulesTesting = ob_get_clean();
-			if(OUTPUT_FILE_INFO){
+			if(OUTPUT_FILE_INFO && $rulesTesting!='' && file_exists(DEBUG_FILE_PATH)){
 				file_put_contents(DEBUG_FILE_PATH.'rules-log.txt', $rulesTesting, FILE_APPEND);
 			}
 			// Verifica il tipo di file per applicare i criteri di ricerca e inclusione
@@ -268,6 +268,7 @@ if(!class_exists('core')){
 							if(isset($dbg['skip']) && count($dbg['skip'])>0){
 								$d = ClassFactory::get('Debug');
 								$skip = $dbg['skip'];
+								if(!is_array($skip)) $skip = array($skip);
 								foreach($skip as $key => $skipDebugger){
 									$d->skipGroup($skip[$key]);
 								}

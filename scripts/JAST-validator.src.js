@@ -326,28 +326,43 @@ _.extend('Validator',{
 		var compareItem = V.decodeValue(_.Validator.constants.VALUE + itm.value, conditions.isDate, options.dateFormat);
 		V._temporaryRestoreItem = [itm.id];
 		V._temporaryErrorData.push(dataItem.value);
-		if(compareItem.value<=dataItem.value || 
-			!isNaN(compareItem.value) && !isNaN(dataItem.value) &&  (
-				(conditions.integerNumber!=-1 && parseInt(compareItem.value)<=parseInt(dataItem.value)) ||
-				(conditions.floatNumber!=-1 && parseFloat(compareItem.value)<=parseFloat(dataItem.value))
-			)
-		){
-			return false;
+		
+		/*
+		* When the first number was greater than the second but the first string and the second was smaller than the first, the comparison check falls.
+		*/
+		var areBothNumbersCompliant 	= !isNaN(compareItem.value) && !isNaN(dataItem.value);
+		var integerCondition			= (conditions.integerNumber !=-1)
+		var floatCondition				= (conditions.floatNumber !=-1)
+		if(compareItem.value<=dataItem.value && !integerCondition && !floatCondition ||
+			(areBothNumbersCompliant && integerCondition && parseInt(compareItem.value)<=parseInt(dataItem.value)) ||
+		        (areBothNumbersCompliant && floatCondition && parseFloat(compareItem.value)<=parseFloat(dataItem.value))
+    		){
+	    		return false;
 		}else{
-			return cond[2];	
+			return cond[2];   
 		}
 	},
 	_check_greatOrEqualTo: function(itm, cond, actions, conditions,options){
 		var V = _.Validator;
-		var dataItem = V.getDataItemFromAction(actions, conditions[cond[0]], cond[1], conditions.isDate, options.dateFormat);
-		var compareItem = V.decodeValue(_.Validator.constants.VALUE + itm.value, conditions.isDate, options.dateFormat);
+		var dataItem 			= V.getDataItemFromAction(actions, conditions[cond[0]], cond[1], conditions.isDate, options.dateFormat);
+		var compareItem 		= V.decodeValue(_.Validator.constants.VALUE + itm.value, conditions.isDate, options.dateFormat);
 		V._temporaryRestoreItem = [itm.id];
 		V._temporaryErrorData.push(dataItem.value);
-		if(compareItem.value>=dataItem.value || (parseInt('0'+compareItem.value)>=parseInt('0'+dataItem.value) && conditions.integerNumber!=-1)){
+
+		/*
+		* When the first number was greater than the second but the first string and the second was smaller than the first, the comparison check falls.
+		*/
+		var areBothNumbersCompliant 	= !isNaN(compareItem.value) && !isNaN(dataItem.value);
+		var integerCondition			= (conditions.integerNumber !=-1)
+		var floatCondition				= (conditions.floatNumber !=-1)
+		if((compareItem.value>=dataItem.value && !integerCondition && !floatCondition) ||
+			(areBothNumbersCompliant && integerCondition && parseInt(compareItem.value)>=parseInt(dataItem.value)) ||
+			(areBothNumbersCompliant && floatCondition && parseFloat(compareItem.value)>=parseFloat(dataItem.value))
+		){
 			return false;
 		}else{
-			return cond[2];	
-		}		
+			return cond[2];   
+		}       
 	},
 	_check_custom: function(itm, cond, actions, conditions,options){
 		var V = _.Validator;

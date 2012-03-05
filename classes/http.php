@@ -309,7 +309,7 @@
 		
 		function parse( $cookie_str, $host ) {
 			$cookie_str = str_replace( '; ', ';', $cookie_str ) . ';';
-			$data = preg_split( ';', $cookie_str );
+			$data = preg_split( '/;/', $cookie_str );
 			$value_str = $data[0];
 
 			$cookie_param = 'domain=';

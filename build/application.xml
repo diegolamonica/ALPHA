@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <application id="%PARAM1%">
-	<core>12</core>
+	<!-- 
+	You can remove this item if you do not require extra file to include
+	-->
 	<required>app/local.functions.php</required>
 	<paths>
 		<controller>app/controller</controller>
