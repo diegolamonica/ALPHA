@@ -31,9 +31,15 @@ class Ldap  extends Debugger{
 
 		$ds= ldap_connect(LDAP_HOST);
 		ldap_set_option($ds, LDAP_OPT_PROTOCOL_VERSION, 3);
-		$anon = @ldap_bind( $ds );
+		if(defined('LDAP_TRUSTED_USER') && defined('LDAP_TRUSTED_PASSWORD')){
+			$ldapUname = LDAP_TRUSTED_USER;
+			$ldapUpass = LDAP_TRUSTED_PASSWORD;
+			$bindingTest = @ldap_bind( $ds, $ldapUname, $ldapUpass );
+		}else{
+			$bindingTest = @ldap_bind( $ds );
+		}
 		// try anonymous login to test connection
-		if($anon){
+		if($bindingTest){
 			$this->directoryService = $ds; 
 			return true;
 		}
