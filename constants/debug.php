@@ -89,7 +89,7 @@ define('DEBUG_REPORT_ALL', 	DEBUG_REPORT_CLASS_INFO+							# For maniacal purpos
  * @var String
  */
 date_default_timezone_set(APPLICATION_TIMEZONE);
-_define('DEBUG_FILE_NAME',	date('YmdHm') . '@' . $_SERVER['REMOTE_ADDR']. '.txt',false,false,true);
+_define('DEBUG_FILE_NAME',	date('YmdH') . '@' . $_SERVER['REMOTE_ADDR']. '.txt',false,false,true);
 /**
  * Identifica il folder nel quale verranno messi i file di debug.
  * @var String
