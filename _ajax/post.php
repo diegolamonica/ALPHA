@@ -57,14 +57,13 @@ function post(){
 	$b->setSource($table);
 	$b->bindFromStructure('POST',$_POST);
 	$b->find();
-	
 	$b->save(false);
 	$b->find();
-	if($b->currentRecord!=null) $rs = $b->currentRecord;
+	$rs = ($b->currentRecord!=null)?$b->currentRecord:array();
 	
 	if(AJAX_POST_RETURN_OBJECT){
 		return $rs;
-	}else{	
+	}else{
 		$buffer = post_toJSONObject($rs);
 		header('Content Type: text/javascript; Encoding: UTF-8');
 		echo $buffer;

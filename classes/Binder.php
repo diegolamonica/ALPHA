@@ -419,7 +419,10 @@ class Binder extends Debugger implements iBinder {
 				
 			foreach($object as $key =>$value){
 				if($sql!='') $sql .= ', ';
-				$sql = SQL_FIELD_PREFIX .$key . SQL_FIELD_POSTFIX. ' = \'' . addslashes($value) . '\'';
+				# Issue 39 resolution: only the last field from the class were saved.
+				# Damned not typed `.`!!!
+				$sql .= SQL_FIELD_PREFIX .$key . SQL_FIELD_POSTFIX. ' = \'' . addslashes($value) . '\'';
+				
 			}
 			$sql = 'update ' . SQL_TABLE_PREFIX . $table . SQL_TABLE_POSTFIX. ' set ' . $sql . ' where '  . $updateCondition;
 		}else{
