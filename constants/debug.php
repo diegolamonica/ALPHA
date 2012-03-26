@@ -75,20 +75,16 @@ define('DEBUG_REPORT_ALL', 	DEBUG_REPORT_CLASS_INFO+							# For maniacal purpos
 								DEBUG_REPORT_CLASS_FUNCTION_INFO+
 								DEBUG_REPORT_OTHER_DATA);
 
-/**
- * Costante che indica il livello di Debug applicato
- * @var Integer
- */
 #define('DEBUG_REPORT_LEVEL', DEBUG_REPORT_CLASS_FUNCTION_INFO+DEBUG_REPORT_CLASS_INFO);	
 #_define('DEBUG_REPORT_LEVEL', DEBUG_REPORT_NONE,false,false,true);
 #define('DEBUG_REPORT_LEVEL', DEBUG_REPORT_NONE,false,false,true);
 #_define('DEBUG_REPORT_LEVEL', DEBUG_REPORT_CLASS_INFO+DEBUG_REPORT_FUNCTION_ENTER+DEBUG_REPORT_OTHER_DATA,false,false,true);
 								
+date_default_timezone_set(APPLICATION_TIMEZONE);
 /**
- * Identifica il nome del file di debug generato su file system
+ * Identify the name of the generated debug file
  * @var String
  */
-date_default_timezone_set(APPLICATION_TIMEZONE);
 _define('DEBUG_FILE_NAME',	date('YmdH') . '@' . $_SERVER['REMOTE_ADDR']. '.txt',false,false,true);
 /**
  * Identifica il folder nel quale verranno messi i file di debug.
