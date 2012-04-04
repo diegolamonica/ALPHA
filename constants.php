@@ -2,12 +2,11 @@
 /**
  * @name Costanti
  * @author Diego La Monica <me@diegolamonica.info>
- * @version 1.0
- * @desc Costanti necessarie ai fini applicativi
  * @package ALPHA
  */
 
-define('ALPHA_FRAMEWORK_VERSION','1.2');
+#define('ALPHA_FRAMEWORK_VERSION','1.2');
+define('ALPHA_FRAMEWORK_VERSION','1.2.1');
 
 if(!defined('OUTPUT_DEBUG_INFO') || OUTPUT_DEBUG_INFO) require_once CORE_ROOT. 'includes/debugging.php';
 

@@ -169,9 +169,18 @@ if(!class_exists('ociConnector')){
 					
 					$stm = oci_parse($this->conn, $sql);
 					if($isInsert) OCIBindByName($stm,":ID",$id,32);	
-					oci_execute($stm);
-					
+					# Managed OCI Error in case of execution fail.
 					$dbg->write('Executing query' . $sql,DEBUG_REPORT_OTHER_DATA );
+					$response = @oci_execute($stm);
+					
+					if(!$response){
+						$e = ClassFactory::get('ErrorManager');
+						$errorObject = oci_error($stm);
+						$this->lastErrorObject = $errorObject;
+						preg_match("/ORA\-" . $errorObject['code'] ."\:(.*)\r?\n/i", $errorObject['message'], $errorMessage);
+						$e->setText($errorMessage[1]);
+						$dbg->write('Execution raised error: ' .  $errorObject['message']);
+					}
 					if($isInsert) $this->lastId = $id;
 					
 				}else{
@@ -183,10 +192,6 @@ if(!class_exists('ociConnector')){
 							
 							$dbg->write('paging cannot be enabled');
 						}else{
-							/*
-							$s = ClassFactory::get('Searcher');
-							$sql = $s->getFilter($sql);
-							*/
 							$p->updateCount($sql);
 							$limit = $p->buildLimitClause();
 							$sql = 'select * from (select rownum as limitCountColumn, x.* from(' . $sql . ') x where ' . $limit;
@@ -195,9 +200,19 @@ if(!class_exists('ociConnector')){
 					}
 					
 					$stm= oci_parse($this->conn, $sql);
-					#echo('oci8.2 ' .date('Y-m-d H:i:s') ." <strong>$sql</strong> " . '<br />');
-					oci_execute($stm);
-					#echo('oci8.3 ' .date('Y-m-d H:i:s') .'<br />');
+					
+					# Managed OCI Error in case of execution fail.
+					$response = @oci_execute($stm);
+					
+					if(!$response){
+						$e = ClassFactory::get('ErrorManager');
+						$errorObject = oci_error($stm);
+						$this->lastErrorObject = $errorObject;
+						preg_match("/ORA\-" . $errorObject['code'] ."\:(.*)\r?\n/i", $errorObject['message'], $errorMessage);
+						$e->setText($errorMessage[1]);
+						$dbg->write('Execution raised error: ' .  $errorObject['message']);
+					}
+					
 					if(!$unwatched){
 					
 						if($this->doCommit()) oci_commit($this->conn);
