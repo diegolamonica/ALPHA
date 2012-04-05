@@ -33,8 +33,12 @@ class CustomAuthentication implements iAuthentication{
 				$dbg->write("Trying to connect as given user($user, $password)");
 				if($l->authenticateAs($user, $password)){
 					$dbg->write("Authentication sucessfull!");
-					$_SESSION[SESSION_USER_KEY_VAR] = $user;
-					$_SESSION[SESSION_USER_TOKEN_VAR] = $password;
+					$storage = ClassFactory::get('Storage');
+					$storage->write(SESSION_USER_KEY_VAR, $user);
+					$storage->write(SESSION_USER_TOKEN_VAR, $password);
+					
+					#$_SESSION[SESSION_USER_KEY_VAR] = $user;
+					#$_SESSION[SESSION_USER_TOKEN_VAR] = $password;
 					$dbg->write('Exiting ' . __FUNCTION__, DEBUG_REPORT_FUNCTION_EXIT);
 					return $l->lastEntry;
 				}else{
@@ -60,14 +64,22 @@ class CustomAuthentication implements iAuthentication{
 		$dbg = ClassFactory::get('Debug');
 		$dbg->write('Entering ' . __FUNCTION__, DEBUG_REPORT_FUNCTION_ENTER);
 		$dbg->writeFunctionArguments(func_get_args());
-		
-		if(isset($_SESSION[ SESSION_USER_KEY_VAR ]) && isset($_SESSION[ SESSION_USER_TOKEN_VAR ])){
-			
-			if($this->login($_SESSION[SESSION_USER_KEY_VAR], $_SESSION[SESSION_USER_TOKEN_VAR])){
-				
-				$result=true;
-			}else{
-				$result=false;
+		$storage = ClassFactory::get('Storage');
+					
+		#if(isset($_SESSION[ SESSION_USER_KEY_VAR ]) && isset($_SESSION[ SESSION_USER_TOKEN_VAR ])){
+		$userName = $storage->read(SESSION_USER_KEY_VAR);
+		$userPass = $storage->read(SESSION_USER_TOKEN_VAR );
+		if(!is_null($userName) && !is_null($userPass)){
+			try{
+				#if($this->login($_SESSION[SESSION_USER_KEY_VAR], $_SESSION[SESSION_USER_TOKEN_VAR])){
+				if($this->login($userName, $userPass)){
+					
+					$result=true;
+				}else{
+					$result=false;
+				}
+			}catch(Exception $e){
+				$result = false;
 			}
 		}else{
 			$result=false;
@@ -93,9 +105,11 @@ class CustomAuthentication implements iAuthentication{
 		$dbg = ClassFactory::get('Debug');
 		$dbg->write('Entering ' . __FUNCTION__, DEBUG_REPORT_FUNCTION_ENTER);
 		$dbg->writeFunctionArguments(func_get_args());
-
-		unset($_SESSION[SESSION_USER_TOKEN_VAR ]);
-		unset($_SESSION[SESSION_USER_KEY_VAR]);
+		$storage = ClassFactory::get('Storage');
+		$storage->destroy(SESSION_USER_TOKEN_VAR);
+		$storage->destroy(SESSION_USER_KEY_VAR);
+		#unset($_SESSION[SESSION_USER_TOKEN_VAR ]);
+		#unset($_SESSION[SESSION_USER_KEY_VAR]);
 		$dbg->write('Exiting ' . __FUNCTION__, DEBUG_REPORT_FUNCTION_EXIT);
 	}
 

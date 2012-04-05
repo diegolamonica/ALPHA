@@ -1,9 +1,8 @@
 <?php
 /**
  * @name My SQL Authentication
- * @version 1.0
  * @author Diego La Monica
- * @desc Classe che si preoccupa delle operazioni di autenticazione utente
+ * @desc Takes care to authenticate user against mysql table
  * @package ALPHA 
  */
 /**
@@ -11,7 +10,7 @@
  */
 require_once CORE_ROOT. 'classes/interfaces/iAuthentication.php';
 /**
- * Classe di autenticazione basata su mySQL.
+ * Authenticatione Class based on mySQL.
  * @author Diego La Monica
  * @version 1.0
  *
@@ -38,7 +37,6 @@ class CustomAuthentication implements iAuthentication {
 		$dbg = ClassFactory::get('Debug');
 		$dbg->write('Class Authentication generated' , DEBUG_REPORT_CLASS_CONSTRUCTION);
 	
-		#if(!isset($_SESSION) || count($_SESSION)==0) session_start();
 		$c = ClassFactory::get('connector');
 	
 	}
@@ -69,9 +67,12 @@ class CustomAuthentication implements iAuthentication {
 			$dbg->write('Given credential (UserName and Password) are valid', DEBUG_REPORT_OTHER_DATA);
 			
 			$rs = $c->moveNext();
+			$storage = ClassFactory::get('Storage');
+			$storage->write(SESSION_USER_TOKEN_VAR, $rs[AUTHENTICATION_FIELD_TOKEN]);
+			$storage->write(SESSION_USER_KEY_VAR, $rs[AUTHENTICATION_FIELD_TO_STORE]);
 			
-			$_SESSION[SESSION_USER_TOKEN_VAR] 	= $rs[AUTHENTICATION_FIELD_TOKEN];
-			$_SESSION[SESSION_USER_KEY_VAR] 	= $rs[AUTHENTICATION_FIELD_TO_STORE];
+			#$_SESSION[SESSION_USER_TOKEN_VAR] 	= $rs[AUTHENTICATION_FIELD_TOKEN];
+			#$_SESSION[SESSION_USER_KEY_VAR] 	= $rs[AUTHENTICATION_FIELD_TO_STORE];
 			
 			
 		}else{
@@ -92,9 +93,17 @@ class CustomAuthentication implements iAuthentication {
 		
 		if($this->_isAuthenticated!==false) return $this->_isAuthenticated;
 		$rs = null;
-		if(isset($_SESSION[SESSION_USER_TOKEN_VAR]) && isset($_SESSION[SESSION_USER_KEY_VAR])){
-			$token = $_SESSION[SESSION_USER_TOKEN_VAR];
-			$key = $_SESSION[SESSION_USER_KEY_VAR];
+		#if(isset($_SESSION[SESSION_USER_TOKEN_VAR]) && isset($_SESSION[SESSION_USER_KEY_VAR])){
+		#	$token = $_SESSION[SESSION_USER_TOKEN_VAR];
+		#	$key = $_SESSION[SESSION_USER_KEY_VAR];
+		
+		$storage = ClassFactory::get('Storage');
+		$token = $storage->read(SESSION_USER_TOKEN_VAR);
+		$key = $storage->read(SESSION_USER_KEY_VAR);
+		
+		if(!is_null($token) && !is_null($key)){
+			#$token = $_SESSION[SESSION_USER_TOKEN_VAR];
+			#$key = $_SESSION[SESSION_USER_KEY_VAR];
 			$q = $this->getQuerySQL('','', $token, $key);
 			
 			$c = ClassFactory::get('connector');
@@ -140,10 +149,15 @@ class CustomAuthentication implements iAuthentication {
 		$dbg->writeFunctionArguments(func_get_args());
 		
 		if($this->isAuthenticated()){
-			$_SESSION[SESSION_USER_KEY_VAR] = '';
-			$_SESSION[SESSION_USER_TOKEN_VAR] = '';
-			unset($_SESSION[SESSION_USER_KEY_VAR]);
-			unset($_SESSION[SESSION_USER_TOKEN_VAR]);
+			$storage = ClassFactory::get('Storage');
+			
+			$storage->destroy(SESSION_USER_KEY_VAR);
+			$storage->destroy(SESSION_USER_TOKEN_VAR);
+			
+			#$_SESSION[SESSION_USER_KEY_VAR] = '';
+			#$_SESSION[SESSION_USER_TOKEN_VAR] = '';
+			#unset($_SESSION[SESSION_USER_KEY_VAR]);
+			#unset($_SESSION[SESSION_USER_TOKEN_VAR]);
 		}
 		$dbg->write('Exiting ' . __FUNCTION__, DEBUG_REPORT_FUNCTION_EXIT);
 	}
@@ -158,11 +172,15 @@ class CustomAuthentication implements iAuthentication {
 		$rs = null;
 		
 		if(defined('MYSQL_ROLE_MODULE') && MYSQL_ROLE_MODULE=='yes'){
-			if(isset($_SESSION[SESSION_USER_KEY_VAR .'_userdata'])){
+			
+			$storage = ClassFactory::get('Storage');
+			$userData = $storage->read(SESSION_USER_KEY_VAR .'_userdata');
+			if(!is_null($userData)) return $userData;
+			#if(isset($_SESSION[SESSION_USER_KEY_VAR .'_userdata'])){
 				
-				return unserialize($_SESSION[SESSION_USER_KEY_VAR .'_userdata']);
+			#	return unserialize($_SESSION[SESSION_USER_KEY_VAR .'_userdata']);
 				
-			}
+			#}
 		}
 		$rs = $this->isAuthenticated();
 		$dbg->write('Exiting ' . __FUNCTION__, DEBUG_REPORT_FUNCTION_EXIT);

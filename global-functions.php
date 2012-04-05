@@ -250,7 +250,7 @@ function dateAdd($interval, $number, $date) {
  */
 function implementDefaultView($viewToUse, $querySQL = '', $itemListNameOnTemplate = '', $useAuthentication =true, $paginationNamedObject = null, $beforeProcessMethod = null){
 	$a = ClassFactory::get('Authentication');
-		
+	
 	if(!$a->isAuthenticated() && $useAuthentication){
 		$a->forceLogin();
 		exit();
@@ -324,7 +324,8 @@ function implementDefaultForm($redirectInvalidId,$viewToUse, $dataSource, $itemN
 	if((!isset($_GET['id']) || !is_numeric($_GET['id'])) && $dataSource!=''){
 		header('Location: ' . $redirectInvalidId);
 	}else{
-		if(!isset($_SESSION)) session_start();
+		# Storage Introduction does not require session_Start anymore.
+		#if(!isset($_SESSION)) session_start();
 		require_once(CORE_ROOT. "classes/ClassFactory.php");
 		if($useAuthentication){
 			$a = ClassFactory::get('Authentication');

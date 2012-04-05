@@ -122,6 +122,10 @@ if(!class_exists('ociConnector')){
 		}
 		function connect($host, $db, $user, $password){
 			if($this->isConnected()) return;
+			
+			$evt = ClassFactory::get('Events');
+			$evt->raise(ALPHA_EVENT_CONNECTOR_ON_CONNECTION, $host, $db, $user, $password);
+			
 			$dbg = ClassFactory::get('Debug');
 			$dbg->write('Entering ' . __FUNCTION__, DEBUG_REPORT_FUNCTION_ENTER);
 			$dbg->writeFunctionArguments(func_get_args());
@@ -130,11 +134,12 @@ if(!class_exists('ociConnector')){
 			exec('set NLS_LANG=ITALIAN_ITALY.AL32UTF8');
 			if($host==''){
 				# Ho passato solo il nome dell'istanza come identificato nel TNSNAME
-				
+				$evt->raise(ALPHA_EVENT_CONNECTOR_ON_TNSNAME_CONNECTION, $host, $db, $user, $password);
 				$conn = OCILogon( $user, $password, $db, 'AL32UTF8');
 				#$conn = OCILogon( $user, $password, $db, 'WE8MSWIN1252');
 			}else{
 				# Ho pasato il server e il DB non identificati sul TNS Name 
+				$evt->raise(ALPHA_EVENT_CONNECTOR_ON_URL_CONNECTION, $host, $db, $user, $password);
 				$conn = OCILogon( $user, $password, '//'.$host.'/' . $db, 'AL32UTF8');
 				#$conn = OCILogon( $user, $password, '//'.$host.'/' . $db, 'WE8MSWIN1252');
 			}
@@ -146,9 +151,13 @@ if(!class_exists('ociConnector')){
 			$this->query('alter session set nls_sort = binary_ci',true);
 			$this->query('alter session set nls_comp = linguistic',true);
 			$this->query("ALTER SESSION SET NLS_DATE_FORMAT = 'DD/MM/YYYY'", true);
+			
+			$evt->raise(ALPHA_EVENT_CONNECTOR_ON_ALTER_SESSION, $this);
 		}
 		
 		function query($sql, $empty = false, $returnId=true, $unwatched = false){
+			$evt = ClassFactory::get('Events');
+			$evt->raise(ALPHA_EVENT_CONNECTOR_ON_QUERY, $sql, $empty, $returnId, $unwatched);
 			if(!$unwatched){
 				$this->lastQuery=$sql;
 			}
@@ -159,11 +168,13 @@ if(!class_exists('ociConnector')){
 			if($this->isConnected()){
 				
 				if($empty){
+					$evt->raise(ALPHA_EVENT_CONNECTOR_ON_EMPTY_QUERY, $sql, $empty, $returnId, $unwatched);
 					$dbg->write('executing empty query');
 					$isInsert = false;
 					if(substr( trim( strtolower($sql)) , 0,6) =='insert' && $returnId){
 						$isInsert = true;
 						$sql .= (' returning id into :ID');
+						$evt->raise(ALPHA_EVENT_CONNECTOR_ON_INSERT, $sql);
 					}
 					$sql = utf8_encode($sql);
 					
@@ -184,14 +195,17 @@ if(!class_exists('ociConnector')){
 					if($isInsert) $this->lastId = $id;
 					
 				}else{
+					$evt->raise(ALPHA_EVENT_CONNECTOR_ON_RESULTSET_QUERY, $sql, $empty, $returnId, $unwatched);
 					$dbg->write('executing query with result');
 					
 					$p = ClassFactory::get('Paging',false);
 					if($p!=null && $this->pagingIsEnabled) {
+					
 						if(strpos('ROWNUM',strtoupper($sql))!==false){
 							
 							$dbg->write('paging cannot be enabled');
 						}else{
+							$evt->raise(ALPHA_EVENT_CONNECTOR_ON_PAGINATION, $p);
 							$p->updateCount($sql);
 							$limit = $p->buildLimitClause();
 							$sql = 'select * from (select rownum as limitCountColumn, x.* from(' . $sql . ') x where ' . $limit;
@@ -207,6 +221,7 @@ if(!class_exists('ociConnector')){
 					if(!$response){
 						$e = ClassFactory::get('ErrorManager');
 						$errorObject = oci_error($stm);
+						$evt->raise(ALPHA_EVENT_CONNECTOR_ON_ERROR, $errorObject, $sql);
 						$this->lastErrorObject = $errorObject;
 						preg_match("/ORA\-" . $errorObject['code'] ."\:(.*)\r?\n/i", $errorObject['message'], $errorMessage);
 						$e->setText($errorMessage[1]);

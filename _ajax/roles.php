@@ -1,8 +1,8 @@
 <?php
-
-$s = $_SESSION['authentication_user_token'];
-$s = unserialize($s);
-#echo(nl2br(str_replace('\t','&nbsp; &nbsp; ', print_r($_SESSION,true))));
+$storage = ClassFactory::get('Storage');
+#$s = $_SESSION['authentication_user_token'];
+#$s = unserialize($s);
+$s = $storage->read('authentication_user_token');
 
 if(!isset($s['userRolesDeactivated'])) $s['userRolesDeactivated'] = Array();
 
@@ -22,13 +22,19 @@ if(isset($_GET['add']) || isset($_GET['del'])){
 	}
 	
 	$appId = $s['applicationID'];
-	$_SESSION['authentication_user_token'] = serialize($s);
-	$_SESSION['multi_apps_logon'][$appId] = serialize($s);
+	$storage->write('authentication_user_token',$s );
+	$multiAppsLogon = $storage->read('multi_apps_logon');
+	$multiAppsLogon[$appId] = serialize($s);
+	$storage->write('multi_apps_logon',$multiAppsLogon );
+	
+	#$_SESSION['authentication_user_token'] = serialize($s);
+	#$_SESSION['multi_apps_logon'][$appId] = serialize($s);
 	
 }
 if(isset($_GET['destroy'])){
-	session_destroy();
-	unset($_SESSION);
+	$storage->destroy();
+	#session_destroy();
+	#unset($_SESSION);
 }
 $j = ClassFactory::get('Json');
 $roles = Array(

@@ -38,8 +38,12 @@ class CustomAuthentication implements iAuthentication{
 			$rs = $c->getFirstRecord($sql);
 			if($rs!=null){
 				$this->currentUserData = $rs;
-				$_SESSION[SESSION_USER_KEY_VAR ] = $user;
-				$_SESSION[SESSION_USER_TOKEN_VAR] = serialize($rs);
+				# Storage Class Introduction
+				# $_SESSION[SESSION_USER_KEY_VAR ] = $user;
+				# $_SESSION[SESSION_USER_TOKEN_VAR] = serialize($rs);
+				$s =ClassFactory::get('Storage');
+				$s->write(SESSION_USER_KEY_VAR, $user);
+				$s->write(SESSION_USER_TOKEN_VAR, $rs);
 				$return = true;
 			}else{
 				$this->lastError = AUTHENTICATION_ERROR_XS_NO_RECORD_FOUND;
@@ -64,13 +68,20 @@ class CustomAuthentication implements iAuthentication{
 			$sql = "select * from ".AUTHENTICATION_DATABASE_TABLE." where TOKEN='$token'";
 			$rs = $c->getFirstRecord($sql);
 			if($rs!=null){
-				
-				$_SESSION[SESSION_USER_KEY_VAR] = trim($rs['MATRICOLA']);
-				$_SESSION[SESSION_USER_TOKEN_VAR] = $rs['DATI'];
+				#$_SESSION[SESSION_USER_KEY_VAR] = trim($rs['MATRICOLA']);
+				#$_SESSION[SESSION_USER_TOKEN_VAR] = $rs['DATI'];
 				$allData = unserialize($rs['DATI']);
-				$_SESSION['multi_apps_logon'][$allData['applicationID']] =  $rs['DATI'];
-				$c->query('delete from '.AUTHENTICATION_DATABASE_TABLE.' where id=' . $rs['ID'], true);
+				$storage =ClassFactory::get('Storage');
 				
+				$storage->write(SESSION_USER_KEY_VAR, 		trim($rs['MATRICOLA']));
+				$storage->write(SESSION_USER_TOKEN_VAR, 	$allData);
+				
+				#$_SESSION['multi_apps_logon'][$allData['applicationID']] =  $rs['DATI'];
+				$multiAppsLogon = $storage->read('multi_apps_logon');
+				if(is_null($multiAppsLogon)) $multiAppsLogon = array();
+				$multiAppsLogon[$allData['applicationID']] = $rs['DATI'];
+				$storage->write('multi_apps_logon', $multiAppsLogon);
+				$c->query('delete from '.AUTHENTICATION_DATABASE_TABLE.' where id=' . $rs['ID'], true);
 				
 				$url = $_SERVER['REDIRECT_URL'];
 				$get = '';
@@ -81,30 +92,50 @@ class CustomAuthentication implements iAuthentication{
 					}
 				} 
 				$url = $url . '?' . $get;
-				
+
 				header('Location: ' . $url);
 				exit();
 			}
 			
 		}
 	
-		if(isset($_SESSION[ SESSION_USER_KEY_VAR ]) && isset($_SESSION[ SESSION_USER_TOKEN_VAR ])){
-			$rs = unserialize($_SESSION[ SESSION_USER_TOKEN_VAR ]);
-			if(isset($rs['userData']) && isset($rs['userData'][AUTHENTICATION_FIELD_TOKEN]) && $rs['userData'][AUTHENTICATION_FIELD_TOKEN]==$_SESSION[ SESSION_USER_KEY_VAR ]){
+		#if(isset($_SESSION[ SESSION_USER_KEY_VAR ]) && isset($_SESSION[ SESSION_USER_TOKEN_VAR ])){
+		$s =ClassFactory::get('Storage');
+		#$s->debug();
+		
+		if(!is_null($s->read(SESSION_USER_KEY_VAR)) && !is_null($s->read(SESSION_USER_TOKEN_VAR)) ){
+			#$rs = unserialize($_SESSION[ SESSION_USER_TOKEN_VAR ]);
+			$rs = $s->read(SESSION_USER_TOKEN_VAR);
+			
+		
+			#if(isset($rs['userData']) && isset($rs['userData'][AUTHENTICATION_FIELD_TOKEN]) && $rs['userData'][AUTHENTICATION_FIELD_TOKEN]==$_SESSION[ SESSION_USER_KEY_VAR ]){
+			if(
+					isset($rs['userData']) && 
+					isset($rs['userData'][AUTHENTICATION_FIELD_TOKEN]) && 
+					$rs['userData'][AUTHENTICATION_FIELD_TOKEN]==$s->read( SESSION_USER_KEY_VAR ) ){
 				$id = $this->getApplicationId();
-				if(isset($_SESSION['multi_apps_logon'][$id])){
-					$_SESSION[ SESSION_USER_TOKEN_VAR ] = $_SESSION['multi_apps_logon'][$id];
+				
+				#if(isset($_SESSION['multi_apps_logon'][$id])){
+				$multiAppsLogon = $s->read('multi_apps_logon');
+				if(isset($multiAppsLogon[$id])){
+					#$_SESSION[ SESSION_USER_TOKEN_VAR ] = $_SESSION['multi_apps_logon'][$id];
+					$s->write( SESSION_USER_TOKEN_VAR , unserialize($multiAppsLogon[$id]));
 					$result=true;
 					#$result = $_SESSION[ SESSION_USER_TOKEN_VAR ]; 
 				} else{
-					unset($_SESSION[SESSION_USER_KEY_VAR]);
-					unset($_SESSION[SESSION_USER_TOKEN_VAR]);
+					$s->destroy(SESSION_USER_KEY_VAR);
+					$s->destroy(SESSION_USER_TOKEN_VAR);
+					
+					#unset($_SESSION[SESSION_USER_KEY_VAR]);
+					#unset($_SESSION[SESSION_USER_TOKEN_VAR]);
 				}
 				
 			}else{
-				echo('quindi non sono qui!');
-				unset($_SESSION[SESSION_USER_KEY_VAR]);
-				unset($_SESSION[SESSION_USER_TOKEN_VAR]);
+				$s->destroy(SESSION_USER_KEY_VAR);
+				$s->destroy(SESSION_USER_TOKEN_VAR);
+			
+				#unset($_SESSION[SESSION_USER_KEY_VAR]);
+				#unset($_SESSION[SESSION_USER_TOKEN_VAR]);
 			}
 			#exit();
 			
@@ -138,9 +169,12 @@ class CustomAuthentication implements iAuthentication{
 		$dbg = ClassFactory::get('Debug');
 		$dbg->write('Entering ' . __FUNCTION__, DEBUG_REPORT_FUNCTION_ENTER);
 		$dbg->writeFunctionArguments(func_get_args());
-
-		unset($_SESSION[SESSION_USER_TOKEN_VAR ]);
-		unset($_SESSION[SESSION_USER_KEY_VAR]);
+		$s = ClassFactory::get('Storage');
+		$s->destroy(SESSION_USER_KEY_VAR);
+		$s->destroy(SESSION_USER_TOKEN_VAR);
+				
+		#unset($_SESSION[SESSION_USER_TOKEN_VAR ]);
+		#unset($_SESSION[SESSION_USER_KEY_VAR]);
 		$dbg->write('Exiting ' . __FUNCTION__, DEBUG_REPORT_FUNCTION_EXIT);
 	}
 
@@ -170,7 +204,10 @@ class CustomAuthentication implements iAuthentication{
 		$dbg->writeFunctionArguments(func_get_args());
 
 		if($this->isAuthenticated()){
-			$result = unserialize($_SESSION[ SESSION_USER_TOKEN_VAR ]);
+			$s = ClassFactory::get('Storage');
+			
+			#$result = unserialize($_SESSION[ SESSION_USER_TOKEN_VAR ]);
+			$result = $s->read( SESSION_USER_TOKEN_VAR );
 		}else{
 			$result = null;
 				

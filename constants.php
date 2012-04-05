@@ -2,11 +2,11 @@
 /**
  * @name Costanti
  * @author Diego La Monica <me@diegolamonica.info>
+ * @version 1.0
+ * @desc Costanti necessarie ai fini applicativi
  * @package ALPHA
  */
 
-#define('ALPHA_FRAMEWORK_VERSION','1.2');
-define('ALPHA_FRAMEWORK_VERSION','1.2.1');
 
 if(!defined('OUTPUT_DEBUG_INFO') || OUTPUT_DEBUG_INFO) require_once CORE_ROOT. 'includes/debugging.php';
 
@@ -18,47 +18,48 @@ $tmpScriptPath = $_SERVER['DOCUMENT_ROOT']. REQUESTED_URL; //$_SERVER['SCRIPT_FI
 $tmpScriptPath = preg_replace('/\/[^\/]+$/i','/', $tmpScriptPath);
 
 define('CURRENT_SCRIPT_PATH', $tmpScriptPath);
+
+# Event handling constants
+require_once CORE_ROOT .'constants/events.php';
+
 # Applicaton Paths Constants
-includeConstantFrom('path.php');
+require_once CORE_ROOT .'constants/path.php';
 
 # Applicaton Settings Constants
-includeConstantFrom('application.php');
-# Applicaton Settings Constants
-includeConstantFrom('ldap.php');
+require_once CORE_ROOT .'constants/application.php';
+# LDAP Settings Constants
+require_once CORE_ROOT .'constants/ldap.php';
+
 # Database settings constants
-includeConstantFrom('db.php');
+require_once CORE_ROOT .'constants/db.php';
 
 # Authentication settings constants
-includeConstantFrom('authentication.php');
+require_once CORE_ROOT .'constants/authentication.php';
 
 # Model constants - DO NOT CHANGHE!!! -
-includeConstantFrom('model.php');
+require_once CORE_ROOT .'constants/model.php';
+
 # Debugg constants
-includeConstantFrom('debug.php');
+require_once CORE_ROOT .'constants/debug.php';
+
 # Pagination constants
-includeConstantFrom('pagination.php');
+require_once CORE_ROOT .'constants/pagination.php';
+
 # Search constants
-includeConstantFrom('searcher.php');
+require_once CORE_ROOT .'constants/searcher.php';
 
 # Error presentation constants
-includeConstantFrom('error.php');
+require_once CORE_ROOT .'constants/error.php';
 
 # Error presentation constants
-includeConstantFrom('filemanager.php');
+require_once CORE_ROOT .'constants/filemanager.php';
 
-#includeFrom('', 'local.functions.php');
+# FirePHP Debugging constants
+require_once CORE_ROOT .'constants/firephp.php';
 
-# issue #23
-# - Temporary location for firephp constants. -
-# In a next release those constants need to be relocated out of there.
-define('FirePHP_WARN', 'WARN');
-define('FirePHP_DUMP', 'DUMP');
-define('FirePHP_ERROR', 'ERROR');
-define('FirePHP_EXCEPTION', 'EXCEPTION');
-define('FirePHP_INFO', 'INFO');
-define('FirePHP_LOG', 'LOG');
-define('FirePHP_GROUP_END', 'GROUP_END');
-define('FirePHP_GROUP_START', 'GROUP_START');
-define('FirePHP_TABLE', 'TABLE');
-define('FirePHP_TRACE', 'TRACE');
+
+# Storage handling constants
+require_once CORE_ROOT .'constants/storage.php';
+
+
 ?>

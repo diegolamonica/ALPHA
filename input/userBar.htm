@@ -21,20 +21,22 @@
 		{php:EMPTY}
 			
 			$c = ClassFactory::get('connector', true,'tempConnector');
-			// Devo prendere l'elenco delle applicazioni in cui l'utente è censito
-			#print_r($_SESSION['multi_apps_logon']);
+			// Get user listed applications
 			echo('<div id="app-list">');
 			echo('<strong>Passa a</strong>');
 			echo('<ul>');
-			
-			foreach(array_keys($_SESSION['multi_apps_logon']) as $key){
+			$storage = ClassFactory::get('Storage');
+			$multiAppsLogon = $storage->read('multi_apps_logon');
+			#foreach(array_keys($_SESSION['multi_apps_logon']) as $key){
+			foreach(array_keys($multiAppsLogon) as $key){
 				$appRs = $c->getFirstRecord("select NOME_APPLICAZIONE, URL from ".APPLICATIONS_DATABASE_TABLE." where ID='$key'");
 				
 				echo('<li>');
 				
 				echo('<a href="' . $appRs['URL'] . '">' . $appRs['NOME_APPLICAZIONE'] . '</a>');
 				
-				if($_SESSION[SESSION_USER_TOKEN_VAR] == $_SESSION['multi_apps_logon'][$key]){
+				#if($_SESSION[SESSION_USER_TOKEN_VAR] == $_SESSION['multi_apps_logon'][$key]){
+				if($storage->read(SESSION_USER_TOKEN_VAR) == multiAppsLogon[$key]){
 					echo('<img src="/css/images/success.png" alt="&gt;" />');
 				}
 				echo('</li>');
