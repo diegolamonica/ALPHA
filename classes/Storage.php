@@ -116,10 +116,12 @@ class Storage extends Debugger{
 	function write($key, $value){
 		$value = serialize($value);
 		$this->handler->write($key, $this->encrypt($value));
+		
 	}
 	
 	function read($key){
-		$value = ($this->decrypt($this->handler->read($key)));
+		$value = $this->handler->read($key);
+		if(!is_null($value) && $value!='') $value = ($this->decrypt($value));
 		if($this->is_serialized($value)){
 			$value = unserialize($value);
 		}

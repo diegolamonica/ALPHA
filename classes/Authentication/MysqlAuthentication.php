@@ -70,7 +70,6 @@ class CustomAuthentication implements iAuthentication {
 			$storage = ClassFactory::get('Storage');
 			$storage->write(SESSION_USER_TOKEN_VAR, $rs[AUTHENTICATION_FIELD_TOKEN]);
 			$storage->write(SESSION_USER_KEY_VAR, $rs[AUTHENTICATION_FIELD_TO_STORE]);
-			
 			#$_SESSION[SESSION_USER_TOKEN_VAR] 	= $rs[AUTHENTICATION_FIELD_TOKEN];
 			#$_SESSION[SESSION_USER_KEY_VAR] 	= $rs[AUTHENTICATION_FIELD_TO_STORE];
 			

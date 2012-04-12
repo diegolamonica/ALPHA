@@ -27,7 +27,6 @@ class sqlDecode implements iFunction{
 		$returnValue = $this->parameters[3];
 		
 		$sql = 'select ' . $returnValue .' from ' . $table . ' where ' . $keyField . ' = \''. $keyValue . '\'';
-		#echo($sql);
 		$c = ClassFactory::get('connector');
 		$rs = $c->getFirstRecord($sql);
 		if($rs == null) return '';

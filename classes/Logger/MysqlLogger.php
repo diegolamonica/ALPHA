@@ -45,7 +45,6 @@ class CustomLogger extends Debugger implements iLogger {
 		if($limit!='') $q.=' limit ' . $limit;
 
 		$c->query($q);
-		 
 		while( $rs = $c->moveNext() ) $result[] = $rs;
 		if(!isset($result)) $result = null;
 		$c->release();
@@ -58,7 +57,7 @@ class CustomLogger extends Debugger implements iLogger {
 		$dbg->write('Entering ' . __FUNCTION__, DEBUG_REPORT_FUNCTION_ENTER);
 		$dbg->writeFunctionArguments(func_get_args());
 		
-		// Se � stata forzata la tabella di memorizzazione
+		// Se è stata forzata la tabella di memorizzazione
 		if($this->_source!=null && $source!='log'){
 			$field = '('.$source.')' . $field;
 			$source = $this->_source;
@@ -71,8 +70,9 @@ class CustomLogger extends Debugger implements iLogger {
 			$b = ClassFactory::get('Binder',true,'ConnectorLog');
 			$b->setSource('log');
 			$b->setDefaultValue('data', date('Y-m-d H:i:s'));
-			$b->setDefaultValue('descrizione', $descrizione); 
-			$b->bind('id_utente', 'SESSION', SESSION_USER_KEY_VAR);
+			$b->setDefaultValue('descrizione', $descrizione);
+			$storage = ClassFactory::get('Storage');
+			$b->setDefaultValue('id_utente', $storage->read(SESSION_USER_KEY_VAR));
 			$b->setDefaultValue('tabella_rif', $source);
 			$b->setDefaultValue('id_tabella_rif', $sourceKey);
 			$b->setDefaultValue('campo', $field);
