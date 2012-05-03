@@ -8,6 +8,13 @@
  */
 
 
+/*
+ * Accidental removal of the version number in the latest commit 306d9bfbb49d7cdf987657cc763027ddc1411969
+ * https://github.com/diegolamonica/ALPHA/commit/306d9bfbb49d7cdf987657cc763027ddc1411969#diff-6
+ */ 
+#define('ALPHA_FRAMEWORK_VERSION','1.2.1');
+define('ALPHA_FRAMEWORK_VERSION','1.2.2');
+
 if(!defined('OUTPUT_DEBUG_INFO') || OUTPUT_DEBUG_INFO) require_once CORE_ROOT. 'includes/debugging.php';
 
 
