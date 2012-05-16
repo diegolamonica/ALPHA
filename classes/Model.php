@@ -643,7 +643,7 @@ class Model extends Debugger {
 						$input[$i] = $inputResult[0];
 						$attribs['html'] = $inputResult[1];
 					}
-					if(!isset($attribs['inloop']) && !$this->inLoop || (($attribs['inloop']=="true") && $this->inLoop)){
+					if(!isset($attribs['inloop']) && !$this->inLoop || isset($attribs['inloop']) && (($attribs['inloop']=="true") && $this->inLoop)){
 							
 						// Cerca prima se esiste un input customizzato rilasciato con l'applicazione
 
