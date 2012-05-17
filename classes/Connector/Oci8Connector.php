@@ -3,9 +3,19 @@ require_once  CORE_ROOT. 'classes/interfaces/iConnector.php';
 require_once CORE_ROOT. 'classes/Debug.php'; 
 
 class Oci8Connector extends Debugger implements iConnector {
+	/*
+	 * CHANGELOG:
+	 * V 2.1
+	 * - describeTable method is invoking all_tab_columns (better) instead of user_tab_columns
+	 * - insert query is building the columns section in the query if missed and try to identify by it's own the id field name
+	 * - added logout() method
+	 * 
+	 * V 2.0
+	 * - Complete refactoring of source code
+	 */
 	
-	const VERSION = '2.0';
-	
+	# const VERSION = '2.0';
+	const VERSION = '2.1';
 	private $conn;
 	private $result;
 	public $lastQuery;
@@ -44,10 +54,7 @@ class Oci8Connector extends Debugger implements iConnector {
 	}
 	
 	function __destruct(){
-		if($this->conn!=null){
-			ocicommit($this->conn);	
-			ocilogoff($this->conn);
-		}
+		$this->logout();
 		$dbg = ClassFactory::get('Debug');
 		$dbg->write('Class ' . get_class($this) . ' destructed' , DEBUG_REPORT_CLASS_DESTRUCTION);
 	}
@@ -55,6 +62,13 @@ class Oci8Connector extends Debugger implements iConnector {
 	function getLimitClause($fromRow, $rowCount){
 		return ' rownum<=' . ($fromRow+$rowCount) . (($fromRow!=-1)?') where limitCountColumn> ' . $fromRow:'');
 		
+	}
+	
+	public function logout(){
+		if($this->conn!=null){
+			ocicommit($this->conn);	
+			ocilogoff($this->conn);
+		}
 	}
 	
 	function doCommit($value = null){
@@ -312,9 +326,41 @@ class Oci8Connector extends Debugger implements iConnector {
 				ClassFactory::get('Events')->raise(ALPHA_EVENT_CONNECTOR_ON_EMPTY_QUERY, $sql, $empty, $returnId, $unwatched);
 				ClassFactory::get('Debug')->write('executing empty query');
 				$isInsert = false;
-				if(substr( trim( strtolower($sql)) , 0,6) =='insert' && $returnId){
+				if($returnId && preg_match("#^(\s*insert\s+into\s+([^\s]+)\s+)(.*)$#im", $sql, $matches )){
 					$isInsert = true;
-					$sql .= (' returning id into :ID');
+					/*
+					 * If you are using an insert command like "insert into table values(a,b,c);"
+					 * the returning id into :ID causes an sql error because the field list
+					 * is not specified.
+					 * You should use something like "insert into table (id, field1, field2) values(a,b,c);"
+					 * to avoid the error.
+					 * 
+					 */
+					// we have to detect the table name into the insert sql query
+					$theTableName = $matches[2];
+					$sqlLeftPart = $matches[1];
+					$sqlRightPart = $matches[3];
+					$fields = $this->describeTable($theTableName);
+					$sqlColumns = '';
+					// As default behavior the first field in the table will be
+					// identified as the autoincrement field
+					$idField = $fields[0][DB_DESCRIPTOR_COLUMN_FIELD];
+					$needColumnsInInsert = (preg_match("#^values#i", $sqlRightPart));
+					// Building the field columns insert section
+					foreach($fields as $field){
+						if($sqlColumns!='') $sqlColumns.=',';
+						if($needColumnsInInsert) $sqlColumns .= $field[DB_DESCRIPTOR_COLUMN_FIELD];
+						if($field[DB_DESCRIPTOR_COLUMN_EXTRA_INFO] == DB_DESCRIPTOR_COLUMN_EXTRA_INFO_AUTOINCREMENT){
+							// If we found an autoincrement field we use it!
+							$idField =$field[DB_DESCRIPTOR_COLUMN_FIELD];
+						}
+					}
+					
+					
+					if($needColumnsInInsert) $sql = "$sqlLeftPart ($sqlColumns) $sqlRightPart";
+
+					$sql .= (" returning $idField into :ID");
+					
 					ClassFactory::get('Events')->raise(ALPHA_EVENT_CONNECTOR_ON_INSERT, $sql);
 				}
 				$sql = utf8_encode($sql);
@@ -323,6 +369,7 @@ class Oci8Connector extends Debugger implements iConnector {
 				if($isInsert) OCIBindByName($stm,":ID",$id,32);	
 				# Managed OCI Error in case of execution fail.
 				ClassFactory::get('Debug')->write('Executing query' . $sql,DEBUG_REPORT_OTHER_DATA );
+			#	echo("<strong>Executing:</strong><pre>$sql</pre>");
 				$response = @oci_execute($stm);
 				
 				if(!$response){
@@ -382,14 +429,17 @@ class Oci8Connector extends Debugger implements iConnector {
 		}
 	}
 	
-	function allResults(){
+	function allResults($stm = null){
+		
 		$dbg = ClassFactory::get('Debug');
 		$dbg->write('Entering ' . __FUNCTION__, DEBUG_REPORT_FUNCTION_ENTER);
 		$dbg->writeFunctionArguments(func_get_args());
 		
-		if($this->result){
+		if(is_null($stm)) $stm = $this->result;
+		
+		if($stm){
 			$return = array();	
-			while($rs = oci_fetch_assoc($this->result)){
+			while($rs = oci_fetch_assoc($stm)){
 				if(function_exists('formatRecordset')){
 					
 					$return[] = formatRecordset($rs, $this->lastQuery);
@@ -450,12 +500,15 @@ class Oci8Connector extends Debugger implements iConnector {
 		
 	}
 	
-	function getCount(){
+	function getCount($stm = null){
+		
+		if(is_null($stm)) $stm = $this->result;
+		
 		$dbg = ClassFactory::get('Debug');
 		$dbg->write('Entering ' . __FUNCTION__, DEBUG_REPORT_FUNCTION_ENTER);
 		$dbg->writeFunctionArguments(func_get_args());
-		oci_fetch_all($this->result, $array);
-		$result = oci_num_rows($this->result);
+		oci_fetch_all($stm, $array);
+		$result = oci_num_rows($stm);
 		$dbg->write('Result is: ' . $result, DEBUG_REPORT_OTHER_DATA);
 		return $result;
 	}
@@ -510,13 +563,23 @@ class Oci8Connector extends Debugger implements iConnector {
 	public function describeTable($tableName){
 		
 		if(isset($this->descriptors[$tableName])) return $this->descriptors[$tableName]; 
+		/*
+		 * Improvements of the following row of code:
+		 * $sql = "select * from user_tab_columns where table_name ='$tableName'";
+		 * 
+		 * If the table is an alias of another table the above query does not return any result.
+		 * Instead if I made a query against the all_tab_columns it will give the same results 
+		 * querying any object regardless its type (TABLE, VIEW, ALIAS, ... ).
+		 */
+		$sql = "SELECT 	COLUMN_NAME, DATA_TYPE, DATA_LENGTH, DATA_DEFAULT,
+		         		DATA_PRECISION, DATA_SCALE, NULLABLE, TABLE_NAME
+		    	FROM 	all_tab_columns
+		   		WHERE 	TABLE_NAME = '$tableName' ORDER BY COLUMN_ID";
 		
-		$sql = "select * from user_tab_columns where table_name ='$tableName'";
 		$paginationStatus = $this->pagingIsEnabled;
 		$this->disablePagination();
 		
 		$stm = $this->query($sql,false, false, true);
-		
 		$this->pagingIsEnabled = $paginationStatus; 
 		/*
 		$c = new ociConnector($this->connector_host,$this->connector_instance, $this->connector_username, $this->connector_password);
