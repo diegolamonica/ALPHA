@@ -4,7 +4,8 @@ require_once CORE_ROOT. 'classes/Debug.php';
 
 class MysqlConnector extends Debugger implements iConnector {
 	
-	const VERSION = '2.0';
+#	const VERSION = '2.0';
+	const VERSION = '2.0.1';
 	
 	private $conn;
 	private $result;
