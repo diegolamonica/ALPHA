@@ -189,7 +189,7 @@ class MysqlConnector extends Debugger implements iConnector {
 				$isInsert = false;
 				if(substr( trim( strtolower($sql)) , 0,6) =='insert' && $returnId){
 					$isInsert = true;
-					$sql .= (' returning id into :ID');
+					#$sql .= (' returning id into :ID');
 					ClassFactory::get('Events')->raise(ALPHA_EVENT_CONNECTOR_ON_INSERT, $sql);
 				}
 				
@@ -387,7 +387,7 @@ class MysqlConnector extends Debugger implements iConnector {
 		# Else it's sufficient to escape the string using mysql_escape_string.
 		if(get_magic_quotes_gpc()=='1') $value = stripslashes($value);
 		#$value = mysql_escape_string($value);
-		$value = mysqli_escape_string($value);
+		$value = mysqli_escape_string($this->conn, $value);
 		/**
 		 * End Issue 14
 		 */

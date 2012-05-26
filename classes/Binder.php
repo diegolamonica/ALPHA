@@ -400,8 +400,8 @@ class Binder extends Debugger implements iBinder {
 				$sql .='where ' .$this->whereCondition;
 		
 				$c->query($sql, true);
-				
-				if($c->lastErrorObject==''){
+				$err = $c->getLastErrorObject();
+				if(is_null($err)){
 					$l->write('Record salvato', $this->tableName, $idRecord);
 				}else{
 					$e = ClassFactory::get('ErrorManager');
