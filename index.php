@@ -24,7 +24,8 @@ require_once('classes/Xml2array.php');
 
 if(!class_exists('core')){
 	class core{
-
+		const QUERYSTRING_URL_PARAMETER 		= '__url';
+		const QUERYSTRING_FILENAME_PARAMETER	= '__fn';
 		static function startup(){
 			
 			if(function_exists('xapache_get_modules')){
@@ -66,7 +67,14 @@ if(!class_exists('core')){
 			# loop through each pair
 			foreach ($pairs as $i) {
 				# split into name and value
-				list($name,$value) = explode('=', $i, 2);
+				
+				// If some querystring elements does not have any value (eg. ?param1&param2=123)
+				// the following instruction causes a PHP Notice
+				// list($name, $value) = explode('=', $i, 2);
+				$pair = explode('=', $i, 2);
+				!isset($pair[1]) && $pair[1] = '';
+				$name = $pair[0]; 
+				$value = $pair[1];
 				# if name already exists
 				if( isset($arr[$name]) ) {
 					# stick multiple values into an array
@@ -80,8 +88,8 @@ if(!class_exists('core')){
 					$arr[$name] = $value;
 				}
 			}
-			if(is_array($arr['__url']))	$_GET['__url'] = $arr['__url'][0];
-			if(is_array($arr['__fn'])) 	$_GET['__fn'] = $arr['__fn'][0];
+			if(is_array($arr[self::QUERYSTRING_URL_PARAMETER]))	$_GET[self::QUERYSTRING_URL_PARAMETER] = $arr[self::QUERYSTRING_URL_PARAMETER][0];
+			if(is_array($arr[self::QUERYSTRING_FILENAME_PARAMETER])) 	$_GET[self::QUERYSTRING_FILENAME_PARAMETER] = $arr[self::QUERYSTRING_FILENAME_PARAMETER][0];
 			
 			/*
 			 * ===================================================================================
@@ -95,25 +103,25 @@ if(!class_exists('core')){
 			/*
 			 * Correct some possible unexpected behavior of the url
 			 */
-			if(!isset($_GET['__url'])) $_GET['__url'] = '/';
-			if(!isset($_GET['__fn'])) $_GET['__fn'] =$_SERVER['SCRIPT_FILENAME'];
-			if(substr($_GET['__url'],strlen($_GET['__url'])-1)=='/') $_GET['__url'] .= 'index.php';
-			if(substr($_GET['__fn'],strlen($_GET['__fn'])-1)=='/')	$_GET['__fn'] .='index.php';
-			$fileNameOnServer = $_GET['__fn'];
+			if(!isset($_GET[self::QUERYSTRING_URL_PARAMETER])) $_GET[self::QUERYSTRING_URL_PARAMETER] = '/';
+			if(!isset($_GET[self::QUERYSTRING_FILENAME_PARAMETER])) $_GET[self::QUERYSTRING_FILENAME_PARAMETER] =$_SERVER['SCRIPT_FILENAME'];
+			if(substr($_GET[self::QUERYSTRING_URL_PARAMETER],strlen($_GET[self::QUERYSTRING_URL_PARAMETER])-1)=='/') $_GET[self::QUERYSTRING_URL_PARAMETER] .= 'index.php';
+			if(substr($_GET[self::QUERYSTRING_FILENAME_PARAMETER],strlen($_GET[self::QUERYSTRING_FILENAME_PARAMETER])-1)=='/')	$_GET[self::QUERYSTRING_FILENAME_PARAMETER] .='index.php';
+			$fileNameOnServer = $_GET[self::QUERYSTRING_FILENAME_PARAMETER];
 			
-			if($_GET['__url']!=''){
-				$requestedUrl = $_GET['__url'];
+			if($_GET[self::QUERYSTRING_URL_PARAMETER]!=''){
+				$requestedUrl = $_GET[self::QUERYSTRING_URL_PARAMETER];
 			}else{
-				$_GET['__url'] = '/index.php';
-				$requestedUrl = $_GET['__url'];
+				$_GET[self::QUERYSTRING_URL_PARAMETER] = '/index.php';
+				$requestedUrl = $_GET[self::QUERYSTRING_URL_PARAMETER];
 			}
-		
+			
 			/*
 			 * Removing __fn from the QueryString to avoid
 			 * security issues
 			 */
-			unset($_GET['__fn']);
-			unset($_GET['__url']);
+			unset($_GET[self::QUERYSTRING_FILENAME_PARAMETER]);
+			unset($_GET[self::QUERYSTRING_URL_PARAMETER]);
 			/* ----------------------------------------  */
 			$baseDir = dirname($fileNameOnServer) .'/';
 			define('ROOT', $baseDir);
@@ -278,7 +286,6 @@ if(!class_exists('core')){
 						}
 						
 						$defaultBaseDir = APPLICATION_CONTROLLER_BASEDIR;
-						#echo(substr($requestedUrl, strpos('/', $requestedUrl)));
 						if(substr($requestedUrl, strpos('/', $requestedUrl))=='ajax'){
 							$subBaseDir = '/'.AJAX_BASEDIR;
 							$requestedUrl = substr($requestedUrl, 5);
@@ -287,8 +294,6 @@ if(!class_exists('core')){
 					default:
 						
 						$defaultBaseDir = APPLICATION_VIEW_BASEDIR;
-						#if($ext=='css') $subBaseDir = '/'.CSS_BASEDIR;
-						#if($ext=='js') 	$subBaseDir = '/'.SCRIPTS_BASEDIR;
 				}
 			
 				
@@ -355,6 +360,8 @@ if(!class_exists('core')){
 			isset($method['param']) && call_user_func_array($method['name'], $method['param']);
 			!isset($method['param']) && call_user_func($method['name']);
 		}
+
+		
 		static function doRequireOnce($baseDir, $subDir, $url){
 			$headers = array(
 			
@@ -404,17 +411,25 @@ if(!class_exists('core')){
 				}
 			}
 			isset($debugOutput) && $debugOutput && print('/* previsional path: ' . $fullPath . "*/\r\n");
-			
 			if(!file_exists($fullPath)){
-				# Provo a cercare nelle directory del core
+				# If the file does not exists in the application directory i try to find it in the core directory
 				$baseDir = CORE_ROOT;
 				$fullPath =$baseDir. $url;
 				
 			}
+
 			
 			isset($debugOutput) && $debugOutput && print('/* defined path: ' . $fullPath . "*/\r\n");
 			
 			if(file_exists($fullPath)){
+				if(is_dir($fullPath)){
+					// This will prevent Framework location error if you are pointing 
+					// to a directory instead of a page link.
+					if($fullPath[strlen($fullPath)-1] != '/') {
+						self::redirectToRightResource($url);
+					}
+					$fullPath .= 'index.php';
+				}
 				if(isset($mimeType)) $mimeType = preg_split('/\//',$mimeType);
 				if(!isset($mimeType) || $mimeType[0]=='text'){
 					
@@ -427,19 +442,58 @@ if(!class_exists('core')){
 					echo $buffer;
 				}
 			}else{
-				header('HTTP/1.0 404 Not Found');
-				if(defined('APPLICATION_DEBUG_MODE') && APPLICATION_DEBUG_MODE === true) {
-					?>
-					Impossibile reperire le informazioni sul file da includere
-					<strong><?php echo $fullPath?></strong><br />
-					<p>
-					<?php
-					
-					$result = print_r(func_get_args(), true);
-					echo( nl2br(htmlspecialchars($result)));
-				}
+				self::send404($fullPath, func_get_args());
+			
 			}
 		}
+		/**
+		 * Correct the url location and redirect the user agent to the right resource.
+		 * @param string $url
+		 */
+		static function redirectToRightResource($url){
+			$url .= '/';
+			$qs = $_SERVER['QUERY_STRING'];
+			// Removing special variables __fn and __url from query string
+			// before building the new querystring.
+			$qs = preg_replace('#(' .
+					preg_quote(self::QUERYSTRING_FILENAME_PARAMETER) . 	# REMOVE __fn
+					'|' .												# OR
+					preg_quote(self::QUERYSTRING_URL_PARAMETER).		# REMOVE __url
+					')\=.*?(&|$)#i', '', $qs);
+			if($qs != '') $url .= "?$qs";
+			header("Location: $url");
+			// Redirecting and stop execution
+			exit();
+		}
+		
+		/**
+		 * Send a 404 Response to the client
+		 * @param string $fullPath
+		 * @param any $otherData
+		 */
+		static function send404($fullPath = '', $otherData = ''){
+			header('HTTP/1.0 404 Not Found');
+			if(defined('APPLICATION_DEBUG_MODE') && APPLICATION_DEBUG_MODE === true) {
+				if($fullPath!=''){
+					?>
+					<h1>Unable to find the resource to include</h1>
+					<p><?php echo $fullPath?></p>
+					<?php 
+				}
+				if($otherData!=''){
+					?>
+					<pre>
+						<?php
+						$result = print_r($otherData, true);
+						echo( nl2br(htmlspecialchars($result)));
+						?>
+					</pre>
+					<?php
+				}
+			}
+						
+		}
+			
 	}
 }
 
