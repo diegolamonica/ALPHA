@@ -102,7 +102,7 @@ Class AlphaUnitTest{
 	
 	public function throwIf($check, $success, $error){
 		$this->index+=1;
-		$index = "[#{$this->id}.$this->index". ($this->stop?" STOP":''). '] ';
+		$index = "[#{$this->id}.$this->index". (($this->stop && $this->failedCount>0)?" STOP":''). '] ';
 		if($check || $this->stop && $this->failedCount>0 ){
 			if(!$this->stop) $this->failedCount += 1;
 			$args = func_get_args();
