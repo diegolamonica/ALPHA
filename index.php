@@ -91,14 +91,7 @@ if(!class_exists('core')){
 			if(is_array($arr[self::QUERYSTRING_URL_PARAMETER]))	$_GET[self::QUERYSTRING_URL_PARAMETER] = $arr[self::QUERYSTRING_URL_PARAMETER][0];
 			if(is_array($arr[self::QUERYSTRING_FILENAME_PARAMETER])) 	$_GET[self::QUERYSTRING_FILENAME_PARAMETER] = $arr[self::QUERYSTRING_FILENAME_PARAMETER][0];
 			
-			/*
-			 * ===================================================================================
-			 */
-			
-			if(isset($_GET['core_info']) && $_GET['core_info'] == 'php_info' && OUTPUT_DEBUG_INFO){
-				phpinfo();
-				exit();
-			}
+			define('CORE_ROOT' , dirname(__FILE__).'/');
 			
 			/*
 			 * Correct some possible unexpected behavior of the url
@@ -150,7 +143,6 @@ if(!class_exists('core')){
 			define('REQUESTED_URL',			$requestedUrl);
 			define('APPLICATION_URL', 		$url);
 			
-			define('CORE_ROOT' , dirname(__FILE__).'/');
 			require_once CORE_ROOT. 'global-functions.php';
 			require_once CORE_ROOT. 'classes/Xml2array.php';
 			
@@ -199,6 +191,28 @@ if(!class_exists('core')){
 			require_once CORE_ROOT.'constants.php';
 			_defineApplyAll();
 			require_once CORE_ROOT.'classes/ClassFactory.php';
+			
+			
+			/*
+			 * ===================================================================================
+			*/
+				
+			if(isset($_GET['core_info']) && OUTPUT_DEBUG_INFO){
+				switch($_GET['core_info']){
+					case 'php_info':
+						phpinfo();
+						exit();
+						break;
+					case 'unit-test':
+						if(isset($_GET['class'])){
+							$unitTestFileName = preg_replace("#[^a-z]#i", '', $_GET['class']);
+							require_once("unit-test/$unitTestFileName.php");
+							exit();
+						}
+						break;
+				}
+			}
+				
 			
 			// Gestione delle regole di rewriting dell'indirizzo
 			ob_start();
@@ -270,8 +284,7 @@ if(!class_exists('core')){
 							if(isset($dbg['function_params']) && strtoupper($dbg['function_params']['attributes']['set'])== 'ON') 	$debugLevel |= DEBUG_REPORT_FUNCTION_PARAMETERS; 
 							if(isset($dbg['function_exit']) && strtoupper($dbg['function_exit']['attributes']['set'])== 'ON') 		$debugLevel |= DEBUG_REPORT_FUNCTION_EXIT; 
 							if(isset($dbg['other_data']) && strtoupper($dbg['other_data']['attributes']['set'])== 'ON') 			$debugLevel |= DEBUG_REPORT_OTHER_DATA; 
-							define('DEBUG_REPORT_LEVEL', $debugLevel);
-		
+							if(!defined('DEBUG_REPORT_LEVEL')) define('DEBUG_REPORT_LEVEL', $debugLevel);
 							
 							if(isset($dbg['skip']) && count($dbg['skip'])>0){
 								$d = ClassFactory::get('Debug');

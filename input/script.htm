@@ -13,22 +13,22 @@
 </head>
 <body>
 	<script type="text/javascript">
-	{if:$var['input.when']=='startup'} 
+	{if:$this->getVar('input.when')=='startup'} 
 		/* init-script:begin */
 		{var:input.html}
 		/* init-script:end */
 	{endif}
 
 	
-	{if:$var['input.when']=='header'}
+	{if:$this->getVar('input.when')=='header'}
 		/* script:begin */
 		{var:input.html}
 		/* script:end */
 	{endif}
 	</script>
-
+	
 	<!-- RENDER:BEGIN -->
-	{if:$var['input.when']=='inplace'}
+	{if:$this->getVar('input.when')=='inplace'}
 		<script type="text/javascript">
 		{var:input.html}
 		</script>

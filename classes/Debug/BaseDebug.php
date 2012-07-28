@@ -18,6 +18,7 @@ if(!class_exists('BaseDebug')){
 			$this->fileName = $file;
 			$this->write('*** Debug started ', DEBUG_REPORT_CLASS_CONSTRUCTION);
 			$this->write('Enabled options:', DEBUG_REPORT_CLASS_CONSTRUCTION);
+			
 			if((DEBUG_REPORT_LEVEL & DEBUG_REPORT_CLASS_CONSTRUCTION)!=0) $this->write('DEBUG_REPORT_CLASS_CONSTRUCTION');
 			if((DEBUG_REPORT_LEVEL & DEBUG_REPORT_CLASS_DESTRUCTION)!=0) $this->write('DEBUG_REPORT_CLASS_DESCTRUCTION');
 			if((DEBUG_REPORT_LEVEL & DEBUG_REPORT_CLASS_FUNCTION_INFO)!=0) $this->write('DEBUG_REPORT_CLASS_FUNCTION_INFO');
@@ -37,12 +38,13 @@ if(!class_exists('BaseDebug')){
 			
 			if(($level & DEBUG_REPORT_LEVEL) !== 0 || $this->maniacalDebug){
 				$f = fopen($this->fileName, 'a+');
-				
-				$filler = str_repeat(' ', $level);
-				
-				
-				fwrite($f, date('Y-m-d H:i:s') . $filler . " $data \n");
-				fclose($f);
+				if($f!==false){
+					$filler = str_repeat(' ', $level);
+					
+					
+					fwrite($f, date('Y-m-d H:i:s') . $filler . " $data \n");
+					fclose($f);
+				}
 			}
 				
 		}

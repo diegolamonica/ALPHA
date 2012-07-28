@@ -85,11 +85,10 @@
 <body>
 	<!-- RENDER:BEGIN -->
 	<input type="text" value="{var:input.value}" id="{var:input.id}"
-		{if:isset($var['input.name'])}
+		{if:$this->getVar('input.name')!=''}
 			name="{var:input.name}" 
 		{endif}
 		class="autocompleter {var:input.class}" />
-	
 	<!-- RENDER:END -->
 </body>
 </html>

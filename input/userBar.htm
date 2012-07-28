@@ -35,7 +35,6 @@
 				
 				echo('<a href="' . $appRs['URL'] . '">' . $appRs['NOME_APPLICAZIONE'] . '</a>');
 				
-				#if($_SESSION[SESSION_USER_TOKEN_VAR] == $_SESSION['multi_apps_logon'][$key]){
 				if($storage->read(SESSION_USER_TOKEN_VAR) == multiAppsLogon[$key]){
 					echo('<img src="/css/images/success.png" alt="&gt;" />');
 				}
@@ -90,7 +89,7 @@
 		{phpend}
 
 		<div class="user-actions">
-		{if:$var['input.defaultActions']=='true'}
+		{if:$this->getVar('input.defaultActions')=='true'}
 			<a class="user-logout" href="/">Menu principale</a> -
 			<a class="user-search" href="/ricerche/">Cerca</a> -
 			<a class="user-logout" href="/logout.php">Logout</a>
