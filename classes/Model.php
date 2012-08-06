@@ -1,7 +1,7 @@
 <?php
 /**
  * @author Diego La Monica
- * @version 2.0
+ * @version 2.1
  * @name Model
  * @package ALPHA
  * @uses Debugger
@@ -21,8 +21,14 @@ class Model extends Debugger {
 	 *   - to improve performances
 	 *   - in favour of uint tests 
 	 *   
+	 * V 2.1
+	 * - Optimized code to improve performance (800% faster)
+	 * - Complete removal of debug calls
+	 * - Improved ClearSubvar method 
+	 * - Improved documentation
+	 * - minor bugfix
 	 */
-	const VERSION = '2.0';
+	const VERSION = '2.1';
 
 	const KEYWORD_PHP_BLOCK_START = 'php';
 	const KEYWORD_PHP_BLOCK_END = 'phpend';
@@ -153,6 +159,8 @@ class Model extends Debugger {
 	 */
 	public $inLoop = false;
 	
+	private $ignoreCache = false;
+	
 	/**
 	 * Contains all HTML elements to put in the <head /> block of the current processed page.
 	 * @var array 
@@ -222,10 +230,6 @@ class Model extends Debugger {
 	 */
 	public static function appendScripts($value, $startup = false){
 
-		$dbg = ClassFactory::get('Debug');
-		$dbg->setGroup(__CLASS__);
-		$dbg->write('Entering ' . __FUNCTION__, DEBUG_REPORT_FUNCTION_ENTER);
-		$dbg->writeFunctionArguments(func_get_args());
 		if($startup)
 			$h = &self::$startupScripts;
 		else
@@ -236,7 +240,7 @@ class Model extends Debugger {
 				$h[] = $value;
 			
 		}
-		$dbg->write('Exiting ' . __FUNCTION__, DEBUG_REPORT_FUNCTION_EXIT);
+
 	}
 
 	/**
@@ -247,10 +251,7 @@ class Model extends Debugger {
 	 */
 
 	public static function appendHeaders($headers){
-		$dbg = ClassFactory::get('Debug');
-		$dbg->setGroup(__CLASS__);
-		$dbg->write('Entering ' . __FUNCTION__, DEBUG_REPORT_FUNCTION_ENTER);
-		$dbg->writeFunctionArguments(func_get_args());
+
 		$h = &self::$headers;
 		foreach($headers as $value){
 			$value = trim($value);
@@ -260,7 +261,6 @@ class Model extends Debugger {
 					
 			}
 		}
-		$dbg->write('Exiting ' . __FUNCTION__, DEBUG_REPORT_FUNCTION_EXIT);
 
 	}
 
@@ -275,16 +275,13 @@ class Model extends Debugger {
 	 * @return null
 	 */
 	function setView($viewName){
-		$dbg = ClassFactory::get('Debug');
-		$dbg->setGroup(__CLASS__);
-		$dbg->write('Entering ' . __FUNCTION__, DEBUG_REPORT_FUNCTION_ENTER);
-		$dbg->writeFunctionArguments(func_get_args());
+		
 		$this->viewName = $viewName;
 		$this->viewFileName = APPLICATION_VIEW_BASEDIR .'/'. $viewName .'.htm';
 		$h = fopen($this->viewFileName, "r");
 		$this->buffer = fread($h, filesize($this->viewFileName));
 		fclose($h);
-		$dbg->write('Exiting ' . __FUNCTION__, DEBUG_REPORT_FUNCTION_EXIT);
+		
 	}
 
 
@@ -294,12 +291,9 @@ class Model extends Debugger {
 	 * @return null
 	 */
 	function setViewFromBuffer($buffer){
-		$dbg = ClassFactory::get('Debug');
-		$dbg->setGroup(__CLASS__);
-		$dbg->write('Entering ' . __FUNCTION__, DEBUG_REPORT_FUNCTION_ENTER);
-		$dbg->writeFunctionArguments(func_get_args());
+		
 		$this->buffer = $buffer;
-		$dbg->write('Exiting ' . __FUNCTION__, DEBUG_REPORT_FUNCTION_EXIT);
+		
 	}
 	
 	
@@ -363,14 +357,9 @@ class Model extends Debugger {
 	 */
 	function setVar($key, $value){
 		
-		#$dbg = ClassFactory::get('Debug');
-		#$dbg->setGroup(__CLASS__);
-		#$dbg->write('Entering ' . __FUNCTION__, DEBUG_REPORT_FUNCTION_ENTER);
-		#$dbg->writeFunctionArguments(func_get_args());
 		# $this->variables[$key] = $value;
 		$key = preg_replace('/\%([0-9A-F]{2})/ie', 'chr(hexdec("\\1"))', $key);
 		$this->createVar($key, $value, self::$variables, 'update');
-		#$dbg->write('Exiting ' . __FUNCTION__, DEBUG_REPORT_FUNCTION_EXIT);
 	}
 
 	/**
@@ -428,11 +417,7 @@ class Model extends Debugger {
 	 * @return string
 	 */
 	function retrieveFromCache($buffer){
-		$dbg = ClassFactory::get('Debug');
-		$dbg->setGroup(__CLASS__);
-		$dbg->write('Entering ' . __FUNCTION__, DEBUG_REPORT_FUNCTION_ENTER);
-		$dbg->writeFunctionArguments(func_get_args());
-
+		
 		if (preg_match('/<!--\\s+CACHE MANAGER(.*?)-->\s*/si', $buffer, $defaultCacheBuffer)) {
 			$buffer = '';
 			// Esiste un controllo per la cache
@@ -453,11 +438,17 @@ class Model extends Debugger {
 				$defaultCacheKey 	= strtolower($defaultCacheAttributes[1][$attributesLoop]);
 				$defaultCacheValue 	= $defaultCacheAttributes[2][$attributesLoop];
 				$className = __CLASS__;
-				$m = new $className(false, true, $defaultCacheValue);
-				$m->isPlugin=true;
+				$currentObjectStatus = $this->storeCurrentStatus();
+				
+				# $m = new Model(false, true, $defaultCacheValue);
+				$this->_doNotSendHeader = true;
+				$this->buffer = $defaultCacheValue;
+				$this->isPlugin=true;
 				#$m->setViewFromBuffer($defaultCacheValue);
-				$cacheAttribs[$defaultCacheKey] = $m->render(true);
-				$m = null;
+				$cacheAttribs[$defaultCacheKey] = $this->render(true);
+				
+				$this->restoreCurrentStatus($currentObjectStatus);
+				#$m = null;
 			}
 				
 			// 2. verifico se mi trovo in una condizione di flush
@@ -540,8 +531,6 @@ class Model extends Debugger {
 			$buffer = '';
 		}
 
-		$dbg->write('Exiting ' . __FUNCTION__, DEBUG_REPORT_FUNCTION_EXIT);
-
 		return $buffer;
 	}
 
@@ -552,10 +541,6 @@ class Model extends Debugger {
 	 */
 	function saveCache($buffer){
 
-		$dbg = ClassFactory::get('Debug');
-		$dbg->setGroup(__CLASS__);
-		$dbg->write('Entering ' . __FUNCTION__, DEBUG_REPORT_FUNCTION_ENTER);
-		$dbg->writeFunctionArguments(func_get_args());
 		if (preg_match('/<!--\\s+CACHE MANAGER(.*?)-->\s*/si', $buffer, $defaultCacheBuffer)) {
 			// Esiste un controllo per la cache
 				
@@ -613,8 +598,6 @@ class Model extends Debugger {
 				
 		}
 			
-
-		$dbg->write('Exiting ' . __FUNCTION__, DEBUG_REPORT_FUNCTION_EXIT);
 	}
 
 	/**
@@ -632,14 +615,16 @@ class Model extends Debugger {
 			}
 				
 		}
-
+		$currentObjectStatus = $this->storeCurrentStatus();
+		/*
 		# Storing the current template buffer
 		$buffer = $this->buffer;
 		# Storing the current template status
 		$isPlugin = $this->isPlugin;
 		$sendHeaders = $this->_doNotSendHeader;
-		
+		$storedFromCache = $this->storedFromCache;
 		# Telling the Model I'm in the plugin status
+		*/
 		$this->buffer = $mBuffer;
 		$this->isPlugin = true;
 		$this->_doNotSendHeader = true;
@@ -653,11 +638,13 @@ class Model extends Debugger {
 		
 		$mBuffer = $this->process($mBuffer);
 		
-		
+		$this->restoreCurrentStatus($currentObjectStatus);
+		/*
 		$this->_doNotSendHeader = $sendHeaders;
 		$this->buffer = $buffer;
 		$this->isPlugin = $isPlugin;
-		
+		$this->storedFromCache = $storedFromCache;
+		*/
 		return $mBuffer;
 
 	}
@@ -671,14 +658,10 @@ class Model extends Debugger {
 	 */
 	function process($buffer = null){
 
-		$dbg = ClassFactory::get('Debug');
-		$dbg->setGroup(__CLASS__);
-		$dbg->write('Entering ' . __FUNCTION__, DEBUG_REPORT_FUNCTION_ENTER);
-		$dbg->writeFunctionArguments(func_get_args());
 		if($buffer == null) $buffer = $this->buffer;
 		# Issue #27: $tempBuffer is undefined
 		$tempBuffer = '';
-		if(!$this->storedFromCache) $tempBuffer = $this->retrieveFromCache($buffer);
+		if(!$this->storedFromCache && !$this->inLoop) $tempBuffer = $this->retrieveFromCache($buffer);
 		if($tempBuffer !=''){
 			$buffer = $tempBuffer;
 		}else{
@@ -783,7 +766,6 @@ class Model extends Debugger {
 			}
 		}
 		$this->buffer = $buffer;
-		$dbg->write('Exiting ' . __FUNCTION__, DEBUG_REPORT_FUNCTION_EXIT);
 		return $buffer;
 	}
 	/**
@@ -793,28 +775,55 @@ class Model extends Debugger {
 	function getBuffer(){
 		return $this->buffer;
 	}
+	
+	private function storeCurrentStatus(){
+		return array(
+			'_doNotSendHeader' 	=> $this->_doNotSendHeader,
+			'buffer' 			=> $this->buffer,
+			'ignoreCache' 		=> $this->ignoreCache,
+			'inLoop' 			=> $this->inLoop,
+			'isPlugin' 			=> $this->isPlugin,
+			'storedFromCache' 	=> $this->storedFromCache,
+			'viewFileName'		=> $this->viewFileName,
+			'viewName'			=> $this->viewName
+		);
+	} 
+	
+	private function restoreCurrentStatus($status){
+		foreach($status as $key => $value){
+			
+			$this->$key = $value;
+			
+		}
+	}
 	/**
 	 * Cerca tutti i token nel buffer HTML e le converte nei valori opportuni
 	 * @param $bufferedOutput <b>boolean</b> <code>default false</code> se impostato a true il metodo restituirà in output il buffer elaborato
 	 * @return <b>string</b> solo se <code>$bufferedOutput = true</code> altrimenti null
 	 */
 	function render($bufferedOutput=false){
+		
+		/*
+		 * If i should send headers for the page
+		 */
 		if(!$this->_doNotSendHeader && !headers_sent()){
+			
 			header('Content-type: text/html; charset=UTF-8') ;
 		}
-		$dbg = ClassFactory::get('Debug');
-		$dbg->setGroup(__CLASS__);
-		$dbg->write('Entering ' . __FUNCTION__, DEBUG_REPORT_FUNCTION_ENTER);
-		$dbg->writeFunctionArguments(func_get_args());
+		/*
+		 * Uses local stored buffer
+		 * and check for existence in the cache 
+		 */
 		$buffer = $this->buffer;
-		$tempBuffer = '';
-		if(!$this->storedFromCache) $tempBuffer = $this->retrieveFromCache($buffer);
-		if($tempBuffer !='') $buffer = $tempBuffer;
-		if($this->storedFromCache){
-				
-			if($bufferedOutput) return $buffer;
-			echo($buffer);
-			return $buffer;
+		if(!$this->ignoreCache && !$this->storedFromCache && !$this->inLoop){
+			$tempBuffer = '';
+			$tempBuffer = $this->retrieveFromCache($buffer);
+			if($tempBuffer !='') $buffer = $tempBuffer;
+			if($this->storedFromCache){
+					
+				if($bufferedOutput) return $buffer;
+				echo($buffer);
+			}
 		}
 
 		$savedBuffer = '';
@@ -828,13 +837,14 @@ class Model extends Debugger {
 
 		#$buffer .='{var:'. $chiaveLastKey . '}';
 		#$this->setVar($chiaveLastKey,'');
-		#print_r(array($buffer,preg_match('/{([a-z\-_]+):(.*)}/', $buffer, $items, null, $first_position), $first_position, $items));
-		while(( $result = preg_match('/{([a-z\-_]+):(.*)}/', $buffer, $items, null, $first_position))!=0){
+		while(( /*$result =*/ preg_match('/{([a-z\-_]+):(.*)}/', $buffer, $items, null, $first_position))!=0){
 			$last_first_position = strpos($buffer, $items[0]);
 			if($first_position>$last_first_position) $last_first_position = $first_position;
+			/*
+			 * It seems that the following block is not required (it does the same as while condition: no more)!
+			 * 
 			if($first_position==$last_first_position){
-				$dbg->write('last first position:' . $first_position);
-				$dbg->write('first position:' . $first_position);
+
 				$lastItem = $items[0];
 					
 				$result = preg_match('/{([a-z\-_]+):(.*)}/', $buffer, $items, null, $first_position);
@@ -844,23 +854,33 @@ class Model extends Debugger {
 				}else{
 					#	$first_position = $last_first_position+1;
 				}
-				$dbg->write('match on: ' . $items[0]);
 			}
+			
+			*
+			*/
 			$first_position = $last_first_position+1;
 			$keyword = $items[1];
 			$value = $items[2];
-			$thisClassName = __CLASS__;
-			if(preg_match('/{([a-z\-_]+):(.*)}/', $value)!==false){
-				$tempRenderingBuffer = $this->buffer;
-				$tempsendHeadersStatus = $this->_doNotSendHeader;
+			#$thisClassName = __CLASS__;
+			/* 
+			 * if there were some nested elements 
+			 */
+			if(preg_match('/{([a-z\-_]+):(.*)}/', $value)!=0){
+				
+				
+				$currentObjectStatus = $this->storeCurrentStatus();
+				
 				$this->_doNotSendHeader = true;
 				$this->buffer = $value;
+				$this->ignoreCache = true;
+				
 				$value = $this->render(true);
-				$this->_doNotSendHeader = $tempsendHeadersStatus;
-				$this->buffer = $tempRenderingBuffer;
+				
+				$this->restoreCurrentStatus($currentObjectStatus);
+				
 				
 			}
-			switch($items[1]){
+			switch($keyword){
 				case self::KEYWORD_REDIRECT:
 					$fileToRedirect = APPLICATION_URL.$value;
 					header('Location: ' . $fileToRedirect, true);
@@ -871,15 +891,20 @@ class Model extends Debugger {
 					include $fileToInclude;
 					$tmpBuffer = ob_get_clean();
 					
-					$tempRenderingBuffer = $this->buffer;
-					$tempsendHeadersStatus = $this->_doNotSendHeader;
+					$currentObjectStatus = $this->storeCurrentStatus();
+					
+					#$tempRenderingBuffer = $this->buffer;
+					#$tempsendHeadersStatus = $this->_doNotSendHeader;
+					
 					$this->_doNotSendHeader = true;
 					$this->buffer = $tmpBuffer;
 					$this->process();
 					$tmpBuffer = $this->render(true);
 					
-					$this->buffer = $tempRenderingBuffer;
-					$this->_doNotSendHeader = $tempsendHeadersStatus;
+					$this->restoreCurrentStatus($currentObjectStatus);
+					
+					#$this->buffer = $tempRenderingBuffer;
+					#$this->_doNotSendHeader = $tempsendHeadersStatus;
 					/*
 					 * Reduced the instances of Model:
 					 * - better memory management
@@ -927,67 +952,78 @@ class Model extends Debugger {
 					if(is_null($tempResult) && array_search($blockName, array('$_GET','$_POST','$_COOKIE', '$_ENV', '$_FILES', '$_REQUEST', '$_SERVER', '$_SESSION'))!==false){
 						
 					#if(!isset(self::$variables[$blockName]) && array_search($blockName, array('$_GET','$_POST','$_COOKIE', '$_ENV', '$_FILES', '$_REQUEST', '$_SERVER', '$_SESSION'))!==false){
-						eval( '$temporaryObject='. $blockName . ';');
+						$lambdaFunction = create_function("", "return $blockName;");
+						$temporaryObject = $lambdaFunction(); 
+						#eval( '$temporaryObject='. $blockName . ';');
 						$this->setVar($blockName, $temporaryObject);
 						#self::$variables["$blockName"] =$temporaryObject;
 						$tempResult = $this->getVar($blockName, null, true);
 					}
 					
-					$lastVariables = '';
+					#$lastVariables = '';
+					$lastVariables = null;
 					if(is_array($tempResult)){
+						
+						/*
+						 * Test 2012-08-03
 						$m = new $thisClassName(false, true);
-					
 						$m->inLoop = true;
+						*/
+						
+						/*
+						 * Storing current object status
+						 */
+						$currentObjectStatus = $this->storeCurrentStatus();
+						
+						$this->inLoop 			= true;
+						$this->_doNotSendHeader = true;
+						$this->ignoreCache 		= true;
+						$this->storedFromCache	= false;
+						/* -- Test 2012-08-03 -- */
 						$i = 0;
 
-						$tempIterator 		= $this->getVar('iterator');
-						$tempIteratorKey 	= $this->getVar('iterator.key');
-						$tempIteratorValue 	= $this->getVar('iterator.value');
-						$tempIteratorLast 	= $this->getVar('iterator.last');
-						$tempIteratorPrev 	= $this->getVar('iterator.prev');
-
-						foreach($tempResult as $key => $value){
+						$tempIterator = $this->getVar('iterator', null, true);
+						
+						$totalResults = count($tempResult);
+						$tmpBufferArray = array();
+						foreach($tempResult as $key => &$value){
 							
-							$m->setViewFromBuffer($loopBlock);
-							# Modifica del 26-02-2010 di Diego La Monica
-							# $m->setMultipleVar($this->variables);
-							# Fine Modifica del 26-02-2010 di Diego La Monica
-								
-								
+							$this->buffer = $loopBlock;
+							
 							$i+=1;
-
-							$this->setVar('iterator', $i);
-							$this->setVar('iterator.key', $key);
-							$this->setVar('iterator.value', $value);
-							$this->setVar('iterator.last', ($i == count($tempResult)));
-							$this->setVar('iterator.prev', $lastVariables);
-								
-							#exit();
-							$this->setMultipleVar($value, $blockName);
-							$m->process();
-							$tmpBuffer .= $m->render(true);
-								
+							#$this->setVar('iterator', $i);
+							self::$variables['iterator'][0] = $i;
+							
+							#$this->setVar('iterator.key', $key);
+							self::$variables['iterator']['key'][0] = $key;
+							
+							#$this->setVar('iterator.value', $value);
+							self::$variables['iterator']['value'] = $value;
+							#$this->setVar('iterator.last', ($i == $totalResults));
+							self::$variables['iterator']['last'] = ($i == $totalResults);
+							
+							#$this->setVar('iterator.prev', $lastVariables);
+							self::$variables['iterator']['prev'] = $lastVariables;
+							
+							
+							$this->setVar($blockName, $value);
+							
+							$this->process();
+							$tmpBufferArray[] = $this->render(true);
 							$lastVariables = $value;
-							# Modifica del 26-02-2010 di Diego La Monica
-							# $m->clearAllVar();
-							$this->clearVar('iterator.value');
-							#$m->clearVar($blockName, true);
 							$this->clearSubvar($blockName, true);
-							$this->clearVar('iterator', true);
-							# Fine Modifica del 26-02-2010 di Diego La Monica
+							$this->clearVar('iterator');
 								
 						}
-						$m->inLoop = false;
-						$this->setMultipleVar(
-							array(
-								'iterator'=> $tempIterator,
-								'iterator.key' => $tempIteratorKey,
-								'iterator.value' => $tempIteratorValue,
-								'iterator.last' => $tempIteratorLast,
-								'iterator.prev' => $tempIteratorPrev)
-						);
-						unset($m);
-
+						
+						$tmpBuffer = implode("", $tmpBufferArray);
+						/*
+						 * Restoring object status
+						 */
+						$this->restoreCurrentStatus($currentObjectStatus);
+						
+						 /* -- Test 2012-08-03 -- */
+						if(!is_null($tempIterator)) $this->setVar('iterator', 		$tempIterator);
 
 					}else{
 						$tmpBuffer = '';
@@ -997,9 +1033,7 @@ class Model extends Debugger {
 					break;
 
 				case self::KEYWORD_IF_START:
-					
 					list($ifBlock, $elseBlock) = $this->ifBlockSearch($buffer, $items[0], self::KEYWORD_IF_START, self::KEYWORD_IF_END, self::KEYWORD_IF_ELSE);
-					
 					$replacement = $items[0];
 					$replacement .= $ifBlock;
 					if($elseBlock!=''){ 
@@ -1008,7 +1042,7 @@ class Model extends Debugger {
 					}
 					$replacement .= '{'.self::KEYWORD_IF_END .'}';
 					
-					if($this->evaluate($value, self::$variables)){
+					if($this->evaluate($value)){
 						$buffer = str_replace($replacement, $ifBlock, $buffer); 
 					}else{
 						$buffer = str_replace($replacement, $elseBlock, $buffer);
@@ -1078,9 +1112,6 @@ class Model extends Debugger {
 					else{
 						$unescaped = stripslashes($result[0]);
 
-						$dbg->write('data used for the $unescaped variable:');
-						$dbg->write(print_r($result, true));
-						if(!isset($unescaped)) $dbg->write('WARNING: $unescaped is not set!');
 						if(array_search($unescaped, self::$disallowedEscapeOn)!==false){
 							$buffer = preg_replace('/' . $result[0] . '/', print_r($result[1], true),$buffer,1);
 						}else{
@@ -1184,14 +1215,14 @@ class Model extends Debugger {
 		// $buffer = str_replace('href="/', 'href="' . APPLICATION_URL,  $buffer);
 		// $buffer = str_replace('src="/', 'src="' . APPLICATION_URL,  $buffer);
 
-		$dbg->write('Exiting ' . __FUNCTION__, DEBUG_REPORT_FUNCTION_EXIT);
 
 
 		$buffer = str_replace('@@ROOT/', APPROOT, $buffer);
 
-		// Salvo il buffer in cache
-
-		$this->saveCache($buffer);
+		/*
+		 * If I have to ignore cache why should I save the response in cache?
+		 */
+		if(!$this->ignoreCache) $this->saveCache($buffer);
 
 		if($bufferedOutput) return $buffer;
 		echo($buffer);
@@ -1256,7 +1287,11 @@ class Model extends Debugger {
 			
 		}
 		
-		if(!$raw && is_array($tmpVar) && isset($tmpVar[0])) $tmpVar = $tmpVar[0];
+		if(!$raw){
+			if(is_array($tmpVar) && (isset($tmpVar[0]) || count($tmpVar)==1)){
+				$tmpVar = $tmpVar[0];
+			}
+		}
 		return is_null($tmpVar)?$ifUnavailable:$tmpVar;
 	}
 
@@ -1269,12 +1304,6 @@ class Model extends Debugger {
 	 */
 	private function parseVar($buffer){
 		global $formatArray;
-
-
-		$dbg = ClassFactory::get('Debug');
-		$dbg->setGroup(__CLASS__);
-		$dbg->write('Entering ' . __FUNCTION__, DEBUG_REPORT_FUNCTION_ENTER);
-		$dbg->writeFunctionArguments(func_get_args());
 
 		preg_match('/{' .self::KEYWORD_VAR.':([a-z0-9_\-\.]+)(\\|(@(from)\\s+"([^"\\\]*(?:\\\.[^"\\\]*)*)"\\s?)?(\\s?@(to)\\s+"([^"\\\]*(?:\\\.[^"\\\]*)*)")?)?}/i', $buffer, $items);
 		$value = $items[1];
@@ -1310,11 +1339,10 @@ class Model extends Debugger {
 
 		if($value==null || !isset($value)) $value ='';
 		$result = array(
-		preg_replace('/[^a-z0-9]/i', '\\\\\0', $items[0]),
-		$value
+			preg_replace('/[^a-z0-9]/i', '\\\\\0', $items[0]),
+			$value
 		);
 
-		$dbg->write('Exiting ' . __FUNCTION__, DEBUG_REPORT_FUNCTION_EXIT);
 		return 	$result;
 	}
 
@@ -1325,11 +1353,6 @@ class Model extends Debugger {
 	 * @return string il risultato della funzione
 	 */
 	private function parseFunction($fnName, $params){
-		$dbg = ClassFactory::get('Debug');
-		$dbg->setGroup(__CLASS__);
-		$dbg->write('Entering ' . __FUNCTION__, DEBUG_REPORT_FUNCTION_ENTER);
-		$dbg->writeFunctionArguments(func_get_args());
-		
 		// Splitting the params string into multiple parameters
 		preg_match_all('/("[^"\\\]*(?:\\\.[^"\\\]*)*")|(\'[^\'\\\]*(?:\\\.[^\'\\\]*)*\')|([^,]+)/i', $params, $params);
 		$params = $params[0];
@@ -1413,24 +1436,15 @@ class Model extends Debugger {
 
 		$fnRoot = APPLICATION_CUSTOM_FUNCTION_BASEDIR .'/';
 		if(!file_exists($fnRoot.$fnName . '.php')) $fnRoot = FUNCTIONSROOT;
-
 		if(file_exists($fnRoot.$fnName . '.php')){
-			$dbg->write('Including ' . $fnRoot.$fnName . '.php', DEBUG_REPORT_OTHER_DATA);
 			require_once $fnRoot.$fnName . '.php';
 				
-			$dbg->write('Creating the class ' . $fnName . '()', DEBUG_REPORT_OTHER_DATA);
 			$f = new $fnName();
-			/*for($i=0;$i<count($params) ; $i++){
-				$dbg->write('Adding parameter #' .$i . ': ' . $params[$i], DEBUG_REPORT_OTHER_DATA);
-				$f->addParameter($params[$i]);
-			}*/
 			
 			# A little bit faster than for() statement
 			foreach($params as $i => $param){
-				$dbg->write('Adding parameter #' .$i . ': ' . $param, DEBUG_REPORT_OTHER_DATA);
 				$f->addParameter($param);
 			}
-			$dbg->write('Executing method '  .$fnName . '->execute();', DEBUG_REPORT_OTHER_DATA);
 			$result = $f->execute();
 			
 		}else{
@@ -1441,8 +1455,6 @@ class Model extends Debugger {
 				'Verificare se il file di funzione è presente nel core (' . CORE_ROOT .'/functions/) oppure
 				nella cartella dell\'applicazione (' . APPLICATION_CUSTOM_FUNCTION_BASEDIR . ')');
 		}
-
-		$dbg->write('Exiting ' . __FUNCTION__, DEBUG_REPORT_FUNCTION_EXIT);
 		return $result;
 	}
 	/**
@@ -1451,10 +1463,7 @@ class Model extends Debugger {
 	 * @param string $prefix (optional). default = '' if specified the method will become an alias of setVar($prefix, $object)
 	 */
 	public function setMultipleVar($object, $prefix=''){
-		#$dbg = ClassFactory::get('Debug');
-		#$dbg->setGroup(__CLASS__);
-		#$dbg->write('Entering ' . __FUNCTION__, DEBUG_REPORT_FUNCTION_ENTER);
-		#$dbg->writeFunctionArguments(func_get_args());
+		
 		if($prefix!='') {
 			$this->setVar($prefix, $object);
 		}else if(is_array($object) || is_object($object)){
@@ -1462,49 +1471,36 @@ class Model extends Debugger {
 				$this->setVar($key, $value);
 			}
 		}
-		#$dbg->write('Exiting ' . __FUNCTION__, DEBUG_REPORT_FUNCTION_EXIT);
 	}
 	
 	/**
 	 * Rimuove tutti gli header che dovranno essere passati al modello
 	 * @return null
 	 */
-	function resetHeader(){
-		$dbg = ClassFactory::get('Debug');
-		$dbg->setGroup(__CLASS__);
-		$dbg->write('Entering ' . __FUNCTION__, DEBUG_REPORT_FUNCTION_ENTER);
-		$dbg->writeFunctionArguments(func_get_args());
-
+	public function resetHeader(){
+		
 		self::$headers = array();
 		self::$headerScripts = array();
 		self::$startupScripts =array();
-		$dbg->write('Exiting ' . __FUNCTION__, DEBUG_REPORT_FUNCTION_EXIT);
+
 	}
 	/**
-	 * Rimuove tutte le variabili da fornire al modello
-	 * @return unknown_type
+	 * Remove all variables from the model
 	 */
-	function clearAllVar(){
-		$dbg = ClassFactory::get('Debug');
-		$dbg->setGroup(__CLASS__);
-		$dbg->write('Entering ' . __FUNCTION__, DEBUG_REPORT_FUNCTION_ENTER);
-		$dbg->writeFunctionArguments(func_get_args());
+	public function clearAllVar(){
+
 		# Modifica del 26-02-2010 di Diego La Monica
 		# $this->variables = null;
 		self::$variables = null;
 		# Fine Modifica
-		$dbg->write('Exiting ' . __FUNCTION__, DEBUG_REPORT_FUNCTION_EXIT);
 	}
 	/**
-	 * Rimuove tutte le variabili che hanno uno specifico prefisso. Se prefisso non viene specificato la funzione corrisponderà ad un alias del metodo <code>clearAllVar()</code>
-	 * @param $prefix <b>string</b> il prefisso delle variabili da rimuovere
-	 * @return null
+	 * Remove all variables with specific prefix.
+	 * If $prefix is empty the method will works as clearAllVar() method
+	 * @param string $prefix il prefisso delle variabili da rimuovere
+	 * @param bool $exactToo if true the value of variable and its subvariables will be removed otherways only the direct value will be removed.
 	 */
 	public function clearVar($prefix = '', $exactToo = false ){
-		$dbg = ClassFactory::get('Debug');
-		$dbg->setGroup(__CLASS__);
-		$dbg->write('Entering ' . __FUNCTION__, DEBUG_REPORT_FUNCTION_ENTER);
-		$dbg->writeFunctionArguments(func_get_args());
 
 		if($prefix=='') {
 			$this->clearAllVar();
@@ -1512,40 +1508,32 @@ class Model extends Debugger {
 			# Improvement based on new $variables array structure
 			$this->createVar($prefix, null, self::$variables, $exactToo?'replace':'unset');
 		}
-		$dbg->write('Exiting ' . __FUNCTION__, DEBUG_REPORT_FUNCTION_EXIT);
 
 	}
 	public function clearSubvar($prefix){
-		$dbg = ClassFactory::get('Debug');
-		$dbg->setGroup(__CLASS__);
-		$dbg->write('Entering ' . __FUNCTION__, DEBUG_REPORT_FUNCTION_ENTER);
-		$dbg->writeFunctionArguments(func_get_args());
+
 		$subvar = $this->getVar($prefix, array(), true);
 		foreach($subvar as $key => $value){
-			$this->clearVar("$prefix.$subvar", true);
+			if(!is_numeric($key) /* || is_numeric($key) && intval($key)===$key */)
+				$this->clearVar("$prefix.$subvar", true);
 		}
-		$dbg->write('Exiting ' . __FUNCTION__, DEBUG_REPORT_FUNCTION_EXIT);
-
 	}
 	
 	/**
 	 * Metodo interno per la valutazione di una condizione
-	 * @param $condition <b>string</b> codice PHP della condizione da valutare
-	 * @param  $var <b>any<b> Non usato: valore deprecato 
+	 * @param string $condition codice PHP della condizione da valutare
 	 * @return boolean
+	 * @todo make evaluate more secure/safer
 	 */
-	private function evaluate($condition, $var){
-		$dbg = ClassFactory::get('Debug');
-		$dbg->setGroup(__CLASS__);
-		$dbg->write('Entering ' . __FUNCTION__, DEBUG_REPORT_FUNCTION_ENTER);
-		$dbg->writeFunctionArguments(func_get_args());
-
+	private function evaluate($condition){
+		$var = self::$variables;
+		
 		if($condition!=''){
 			$c = "\$___ModelEvaluationCondition= ($condition);";
 			@eval($c);
+			
 		}
-
-		$dbg->write('Exiting ' . __FUNCTION__, DEBUG_REPORT_FUNCTION_EXIT);
+		
 		return isset($___ModelEvaluationCondition)?$___ModelEvaluationCondition:false;
 
 	}
@@ -1559,10 +1547,6 @@ class Model extends Debugger {
 	 * @return <b>string</b> il contenuto del blocco esclusi gli elementi di apertura e chiusura
 	 */
 	private function endBlockSearch($buffer, $item , $keyword_start, $keyword_end){
-		$dbg = ClassFactory::get('Debug');
-		$dbg->setGroup(__CLASS__);
-		$dbg->write('Entering ' . __FUNCTION__, DEBUG_REPORT_FUNCTION_ENTER);
-		$dbg->writeFunctionArguments(func_get_args());
 
 		$i = strpos($buffer, $item);
 		$j = strpos($buffer, '{' . $keyword_end . '}');
@@ -1585,18 +1569,12 @@ class Model extends Debugger {
 			$startLoopIndex = preg_match_all('/{' . $keyword_start .':([^}]+)}/', $block, $matches);
 				
 		}
-		$dbg->write('Exiting ' . __FUNCTION__, DEBUG_REPORT_FUNCTION_EXIT);
 
 		return $block;
 	}
 
 	private function ifBlockSearch($buffer, $item , $keyword_start, $keyword_end, $keyword_else){
-		$dbg = ClassFactory::get('Debug');
-		$dbg->setGroup(__CLASS__);
-		$dbg->write('Entering ' . __FUNCTION__, DEBUG_REPORT_FUNCTION_ENTER);
-		$dbg->writeFunctionArguments(func_get_args());
-		
-		
+	
 		// Identify the endif related to this if/endif block  
 		$block = $this->endBlockSearch($buffer, $item, $keyword_start, $keyword_end);
 		
@@ -1608,7 +1586,6 @@ class Model extends Debugger {
 		
 		// Search all nested if
 		if(preg_match_all('/{' . $keyword_start .':([^}]+)}/', $block, $matches, PREG_OFFSET_CAPTURE)){
-			#print_r($matches);
 			
 			foreach($matches[0] as $index => $match){
 				$subBlock = $this->endBlockSearch($block, $match[0], $keyword_start, $keyword_end);
@@ -1654,7 +1631,6 @@ class Model extends Debugger {
 			$return[1] = '';
 		
 		}
-		
 		return $return;
 		
 	}
