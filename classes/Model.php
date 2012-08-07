@@ -1,7 +1,7 @@
 <?php
 /**
  * @author Diego La Monica
- * @version 2.1
+ * @version 2.2
  * @name Model
  * @package ALPHA
  * @uses Debugger
@@ -27,8 +27,17 @@ class Model extends Debugger {
 	 * - Improved ClearSubvar method 
 	 * - Improved documentation
 	 * - minor bugfix
+	 *
+	 * V 2.2
+	 * - Some improvements in the Cache Manager
+	 * - Added private method replaceVar (to improve general templating performance)
+	 * - Minor bugfixes
+	 * - added 'count' variable to iterator
+	 * - set the scope (public / private) for the class methods
+	 * - Improved documentation
+	 *
 	 */
-	const VERSION = '2.1';
+	const VERSION = '2.2';
 
 	const KEYWORD_PHP_BLOCK_START = 'php';
 	const KEYWORD_PHP_BLOCK_END = 'phpend';
@@ -136,7 +145,7 @@ class Model extends Debugger {
 	private $_doNotSendHeader = false;
 
 	/**
-	 Contain all the variables expoesed to the template
+	 * Contain all the variables expoesed to the template
 	 * @var array 
 	 */
 	static $variables = array();
@@ -184,11 +193,11 @@ class Model extends Debugger {
 	 * Questo metodo indica al Modello di non inviare al browser nessun header
 	 * @return null
 	 */
-	function doNotSendHeader(){
+	public function doNotSendHeader(){
 		$this->_doNotSendHeader = true;
 	}
 
-	function disallowEscapeOn($varName){
+	public function disallowEscapeOn($varName){
 
 		self::$disallowedEscapeOn[] = "{var:$varName}";
 
@@ -274,7 +283,7 @@ class Model extends Debugger {
 	 * @param $viewName <b>string</b> il nome della vista da utilizzare
 	 * @return null
 	 */
-	function setView($viewName){
+	public function setView($viewName){
 		
 		$this->viewName = $viewName;
 		$this->viewFileName = APPLICATION_VIEW_BASEDIR .'/'. $viewName .'.htm';
@@ -290,7 +299,7 @@ class Model extends Debugger {
 	 * @param $buffer <b>string</b> Il buffer del modello da utilizzare
 	 * @return null
 	 */
-	function setViewFromBuffer($buffer){
+	public function setViewFromBuffer($buffer){
 		
 		$this->buffer = $buffer;
 		
@@ -348,6 +357,27 @@ class Model extends Debugger {
 		
 	}
 	
+	private function replaceVar($variableName, $variableValue, &$variableContainer){
+		
+		/*
+		 * Identify the base name and the subvariable name
+		 */
+		$variableNames = preg_split('#\.#', $variableName, 2);
+		$variableName = $variableNames[0];
+		if(count($variableNames)==1 ){
+			/*
+			 * Writing the variable
+			 */
+			$variableContainer[$variableName] = $variableValue;
+		}else{
+			/*
+			 * Going deep further
+			 */
+			self::createVar($variableNames[1], $variableValue, $variableContainer[$variableName], $method);
+		}
+		
+	}
+	
 	/**
 	 * Expose a variable to the template.
 	 * @param string $key: is the key used in CUTEML
@@ -355,7 +385,7 @@ class Model extends Debugger {
 	 *
 	 * @uses Model::createVar()
 	 */
-	function setVar($key, $value){
+	public function setVar($key, $value){
 		
 		# $this->variables[$key] = $value;
 		$key = preg_replace('/\%([0-9A-F]{2})/ie', 'chr(hexdec("\\1"))', $key);
@@ -378,35 +408,58 @@ class Model extends Debugger {
 	}
 
 	/**
-	 * Metodo interno per aggiustare la selezione del tag html è utilizzato internamente.
-	 * dal metodo pubblico <code>process</code>
+	 * Internal method to adjust the HTML tag selection.
+	 * Returns the given 'item' and the part of HTML that matches the enteire block. 
+	 * It is used by 'process' method.
 	 *
-	 * @param $buffer <b>string</b>
-	 * @param $item <b>string</b>
-	 * @return null
+	 * @param string $buffer
+	 * @param string $item
+	 * @return array
 	 */
 	private function getHtmlTag($buffer, $item){
-		$i = strpos($buffer, $item);
-		$i = $i+strlen($item);		// Mi posiziono alla fine del tag di apertura
 
 		if (preg_match('/<([a-z]+)[^>]*>/s', $item, $tag)) {
 			$tag = $tag[1];
 		} else {
+			
+			/*
+			 * Something goes wrong?
+			 */
 			return array($item, '');
 		}
-
+		
+		/*
+		 * The first char in the Inner HTML of the given block
+		 */
+		$i = strpos($buffer, $item);
+		$i = $i+strlen($item);
+				
+		/*
+		 * Then searching for the closing tag (and for a nested tag)
+		 */
 		$j = strpos($buffer, '</' . $tag . '>', $i);
 		$k = strpos($buffer, '<' . $tag, $i);
+		
+		/*
+		 * Continue with the search until i got further nested tags. 
+		 */
 		while($k<$j && $k>$i){
-			// c'è un elemento intermedio, quindi devo cercare un tag di chiusura successivo.
-				
+			
+			/*
+			 * there is an internal tag, so i must look for the next closing tag.
+			 */
 			$j = strpos($buffer, '</' . $tag . '>', $j+1);
 			$k = strpos($buffer, '<' . $tag, $k+1);
 			if($j===false){
-				// c'è un markup mal formattato
+				/* 
+				 * there is a malformed markup! 
+				 */
 				return array($item, '');
 			}
 		}
+		/*
+		 * I've identified the whole block so I'm building it and output it!
+		 */
 		$item = $item . substr($buffer, $i, ($j-$i)) . '</' . $tag .'>';
 		$html = substr($buffer, $i, ($j-$i) -1);
 		return array($item, $html);
@@ -416,7 +469,7 @@ class Model extends Debugger {
 	 * Preleva il rendering della vista dalla cache
 	 * @return string
 	 */
-	function retrieveFromCache($buffer){
+	private function retrieveFromCache($buffer){
 		
 		if (preg_match('/<!--\\s+CACHE MANAGER(.*?)-->\s*/si', $buffer, $defaultCacheBuffer)) {
 			$buffer = '';
@@ -507,11 +560,12 @@ class Model extends Debugger {
 								$ok = true;
 								$modelKeyVars = preg_split('/,/',$cacheAttribs['modelkeyvar']);
 								foreach($modelKeyVars as $cacheIndex => $keyVar){
-									if(substr($myFile[$cacheIndex+1],0,-1) != serialize($this->getVar($keyVar))) $ok = false;
-										
-									if(!$ok){
-										break;
-									}
+									
+									$currentValue = serialize($this->getVar($keyVar, '', true));
+									$cachedValue = substr($myFile[$cacheIndex+1],0,-1) ;
+									
+									$ok = (strcmp($cachedValue,$currentValue) ==0);
+									if(!$ok) break;
 								}
 								if($ok) break;
 							}
@@ -539,7 +593,7 @@ class Model extends Debugger {
 	 * @param $buffer <b>string</b> è il buffer della vista da salvare nel file di cache
 	 * @return null
 	 */
-	function saveCache($buffer){
+	private function saveCache($buffer){
 
 		if (preg_match('/<!--\\s+CACHE MANAGER(.*?)-->\s*/si', $buffer, $defaultCacheBuffer)) {
 			// Esiste un controllo per la cache
@@ -570,7 +624,7 @@ class Model extends Debugger {
 				if(preg_match('/\-.*-(.*)\.cache/i',$file, $items)){
 						
 					$nextIndex = $items[1]+1;
-						
+					
 				}
 					
 			}
@@ -586,7 +640,7 @@ class Model extends Debugger {
 				
 			$modelKeyVars = preg_split('/,/',$cacheAttribs['modelkeyvar']);
 			foreach($modelKeyVars as $cacheIndex => $keyVar){
-				$cacheFile[] = serialize($this->getVar($keyVar));
+				$cacheFile[] = serialize($this->getVar($keyVar, '', true));
 
 			}
 			$cacheFile[] = $htmlCachedName;
@@ -656,7 +710,7 @@ class Model extends Debugger {
 	 * @param $buffer <b>string</b> <code>default null</code> se non impostato elabora il buffer corrispondente alla vista corrente altrimenti elabora il buffer passato come parametro
 	 * @return string restituisce l'elaborazione del buffer
 	 */
-	function process($buffer = null){
+	public function process($buffer = null){
 
 		if($buffer == null) $buffer = $this->buffer;
 		# Issue #27: $tempBuffer is undefined
@@ -769,10 +823,10 @@ class Model extends Debugger {
 		return $buffer;
 	}
 	/**
-	 * Restituisce il buffer associato alla vista corrente
+	 * Return the current in use buffer
 	 * @return string
 	 */
-	function getBuffer(){
+	public function getBuffer(){
 		return $this->buffer;
 	}
 	
@@ -801,7 +855,7 @@ class Model extends Debugger {
 	 * @param $bufferedOutput <b>boolean</b> <code>default false</code> se impostato a true il metodo restituirà in output il buffer elaborato
 	 * @return <b>string</b> solo se <code>$bufferedOutput = true</code> altrimenti null
 	 */
-	function render($bufferedOutput=false){
+	public function render($bufferedOutput=false){
 		
 		/*
 		 * If i should send headers for the page
@@ -837,7 +891,7 @@ class Model extends Debugger {
 
 		#$buffer .='{var:'. $chiaveLastKey . '}';
 		#$this->setVar($chiaveLastKey,'');
-		while(( /*$result =*/ preg_match('/{([a-z\-_]+):(.*)}/', $buffer, $items, null, $first_position))!=0){
+		while(  preg_match('/{([a-z\-_]+):(.*)}/', $buffer, $items, null, $first_position)!=0){
 			$last_first_position = strpos($buffer, $items[0]);
 			if($first_position>$last_first_position) $last_first_position = $first_position;
 			/*
@@ -861,7 +915,6 @@ class Model extends Debugger {
 			$first_position = $last_first_position+1;
 			$keyword = $items[1];
 			$value = $items[2];
-			#$thisClassName = __CLASS__;
 			/* 
 			 * if there were some nested elements 
 			 */
@@ -893,9 +946,6 @@ class Model extends Debugger {
 					
 					$currentObjectStatus = $this->storeCurrentStatus();
 					
-					#$tempRenderingBuffer = $this->buffer;
-					#$tempsendHeadersStatus = $this->_doNotSendHeader;
-					
 					$this->_doNotSendHeader = true;
 					$this->buffer = $tmpBuffer;
 					$this->process();
@@ -903,8 +953,6 @@ class Model extends Debugger {
 					
 					$this->restoreCurrentStatus($currentObjectStatus);
 					
-					#$this->buffer = $tempRenderingBuffer;
-					#$this->_doNotSendHeader = $tempsendHeadersStatus;
 					/*
 					 * Reduced the instances of Model:
 					 * - better memory management
@@ -949,39 +997,68 @@ class Model extends Debugger {
 					# Unit Test #14
 					$tempResult = $this->getVar($blockName, null, true);
 
-					if(is_null($tempResult) && array_search($blockName, array('$_GET','$_POST','$_COOKIE', '$_ENV', '$_FILES', '$_REQUEST', '$_SERVER', '$_SESSION'))!==false){
+					if(is_null($tempResult)){
+
+						# I don't like this way to get data here, because it has a lot of memory usage
+						# Lambda function never destruct... is it a PHP bug or am I unable to do it???
+						# Look for a solution because it's a thing useful out of there too!
 						
-					#if(!isset(self::$variables[$blockName]) && array_search($blockName, array('$_GET','$_POST','$_COOKIE', '$_ENV', '$_FILES', '$_REQUEST', '$_SERVER', '$_SESSION'))!==false){
-						$lambdaFunction = create_function("", "return $blockName;");
-						$temporaryObject = $lambdaFunction(); 
+						#$lambdaFunction = create_function("", "return $blockName;");
+						#$temporaryObject = $lambdaFunction();
+						
+						# And I don't like this way too... it's weird and insecure.
 						#eval( '$temporaryObject='. $blockName . ';');
-						$this->setVar($blockName, $temporaryObject);
-						#self::$variables["$blockName"] =$temporaryObject;
+							
+						# This way is cleaner than both lambda and eval.
+						$availableObjects = array();
+						isset($_GET) 		&& $availableObjects['$_GET'] 		= $_GET;
+						isset($_POST) 		&& $availableObjects['$_POST'] 		= $_POST;
+						isset($_COOKIE) 	&& $availableObjects['$_COOKIE'] 	= $_COOKIE;
+						isset($_ENV) 		&& $availableObjects['$_ENV'] 		= $_ENV;
+						isset($_FILES) 		&& $availableObjects['$_FILES'] 	= $_FILES;
+						isset($_REQUEST) 	&& $availableObjects['$_REQUEST'] 	= $_REQUEST;
+						isset($_SERVER) 	&& $availableObjects['$_SERVER'] 	= $_SERVER;
+						isset($_SESSION) 	&& $availableObjects['$_SESSION'] 	= $_SESSION;
+						
+						if(isset($availableObjects[$blockName])){
+							/*
+							 * If exists i will create the temporary object
+							 * and the blockName else it will be undefined
+							 */
+							$temporaryObject = $availableObjects[$blockName];
+							$this->setVar($blockName, $temporaryObject);
+						}
+						/*
+						 * And if it's undefined the tempResult used for the iteration
+						 * will be null 
+						 */
 						$tempResult = $this->getVar($blockName, null, true);
+
 					}
 					
-					#$lastVariables = '';
 					$lastVariables = null;
 					if(is_array($tempResult)){
-						
-						/*
-						 * Test 2012-08-03
-						$m = new $thisClassName(false, true);
-						$m->inLoop = true;
-						*/
 						
 						/*
 						 * Storing current object status
 						 */
 						$currentObjectStatus = $this->storeCurrentStatus();
-						
+						/*
+						 * In the loop we dont need to send the headers every time, let the 
+						 * main render method to do as needed.
+						 * Again we not need to check in the cache for an available block,
+						 * maybe in the will we need to discuss about fragmented cache.
+						 * 
+						 */
 						$this->inLoop 			= true;
 						$this->_doNotSendHeader = true;
 						$this->ignoreCache 		= true;
 						$this->storedFromCache	= false;
-						/* -- Test 2012-08-03 -- */
+						
 						$i = 0;
-
+						/*
+						 * Storing the current iterator (useful for nested var).
+						 */
 						$tempIterator = $this->getVar('iterator', null, true);
 						
 						$totalResults = count($tempResult);
@@ -991,6 +1068,11 @@ class Model extends Debugger {
 							$this->buffer = $loopBlock;
 							
 							$i+=1;
+							/*
+							 * The direct way is faster than single setVar call, it's obvious.
+							 * If we decide to change the way we store data in the template
+							 * variable structure, well we can back with the code. 
+							 */
 							#$this->setVar('iterator', $i);
 							self::$variables['iterator'][0] = $i;
 							
@@ -999,19 +1081,65 @@ class Model extends Debugger {
 							
 							#$this->setVar('iterator.value', $value);
 							self::$variables['iterator']['value'] = $value;
+
+							/**
+							 * @since 2.2
+							 */
+							#$this->setVar('iterator.prev', $lastVariables);
+							self::$variables['iterator']['count'][0] = $totalResults;
+								
 							#$this->setVar('iterator.last', ($i == $totalResults));
 							self::$variables['iterator']['last'] = ($i == $totalResults);
 							
 							#$this->setVar('iterator.prev', $lastVariables);
 							self::$variables['iterator']['prev'] = $lastVariables;
 							
-							
+							/*
+							 * Creating the object structure for the current iterator item.
+							* Here an hypotetic structure like:
+							*
+							* 	buildings: [
+							* 		0 => {
+							* 			'type' 	=> 'home',
+							* 			'place' => 'Italy'
+							* 		},
+							* 		1 => {
+							* 			'type' 	=> 'factory',
+							*  		'place'	=> 'New York'
+							*  	}
+							* 	]
+							*
+							* adds to the building structure the direct keys 'type' and 'place' for each
+							* iteration. The above structure would become (in example for the first iteration)
+							*
+							* 	buildings: [
+							* 		0 => {
+							* 			'type' 	=> ['home'],
+							* 			'place' => ['Italy']
+							* 		},
+							* 		1 => {
+							* 			'type' 	=> ['factory'],
+							*  		'place'	=> ['New York']
+							*  	},
+							*  	type:	['home'],
+							*  	place:	['Italy']
+							* 	]
+							*
+							*
+							*/
 							$this->setVar($blockName, $value);
-							
+
+							// Processing and rendering the structure for each iteration
 							$this->process();
 							$tmpBufferArray[] = $this->render(true);
+							
 							$lastVariables = $value;
-							$this->clearSubvar($blockName, true);
+							
+							// We don't need the sub items (type / place ) created previously so
+							// we need to remove them.
+							$this->clearSubvar($blockName);
+							
+							// Same fate for the iterator object.
 							$this->clearVar('iterator');
 								
 						}
@@ -1021,8 +1149,9 @@ class Model extends Debugger {
 						 * Restoring object status
 						 */
 						$this->restoreCurrentStatus($currentObjectStatus);
-						
-						 /* -- Test 2012-08-03 -- */
+						/*
+						 * Restoring the iterator
+						 */
 						if(!is_null($tempIterator)) $this->setVar('iterator', 		$tempIterator);
 
 					}else{
@@ -1514,9 +1643,16 @@ class Model extends Debugger {
 
 		$subvar = $this->getVar($prefix, array(), true);
 		foreach($subvar as $key => $value){
-			if(!is_numeric($key) /* || is_numeric($key) && intval($key)===$key */)
-				$this->clearVar("$prefix.$subvar", true);
+			if(!is_numeric($key) ){
+				unset($subvar[$key]);
+				#$this->clearVar("$prefix.$key", true);
+			}
 		}
+		/*
+		 * Faster than using clearVar method.
+		 */
+		$this->replaceVar($prefix, $subvar, self::$variables);
+		
 	}
 	
 	/**

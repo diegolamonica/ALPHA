@@ -470,8 +470,9 @@ function formattaDateTime($valore){
 		$isDate = ( strlen( $valore ) == 10 );			// L'orario può essere scritto nel formato 00.00.00 oppure
 		if($isDate){
 			$valori = preg_split("/-/", $valore);
-			
-			$valore = $valori[2] . "/" . $valori[1] . "/" . $valori[0];
+			if(count($valori)==3){
+				$valore = $valori[2] . "/" . $valori[1] . "/" . $valori[0];
+			}
 		}
 	}
 	return $valore;
