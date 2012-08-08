@@ -1,7 +1,7 @@
 <?php
 /**
  * @author Diego La Monica
- * @version 2.2
+ * @version 2.3
  * @name Model
  * @package ALPHA
  * @uses Debugger
@@ -36,8 +36,12 @@ class Model extends Debugger {
 	 * - set the scope (public / private) for the class methods
 	 * - Improved documentation
 	 *
+	 * V 2.3
+	 * - Introduced the new cuteml element {break:var}
+	 * - removed an undefined variable from replaceVar() method
+	 *
 	 */
-	const VERSION = '2.2';
+	const VERSION = '2.3';
 
 	const KEYWORD_PHP_BLOCK_START = 'php';
 	const KEYWORD_PHP_BLOCK_END = 'phpend';
@@ -64,6 +68,9 @@ class Model extends Debugger {
 	 * @var String
 	 */
 	const KEYWORD_LOOP_END = 'loop';
+	
+	
+	const KEYWORD_LOOP_BREAK = 'break';
 	
 	/**
 	 * Keyword to identify a variable in the template
@@ -143,7 +150,9 @@ class Model extends Debugger {
 	private $buffer = '';
 	private $storedFromCache = false;
 	private $_doNotSendHeader = false;
-
+	
+	private $currentIterationBlock = '';
+	private $loopBreakFor			= '';
 	/**
 	 * Contain all the variables expoesed to the template
 	 * @var array 
@@ -373,7 +382,7 @@ class Model extends Debugger {
 			/*
 			 * Going deep further
 			 */
-			self::createVar($variableNames[1], $variableValue, $variableContainer[$variableName], $method);
+			self::createVar($variableNames[1], $variableValue, $variableContainer[$variableName]);
 		}
 		
 	}
@@ -832,14 +841,16 @@ class Model extends Debugger {
 	
 	private function storeCurrentStatus(){
 		return array(
-			'_doNotSendHeader' 	=> $this->_doNotSendHeader,
-			'buffer' 			=> $this->buffer,
-			'ignoreCache' 		=> $this->ignoreCache,
-			'inLoop' 			=> $this->inLoop,
-			'isPlugin' 			=> $this->isPlugin,
-			'storedFromCache' 	=> $this->storedFromCache,
-			'viewFileName'		=> $this->viewFileName,
-			'viewName'			=> $this->viewName
+			'_doNotSendHeader' 		=> $this->_doNotSendHeader,
+			'buffer' 				=> $this->buffer,
+			'ignoreCache' 			=> $this->ignoreCache,
+			'inLoop' 				=> $this->inLoop,
+			'isPlugin' 				=> $this->isPlugin,
+			'storedFromCache'	 	=> $this->storedFromCache,
+			'viewFileName'			=> $this->viewFileName,
+			'viewName'				=> $this->viewName,
+			'currentIterationBlock'	=> $this->currentIterationBlock,
+			'loopBreakFor'			=> $this->loopBreakFor
 		);
 	} 
 	
@@ -1050,11 +1061,12 @@ class Model extends Debugger {
 						 * maybe in the will we need to discuss about fragmented cache.
 						 * 
 						 */
-						$this->inLoop 			= true;
-						$this->_doNotSendHeader = true;
-						$this->ignoreCache 		= true;
-						$this->storedFromCache	= false;
+						$this->inLoop 					= true;
+						$this->_doNotSendHeader 		= true;
+						$this->ignoreCache 				= true;
+						$this->storedFromCache			= false;
 						
+						$this->currentIterationBlock 	= $blockName;
 						$i = 0;
 						/*
 						 * Storing the current iterator (useful for nested var).
@@ -1063,6 +1075,7 @@ class Model extends Debugger {
 						
 						$totalResults = count($tempResult);
 						$tmpBufferArray = array();
+						
 						foreach($tempResult as $key => &$value){
 							
 							$this->buffer = $loopBlock;
@@ -1096,37 +1109,37 @@ class Model extends Debugger {
 							
 							/*
 							 * Creating the object structure for the current iterator item.
-							* Here an hypotetic structure like:
-							*
-							* 	buildings: [
-							* 		0 => {
-							* 			'type' 	=> 'home',
-							* 			'place' => 'Italy'
-							* 		},
-							* 		1 => {
-							* 			'type' 	=> 'factory',
-							*  		'place'	=> 'New York'
-							*  	}
-							* 	]
-							*
-							* adds to the building structure the direct keys 'type' and 'place' for each
-							* iteration. The above structure would become (in example for the first iteration)
-							*
-							* 	buildings: [
-							* 		0 => {
-							* 			'type' 	=> ['home'],
-							* 			'place' => ['Italy']
-							* 		},
-							* 		1 => {
-							* 			'type' 	=> ['factory'],
-							*  		'place'	=> ['New York']
-							*  	},
-							*  	type:	['home'],
-							*  	place:	['Italy']
-							* 	]
-							*
-							*
-							*/
+							 * Here an hypotetic structure like:
+							 *
+							 * 	buildings: [
+							 * 		0 => {
+							 * 			'type' 	=> 'home',
+							 * 			'place' => 'Italy'
+							 * 		},
+							 * 		1 => {
+							 * 			'type' 	=> 'factory',
+							 *  		'place'	=> 'New York'
+							 *  	}
+							 * 	]
+							 *
+							 * adds to the building structure the direct keys 'type' and 'place' for each
+							 * iteration. The above structure would become (in example for the first iteration)
+							 *
+							 * 	buildings: [
+							 * 		0 => {
+							 * 			'type' 	=> ['home'],
+							 * 			'place' => ['Italy']
+							 * 		},
+							 * 		1 => {
+							 * 			'type' 	=> ['factory'],
+							 *  		'place'	=> ['New York']
+							 *  	},
+							 *  	type:	['home'],
+							 *  	place:	['Italy']
+							 * 	]
+							 *
+							 *
+							 */
 							$this->setVar($blockName, $value);
 
 							// Processing and rendering the structure for each iteration
@@ -1141,6 +1154,11 @@ class Model extends Debugger {
 							
 							// Same fate for the iterator object.
 							$this->clearVar('iterator');
+							
+							if(substr($blockName.".", 0, strlen($this->loopBreakFor.".")) == $this->loopBreakFor."."){
+								if($blockName == $this->loopBreakFor) $this->loopBreakFor = '';
+								break;
+							}
 								
 						}
 						
@@ -1160,7 +1178,11 @@ class Model extends Debugger {
 					$buffer = str_replace($items[0].$loopBlock.'{' . self::KEYWORD_LOOP_END.'}', $tmpBuffer, $buffer);
 						
 					break;
-
+				case self::KEYWORD_LOOP_BREAK:
+					$replacement = $items[0];
+					$buffer = str_replace($replacement, '', $buffer);
+					$this->loopBreakFor = $value;
+					break; 
 				case self::KEYWORD_IF_START:
 					list($ifBlock, $elseBlock) = $this->ifBlockSearch($buffer, $items[0], self::KEYWORD_IF_START, self::KEYWORD_IF_END, self::KEYWORD_IF_ELSE);
 					$replacement = $items[0];

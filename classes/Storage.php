@@ -1,92 +1,44 @@
 <?php
-
-class CookieStorage{
-
-	private $expiration = 0;
-	private $domain = '';
-	private $path = '';
-	private $secure = false;	# true = only over https
-	private $httponly = true;
-	
-	function __construct(){
-		!defined('STORAGE_COOKIE_EXPIRATION') 	&& define('STORAGE_COOKIE_EXPIRATION', 	'3600');
-		!defined('STORAGE_COOKIE_DOMAIN') 		&& define('STORAGE_COOKIE_DOMAIN', 		'');
-		!defined('STORAGE_COOKIE_PATH') 		&& define('STORAGE_COOKIE_PATH', 		'');
-		!defined('STORAGE_COOKIE_SECURE') 		&& define('STORAGE_COOKIE_SECURE', 		false);
-		!defined('STORAGE_COOKIE_HTTPONLY') 	&& define('STORAGE_COOKIE_HTTPONLY', 	true);
-		
-		$this->expiration 	= time()+STORAGE_COOKIE_EXPIRATION;
-		$this->domain 		= STORAGE_COOKIE_DOMAIN;
-		$this->path			= STORAGE_COOKIE_PATH;
-		$this->secure		= STORAGE_COOKIE_SECURE;
-		$this->httponly		= STORAGE_COOKIE_HTTPONLY;
-		
-	}
-	
-	function write($key, $value){
-		setcookie($key, $value, $this->expiration, $this->path, $this->domain, $this->secure, $this->httponly);
-		$_COOKIE[$key] = $value;
-	}
-	
-	function read($key){
-		return $_COOKIE[$key];
-	}
-	
-	function destroy($key = ''){
-		
-		if($key!=''){
-			unset($_COOKIE[$key]);
-			setcookie($key, NULL, -1);
-		}else{
-			foreach ($_COOKIE as $key => $value){
-				unset($_COOKIE[$key]);
-				setcookie($key, NULL, -1); 
-			}
-		}
-	}
-}
-
-class SessionStorage{
-	function __construct(){
-		if(!isset($_SESSION)) session_start();
-	}
-	
-	function write($key, $value ){
-		$_SESSION[$key] = $value;
-	}
-	
-	function read($key){
-		if(!isset($_SESSION[$key])) return null;
-		return $_SESSION[$key];
-	
-	}
-	
-	function destroy($key = ''){
-		if($key!=''){
-			unset($_SESSION[$key]);
-		}else{
-			unset($_SESSION);
-		}
-		session_destroy();
-		
-	}
-	function debug(){
-	
-		foreach($_SESSION as $key => $value){
-		
-			echo $key . ' =  ' . print_r(unserialize($value), true) . '<br />';
-		}
-	}
-}
+require_once dirname(__FILE__) . '/interfaces/iStorage.php';
 
 class Storage extends Debugger{
-
+	/*
+	 * ChangeLog:
+	 * 
+	 * V 1.1
+	 * - Added VERSION constant.
+	 * - Improved the write() and read() methods.
+	 * - Improved encryption methods: now they check for the existence of the used methods.
+	 * - Optional encryption of the stored data via the definable application constant STORAGE_SECURE_DATA.
+	 * - Add public method setSalt()
+	 * - (Almost) full documented
+	 * - Removed SessionStorage and CookieStorage classes from this file.
+	 * - defined methods scope
+	 * 
+	 */
+	
+	const	VERSION = 1.1;
+	
+	/**
+	 * the specialized Storage handler.
+	 * @var iStorage
+	 */
 	private $handler;
+	
+	/**
+	 * 
+	 * @var string
+	 */
 	private $encryptionKey;
+	
+	/**
+	 * 
+	 * @var string
+	 */
 	private $saltKey = '';
 	
-	function __construct(){
-	
+	public function __construct(){
+		
 		parent::__construct();
 		
 		!defined('STORAGE_ENCRYPTION_KEY')	&& 		define('STORAGE_ENCRYPTION_KEY', '\\1234567890\'ìqwertyuiopè+asdfghjklòàù<zxcvbnm,.-|!"£$%&/()=?^é*ç°§>;:_[]');
@@ -95,50 +47,122 @@ class Storage extends Debugger{
 		$this->setStorage(STORAGE_METHOD);
 	
 	}
-
-
-	function setStorage($handlerClass){
+	
+	/**
+	 * Defines the salt key.
+	 * @param string $saltKey
+	 */
+	public function setSalt($saltKey){
+		$this->saltKey = $saltKey;
+	}
+	
+	
+	/**
+	 * Defines which method to use for the storage.
+	 * Actually the storage class could be SessionStorage or CookieStorage.
+	 * If the method is unable to instantiate the correct class then it will return false else true.
+	 * More storage methods can be defined in the (actually not existing) directory Storage.
+	 * 
+	 * @param string $handlerClass
+	 * @return bool
+	 */
+	public function setStorage($handlerClass){
+		/*
+		 * If class desired class is not already defined
+		 * then I should try to create it.
+		 */
 		if(!class_exists($handlerClass)){
-			$fileToInclude = "Storage/$handlerClass.php";
-			if(file_exists($fileToInclude)){
-				require_once($fileToInclude);
-			} 
+			/*
+			 * Creating a the correct filePath
+			 */
+			$fileToInclude = dirname(__FILE__) . "/Storage/$handlerClass.php";
+			
+			/*
+			 * Then i will include it
+			 */
+			if(file_exists($fileToInclude)) require_once($fileToInclude);
 		}
-		if(class_exists($handlerClass))	$this->handler = new $handlerClass();
+		
+		if(class_exists($handlerClass)){
+			$this->handler = new $handlerClass();
+			return true;
+		}
+		return false;
 	}
 
-	function setEncryptionKey($key){
+	/**
+	 * Set the salt key to be used during encryp / decrypt methods
+	 * @param string $key the salt key
+	 */
+	public function setEncryptionKey($key){
 	
 		$this->encryptionKey = $key;
 	
 	}
-
-	function write($key, $value){
+	
+	/**
+	 * Write the given value in the storage system.
+	 * @param string $key
+	 * @param any $value
+	 */
+	public function write($key, $value){
 		$value = serialize($value);
-		$this->handler->write($key, $this->encrypt($value));
+		/*
+		 * I will store in the Storage object the encrypted serialized value
+		 */
+		$this->handler->write(
+				$key, 
+				$this->encrypt($value)
+			);
 		
 	}
 	
-	function read($key){
+	/**
+	 * Read the value from the defined storage system.
+	 * @param string $key
+	 */
+	public function read($key){
+		/*
+		 * Invoking the handler storage class method read() 
+		 */
 		$value = $this->handler->read($key);
-		if(!is_null($value) && $value!='') $value = ($this->decrypt($value));
-		if($this->is_serialized($value)){
-			$value = unserialize($value);
+		if(!is_null($value) && $value!=''){
+			/*
+			 * If the received value is not null and not is empty
+			 * i will try to decode it and to deserialize it. 
+			 */
+			$value = ($this->decrypt($value));
+			if($this->is_serialized($value, $retVal)) $value = $retVal;
 		}
 		return $value;
-		#return unserialize($this->decrypt($this->handler->read($key)));
 	}
 	
-	function destroy($key = ''){
+	/**
+	 * Call the current storage destroy() method.
+	 * @param string $key (optional) the key to remove from the storage or empty string to remove all keys from storage.
+	 */
+	public function destroy($key = ''){
 		$this->handler->destroy($key);
 	}
-	
-	function debug(){
+	/**
+	 * Call the debug() method of the iStorage handler
+	 */
+	public function debug(){
 		$this->handler->debug();
 	}
 	
+	/**
+	 * encode the string using the mcrypt_encrypt method and return the encrypted string.
+	 * If STORAGE_SECURE_DATA is set to 'true' then the return value is equal to the input value.
+	 * 
+	 * @param string $decrypted
+	 * @return string
+	 * 
+	 * @uses STORAGE_SECURE_DATA
+	 */
 	private function encrypt($decrypted) {
-		if(function_exists('mcrypt_decrypt')){
+		
+		if(function_exists('mcrypt_decrypt')&& (!defined('STORAGE_SECURE_DATA') || defined('STORAGE_SECURE_DATA') && STORAGE_SECURE_DATA=='true')){
 			$password 	= $this->encryptionKey;
 			$salt		= $this->saltKey;
 			// Build a 256-bit $key which is a SHA256 hash of $salt and $password.
@@ -154,9 +178,15 @@ class Storage extends Debugger{
 			return $decrypted;
 		}
 	 }
-
+	/**
+	 * decode the encoded string using the mcrypt_decrypt method.
+	 * 
+	 * @param string $encrypted
+	 * @return boolean|string
+	 */
 	private function decrypt($encrypted) {
-		if(function_exists('mcrypt_decrypt')){
+		
+		if(function_exists('mcrypt_decrypt') && (!defined('STORAGE_SECURE_DATA') || defined('STORAGE_SECURE_DATA') && STORAGE_SECURE_DATA=='true') ){
 			$password 	= $this->encryptionKey;
 			$salt		= $this->saltKey;
 			// Build a 256-bit $key which is a SHA256 hash of $salt and $password.
@@ -213,19 +243,14 @@ class Storage extends Debugger{
 	 * @param		mixed	$result	Result of unserialize() of the $value
 	 * @return		boolean			True if $value is serialized data, otherwise false
 	 */
-	function is_serialized($value, &$result = null)
-	{
+	private function is_serialized($value, &$result = null){
 		// Bit of a give away this one
-		if (!is_string($value))
-		{
-			return false;
-		}
+		if (!is_string($value)) return false;
 	
 		// Serialized false, return true. unserialize() returns false on an
 		// invalid string or it could return false if the string is serialized
 		// false, eliminate that possibility.
-		if ($value === 'b:0;')
-		{
+		if ($value === 'b:0;'){
 			$result = false;
 			return true;
 		}
@@ -233,11 +258,9 @@ class Storage extends Debugger{
 		$length	= strlen($value);
 		$end	= '';
 	
-		switch ($value[0])
-		{
+		switch ($value[0]){
 			case 's':
-				if ($value[$length - 2] !== '"')
-				{
+				if ($value[$length - 2] !== '"'){
 					return false;
 				}
 			case 'b':
@@ -249,13 +272,14 @@ class Storage extends Debugger{
 			case 'O':
 				$end .= '}';
 	
-				if ($value[1] !== ':')
-				{
-					return false;
-				}
-	
-				switch ($value[2])
-				{
+				if ($value[1] !== ':') return false;
+				
+				# This is more readable...
+				if(!preg_match('#^\d$#', $value[2])) return false;
+				
+				# ...than that:
+				/*
+				switch ($value[2]){
 					case 0:
 					case 1:
 					case 2:
@@ -271,21 +295,22 @@ class Storage extends Debugger{
 					default:
 						return false;
 				}
+				*/
+				
+				break;
 			case 'N':
 				$end .= ';';
-	
-				if ($value[$length - 1] !== $end[0])
-				{
-					return false;
-				}
-			break;
-	
+				if ($value[$length - 1] !== $end[0]) return false;
+				break;
 			default:
 				return false;
 		}
-	
-		if (($result = @unserialize($value)) === false)
-		{
+		/*
+		 * odd behavior why $value sometimes is not a string so I need to use print_r
+		 * I have to investigate further and more on this point. 
+		 */
+		$result = @unserialize(print_r($value,true));
+		if ($result === false){
 			$result = null;
 			return false;
 		}
