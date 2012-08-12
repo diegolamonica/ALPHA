@@ -100,17 +100,35 @@ Class AlphaUnitTest{
 		call_user_func_array(array($this, 'throwIf' ), $args);
 	}
 	
+	/**
+	 * The unit test fails if check is true and will throw an AlphaUnitTestFailureException or
+	 * echoes the html with the relative error message.
+	 * If the $check is true the method will echoes the html with success string.
+	 *   
+	 * @param bool $check
+	 * @param string $success
+	 * @param string $error
+	 * @throws AlphaUnitTestFailureException
+	 */
 	public function throwIf($check, $success, $error){
 		$this->index+=1;
 		$index = "[#{$this->id}.$this->index". (($this->stop && $this->failedCount>0)?" STOP":''). '] ';
 		if($check || $this->stop && $this->failedCount>0 ){
-			if(!$this->stop) $this->failedCount += 1;
+			/*
+			 * However i must update the failed count
+			 */
+			$this->failedCount += 1;
+			
 			$args = func_get_args();
 			array_shift($args); # removing $check from args 
 			array_shift($args); # removing $success from args
 			array_shift($args); # removing $error from args
 			$args = var_export($args,true);
 			if($this->throw){
+				/*
+				 * If the intention is to throw exception when the unit test fails then i will do so
+				 * raising the AlphaUnitTestFailureException
+				 */
 				throw new AlphaUnitTestFailureException("$index $error\n\n$args\n");
 			}else{
 				echo("<p class=\"error\">$index $error</p><pre>$args</pre>");
@@ -142,7 +160,7 @@ Class AlphaUnitTest{
 	 * @return bool 
 	 */
 	public function isFullCompliant(){
-		return $this->failedCount = 0;
+		return $this->failedCount == 0;
 	}
 	
 }

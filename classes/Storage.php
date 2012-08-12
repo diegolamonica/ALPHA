@@ -15,9 +15,14 @@ class Storage extends Debugger{
 	 * - Removed SessionStorage and CookieStorage classes from this file.
 	 * - defined methods scope
 	 * 
+	 * V 1.2
+	 * - Added public method enableEncryption()
+	 * - Created Unit Test for CookieStorage
+	 * 		( reachable using this querystring ?core_info=unit-test&class=cookieStorage )
+	 * - Enforced the decrypt method: now the metod tries to detect if the stored data is encrypted before decrypting it 
 	 */
 	
-	const	VERSION = 1.1;
+	const	VERSION = 1.2;
 	
 	/**
 	 * the specialized Storage handler.
@@ -36,6 +41,7 @@ class Storage extends Debugger{
 	 * @var string
 	 */
 	private $saltKey = '';
+	private $secureData = true;
 	
 	public function __construct(){
 		
@@ -45,7 +51,15 @@ class Storage extends Debugger{
 		!defined('STORAGE_METHOD')			&&		define('STORAGE_METHOD', SESSION_STORAGE);
 		$this->setEncryptionKey(STORAGE_ENCRYPTION_KEY);
 		$this->setStorage(STORAGE_METHOD);
+		$this->enableEncryption(!defined('STORAGE_SECURE_DATA') || defined('STORAGE_SECURE_DATA') && (STORAGE_SECURE_DATA=='true' || STORAGE_SECURE_DATA === true) );
 	
+	}
+	/**
+	 * Enable / Disable the encription of variables
+	 * @param bool $status
+	 */
+	public function enableEncryption($status){
+		$this->secureData = $status;
 	}
 	
 	/**
@@ -132,7 +146,8 @@ class Storage extends Debugger{
 			 * i will try to decode it and to deserialize it. 
 			 */
 			$value = ($this->decrypt($value));
-			if($this->is_serialized($value, $retVal)) $value = $retVal;
+			
+			if(!is_null($value) && $this->is_serialized($value, $retVal)) $value = $retVal;
 		}
 		return $value;
 	}
@@ -162,7 +177,7 @@ class Storage extends Debugger{
 	 */
 	private function encrypt($decrypted) {
 		
-		if(function_exists('mcrypt_decrypt')&& (!defined('STORAGE_SECURE_DATA') || defined('STORAGE_SECURE_DATA') && STORAGE_SECURE_DATA=='true')){
+		if(function_exists('mcrypt_decrypt')&& $this->secureData){
 			$password 	= $this->encryptionKey;
 			$salt		= $this->saltKey;
 			// Build a 256-bit $key which is a SHA256 hash of $salt and $password.
@@ -186,24 +201,34 @@ class Storage extends Debugger{
 	 */
 	private function decrypt($encrypted) {
 		
-		if(function_exists('mcrypt_decrypt') && (!defined('STORAGE_SECURE_DATA') || defined('STORAGE_SECURE_DATA') && STORAGE_SECURE_DATA=='true') ){
-			$password 	= $this->encryptionKey;
-			$salt		= $this->saltKey;
-			// Build a 256-bit $key which is a SHA256 hash of $salt and $password.
-			$key = hash('SHA256', $salt . $password, true);
-			// Retrieve $iv which is the first 22 characters plus ==, base64_decoded.
-			$iv = base64_decode(substr($encrypted, 0, 22) . '==');
-			// Remove $iv from $encrypted.
-			$encrypted = substr($encrypted, 22);
-			// Decrypt the data.  rtrim won't corrupt the data because the last 32 characters are the md5 hash; thus any \0 character has to be padding.
-			$decrypted = rtrim(mcrypt_decrypt(MCRYPT_RIJNDAEL_128, $key, base64_decode($encrypted), MCRYPT_MODE_CBC, $iv), "\0\4");
-			// Retrieve $hash which is the last 32 characters of $decrypted.
-			$hash = substr($decrypted, -32);
-			// Remove the last 32 characters from $decrypted.
-			$decrypted = substr($decrypted, 0, -32);
-			// Integrity check.  If this fails, either the data is corrupted, or the password/salt was incorrect.
-			if (md5($decrypted) != $hash) return false;
-			// Yay!
+		if(function_exists('mcrypt_decrypt') && $this->secureData){
+			/*
+			 * If the value is serialized then it's not encrypted value.
+			 */
+			if(!$this->is_serialized($encrypted)){
+				$password 	= $this->encryptionKey;
+				$salt		= $this->saltKey;
+				// Build a 256-bit $key which is a SHA256 hash of $salt and $password.
+				$key = hash('SHA256', $salt . $password, true);
+				// Retrieve $iv which is the first 22 characters plus ==, base64_decoded.
+				$iv_base64 = substr($encrypted, 0, 22);
+				if (strlen($iv_base64) != 22) return null;
+				$iv = base64_decode($iv_base64 . '==');
+				
+				// Remove $iv from $encrypted.
+				$encrypted = substr($encrypted, 22);
+				// Decrypt the data.  rtrim won't corrupt the data because the last 32 characters are the md5 hash; thus any \0 character has to be padding.
+				$decrypted = rtrim(mcrypt_decrypt(MCRYPT_RIJNDAEL_128, $key, base64_decode($encrypted), MCRYPT_MODE_CBC, $iv), "\0\4");
+				// Retrieve $hash which is the last 32 characters of $decrypted.
+				$hash = substr($decrypted, -32);
+				// Remove the last 32 characters from $decrypted.
+				$decrypted = substr($decrypted, 0, -32);
+				// Integrity check.  If this fails, either the data is corrupted, or the password/salt was incorrect.
+				if (md5($decrypted) != $hash) return null;
+				// Yay!
+			}else{
+				$decrypted = null;
+			}
 			return $decrypted;
 		}else{
 			return $encrypted;

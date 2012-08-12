@@ -114,6 +114,8 @@ class CookieStorage implements iStorage{
 		}
 	}
 	
-	public function debug();
+	public function debug(){
+		
+	}
 }
 ?>
