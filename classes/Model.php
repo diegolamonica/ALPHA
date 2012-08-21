@@ -1,7 +1,7 @@
 <?php
 /**
  * @author Diego La Monica
- * @version 2.3
+ * @version 2.4
  * @name Model
  * @package ALPHA
  * @uses Debugger
@@ -39,9 +39,12 @@ class Model extends Debugger {
 	 * V 2.3
 	 * - Introduced the new cuteml element {break:var}
 	 * - removed an undefined variable from replaceVar() method
-	 *
+	 * 
+	 * V 2.4
+	 * - Bugfix on replacevar that does not replace correctly the variable structure in some circumnstances
+	 * - Bugfix corrected the  "@@ROOT/" replacement  
 	 */
-	const VERSION = '2.3';
+	const VERSION = '2.4';
 
 	const KEYWORD_PHP_BLOCK_START = 'php';
 	const KEYWORD_PHP_BLOCK_END = 'phpend';
@@ -57,6 +60,7 @@ class Model extends Debugger {
 	 * @var String
 	 */
 	const KEYWORD_LOOP_START = 'foreach';
+	
 	
 	/**
 	 * Keyword to identify the end of a loop block.
@@ -316,8 +320,12 @@ class Model extends Debugger {
 	
 	
 	private function createVar($variableName, $variableValue, &$variableContainer, $method = 'update'){
-		// In the case of a complex object (see Unit Test #8 up to #15 )
-		if(is_object($variableValue) || is_array($variableValue)){
+		// 
+		/*
+		 * In the case of a complex object (see Unit Test #8 up to #15 ) but only
+		 * if method is not "replace"
+		 */
+		if(is_object($variableValue) || is_array($variableValue) && $method!='replace'){
 			
 			foreach($variableValue as $key => $value){
 				/*
@@ -346,9 +354,20 @@ class Model extends Debugger {
 						return ;
 					}else{  
 						/*
-						 * If this is the last deep level i have to create an index element
+						 * If this is the last deep level 
 						 */
-						return self::createVar(0, $variableValue, $variableContainer[$variableName], $method);
+						if($method=='replace'){
+							/*
+							 * I have to replace the enteire object structure
+							 * because I've chosen to "replace". 
+							 */
+							$variableContainer[$variableName] = $variableValue;
+						}else{
+							/*
+							 * or I have to create an index element
+							 */
+							return self::createVar(0, $variableValue, $variableContainer[$variableName], $method);
+						}
 					}
 				}else{
 					/*
@@ -382,7 +401,7 @@ class Model extends Debugger {
 			/*
 			 * Going deep further
 			 */
-			self::createVar($variableNames[1], $variableValue, $variableContainer[$variableName]);
+			self::createVar($variableNames[1], $variableValue, $variableContainer[$variableName], 'replace');
 		}
 		
 	}
@@ -1140,6 +1159,7 @@ class Model extends Debugger {
 							 *
 							 *
 							 */
+							
 							$this->setVar($blockName, $value);
 
 							// Processing and rendering the structure for each iteration
@@ -1368,7 +1388,7 @@ class Model extends Debugger {
 
 
 
-		$buffer = str_replace('@@ROOT/', APPROOT, $buffer);
+		$buffer = str_replace('@@ROOT/', APPLICATION_URL, $buffer);
 
 		/*
 		 * If I have to ignore cache why should I save the response in cache?
