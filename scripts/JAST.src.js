@@ -2,9 +2,9 @@
 JAST Egg it: JAvaScript Toolkit
 url: http://www.jastegg.it 
 --------------------------------------------------
-Version:		1.5.2
+Version:		1.5.3
 Author: 		Diego La Monica (http://diegolamonica.info)
-Revision of: 	2012-08-28
+Revision of: 	2012-09-13
 Works With:		Internet Explorer 6+
 				Firefox 2.0+ 
 				Safari 3.x
@@ -24,6 +24,9 @@ Works With:		Internet Explorer 6+
  		Added parameter attributes to method createChild
 
 		Improved checks to avoid multiple JAST instances 
+
+1.5.3: 	method Events.fire improved to manage invoking 
+		on elements that does not support event
 */
 
 if(window['JASTEggIt']==null && _==null){
@@ -316,7 +319,25 @@ if(window['JASTEggIt']==null && _==null){
 				var element = _._el(e);
 				if (document.createEventObject){
 					if(evt==null) evt = document.createEventObject();
-					return element.fireEvent('on'+event,evt);
+					try{
+						return element.fireEvent('on'+event,evt);
+					}catch(e){
+						
+						/*
+						 * The element does not support the given "event".
+						 * Trying to invoke it in the old mode
+						 */ 
+						var laFunzione = element['on' + event];
+						if(typeof(laFunzione) == 'function'){
+							laFunzione();
+						}else{ 
+							/*
+							 * Else i cannot do nothing
+							 */
+						}
+					}
+					
+					
 				}else{
 					
 					if(evt==null) evt = document.createEvent("HTMLEvents");
@@ -558,21 +579,20 @@ if(window['JASTEggIt']==null && _==null){
 				e.appendChild(el);
 				return e;
 			},
-				createChild: function(tagName, parentTag, id, attributes){
+			createChild: function(tagName, parentTag, id, attributes){
 				parentTag = JASTEggIt._el(parentTag);
 				var e = document.createElement(tagName);
 				parentTag.appendChild(e);
 				if(id!=null) e.id = id;
-					
-					if(attributes!=null){
-						for(var key in attributes){
-							
-							e.setAttribute(keys, attributes[key]);
-							
-						}
+				
+				if(attributes!=null){
+					for(var key in attributes){
 						
+						e.setAttribute(key, attributes[key]);
 					}
 					
+				}
+				
 				return e;
 			},
 			createOnDocument: function(tagName, beforeItem, afterItem, id, attributes){
@@ -599,22 +619,21 @@ if(window['JASTEggIt']==null && _==null){
 				return e;
 			},
 			remove: function(el){
-				if(JASTEggIt.Array.is(el)){ 
-						var removed = true;
-						/*
-						 * To grant the complete array of elements removal
-						 */
-						while(removed){
-							removed = false;
-							for(var i=0; i<el.length; i++){
-								if(el[i]!=null){
-						JASTEggIt.DOM.remove(el[i]);
-									removed= true;
-									// el[i] = null;
-									break;
-								}
+				if(JASTEggIt.Array.is(el)){
+					var removed = true;
+					/*
+					 * To grant the complete array of elements removal
+					 */
+					while(removed){
+						removed = false;
+						for(var i=0; i<el.length; i++){
+							if(el[i]!=null){
+								JASTEggIt.DOM.remove(el[i]);
+								removed= true;
+								break;
 							}
 						}
+					}
 				}else{
 					el = JASTEggIt._el(el);
 					if(el==null) return false;
@@ -1078,7 +1097,7 @@ if(window['JASTEggIt']==null && _==null){
 		}
 	};
 	var _=JASTEggIt;
-		window['JASTEggIt'] = JASTEggIt;
-		
+	window['JASTEggIt'] = JASTEggIt;
+	
 	JASTEggIt.startup();
 }
