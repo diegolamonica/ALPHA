@@ -1,7 +1,7 @@
 <?php
 /**
  * @author Diego La Monica
- * @version 2.4
+ * @version 2.5
  * @name Model
  * @package ALPHA
  * @uses Debugger
@@ -43,8 +43,11 @@ class Model extends Debugger {
 	 * V 2.4
 	 * - Bugfix on replacevar that does not replace correctly the variable structure in some circumnstances
 	 * - Bugfix corrected the  "@@ROOT/" replacement  
+	 *
+	 * V 2.5
+	 * - Improved url building in rendering method
 	 */
-	const VERSION = '2.4';
+	const VERSION = '2.5';
 
 	const KEYWORD_PHP_BLOCK_START = 'php';
 	const KEYWORD_PHP_BLOCK_END = 'phpend';
@@ -978,6 +981,10 @@ class Model extends Debugger {
 					
 					$this->_doNotSendHeader = true;
 					$this->buffer = $tmpBuffer;
+					/*
+					 * Need it else the include method causes the rendering of headers and url rewriting
+					 */
+					$this->isPlugin = true;
 					$this->process();
 					$tmpBuffer = $this->render(true);
 					
@@ -1068,7 +1075,6 @@ class Model extends Debugger {
 					
 					$lastVariables = null;
 					if(is_array($tempResult)){
-						
 						/*
 						 * Storing current object status
 						 */
@@ -1161,7 +1167,6 @@ class Model extends Debugger {
 							 */
 							
 							$this->setVar($blockName, $value);
-
 							// Processing and rendering the structure for each iteration
 							$this->process();
 							$tmpBufferArray[] = $this->render(true);
@@ -1181,7 +1186,6 @@ class Model extends Debugger {
 							}
 								
 						}
-						
 						$tmpBuffer = implode("", $tmpBufferArray);
 						/*
 						 * Restoring object status
@@ -1352,8 +1356,10 @@ class Model extends Debugger {
 			}
 		};
 
-		
-		if(!$this->isPlugin){
+		/*
+		 * Added $this->inLoop check to avoid the headers and url were built too soon! 
+		 */
+		if(!$this->isPlugin && !$this->inLoop){
 			$h = implode(self::$headers,"\n") . "\n";
 			
 			if((count(self::$headerScripts)>0 || count(self::$startupScripts)>0)  ){
@@ -1377,19 +1383,31 @@ class Model extends Debugger {
 				$h .= $s;
 			}
 			$buffer = str_replace('</head>', $h . "\n</head>", $buffer );
+			/*
+			 * Changed url from relative to absolute, to avoid some strange behavior in AJAX requests 
+			 */
+			#$buffer = str_replace('href="/', 'href="' . APPLICATION_URL,  $buffer);
+			#$buffer = str_replace('src="/', 'src="' . APPLICATION_URL,  $buffer);
 			
-			$buffer = str_replace('href="/', 'href="' . APPLICATION_URL,  $buffer);
-			$buffer = str_replace('src="/', 'src="' . APPLICATION_URL,  $buffer);
+			
+			$buffer = str_replace('href="/', 'href="' . APPLICATION_ABSOLUTE_URL,  $buffer);
+			
+			$buffer = str_replace('src="/', 'src="' . APPLICATION_ABSOLUTE_URL,  $buffer);
+		
+			// $buffer = str_replace('@@ROOT/', APPLICATION_URL, $buffer);
+			/*
+			 * Changed the url from relative to absolute to avoid some strange behaviors in
+			 * AJAX context
+			 */
+			$buffer = str_replace('@@ROOT/', APPLICATION_ABSOLUTE_URL, $buffer);
+		
 		}
-		// Moved inside the conditional block.
-		// So I will make replacements one time at all.
-		// $buffer = str_replace('href="/', 'href="' . APPLICATION_URL,  $buffer);
-		// $buffer = str_replace('src="/', 'src="' . APPLICATION_URL,  $buffer);
-
-
-
-		$buffer = str_replace('@@ROOT/', APPLICATION_URL, $buffer);
-
+		
+		/*
+		 *  Moved and changed inside the above conditional block
+		 */
+		#$buffer = str_replace('@@ROOT/', APPLICATION_ABSOLUTE_URL, $buffer);
+		
 		/*
 		 * If I have to ignore cache why should I save the response in cache?
 		 */

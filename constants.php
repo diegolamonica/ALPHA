@@ -1,9 +1,9 @@
 <?php
 /**
- * @name Costanti
+ * @name Costants
  * @author Diego La Monica <me@diegolamonica.info>
- * @version 1.0
- * @desc Costanti necessarie ai fini applicativi
+ * @version 1.1
+ * @desc Required application Costants
  * @package ALPHA
  */
 
@@ -13,9 +13,11 @@
  * https://github.com/diegolamonica/ALPHA/commit/306d9bfbb49d7cdf987657cc763027ddc1411969#diff-6
  */ 
 #define('ALPHA_FRAMEWORK_VERSION','1.2.1');
-define('ALPHA_FRAMEWORK_VERSION','1.2.2');
-
-if(!defined('OUTPUT_DEBUG_INFO') || OUTPUT_DEBUG_INFO) require_once CORE_ROOT. 'includes/debugging.php';
+define('ALPHA_FRAMEWORK_VERSION','1.3.0');
+/*
+ * Removed a php_notice
+ */
+if(!defined('OUTPUT_DEBUG_INFO') || defined('OUTPUT_DEBUG_INFO') && OUTPUT_DEBUG_INFO) require_once CORE_ROOT. 'includes/debugging.php';
 
 
 /**

@@ -1,10 +1,10 @@
 <?php
 /**
  * 
- * CORE 1.2
+ * CORE 1.3
  * @author Diego La Monica
- * @version 1.2
- * @package Alpha Core 1.2
+ * @version 1.3
+ * @package Alpha Core 1.3
  * ----------------------------
  * Changelog:
  * 
@@ -15,6 +15,8 @@
  * - Classes/Xml2array.php
  * 		aggiunto controllo per evitare errori di ridefinizione della classe Debug (se già esistente)
  * 
+ * V 1.3:
+ * - Added APPLICATION_ABSOLUTE_URL constant
  * ----------------------------
  */
 
@@ -140,8 +142,20 @@ if(!class_exists('core')){
 				if(substr($url,-1)!='/') $url = preg_replace("/([^\/]*)$/",'', $url);
 				if($url =='/') $url = '';
 			}
-			define('REQUESTED_URL',			$requestedUrl);
-			define('APPLICATION_URL', 		$url);
+			/*
+			 * Removing any querystring from the url
+			 */
+			$absUrl = preg_replace('#\?.*$#','', $_SERVER['REQUEST_URI']);
+			
+			if(preg_match('#[^/]$#', $absUrl)){
+				$absUrl = preg_replace('#/[^/]*$#', '/', $absUrl);
+			}
+			$requestedFolder = dirname( $requestedUrl ) .'/';
+			
+			$absUrl = preg_replace('#' . preg_quote($requestedFolder,'#') .'$#', '', $absUrl );
+			define('REQUESTED_URL',					$requestedUrl);
+			define('APPLICATION_URL', 				$url);
+			define('APPLICATION_ABSOLUTE_URL', 		$absUrl);
 			
 			require_once CORE_ROOT. 'global-functions.php';
 			require_once CORE_ROOT. 'classes/Xml2array.php';
@@ -455,7 +469,8 @@ if(!class_exists('core')){
 					echo $buffer;
 				}
 			}else{
-				self::send404($fullPath, func_get_args());
+				$args = func_get_args();
+				self::send404($fullPath, $args);
 			
 			}
 		}
