@@ -1,10 +1,10 @@
 <?php
 /**
  * 
- * CORE 1.3
+ * CORE 1.3.1
  * @author Diego La Monica
- * @version 1.3
- * @package Alpha Core 1.3
+ * @version 1.3.1
+ * @package Alpha Core 1.3.1
  * ----------------------------
  * Changelog:
  * 

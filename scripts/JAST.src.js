@@ -2,9 +2,9 @@
 JAST Egg it: JAvaScript Toolkit
 url: http://www.jastegg.it 
 --------------------------------------------------
-Version:		1.5.3
+Version:		1.5.4
 Author: 		Diego La Monica (http://diegolamonica.info)
-Revision of: 	2012-09-13
+Revision of: 	2012-09-21
 Works With:		Internet Explorer 6+
 				Firefox 2.0+ 
 				Safari 3.x
@@ -27,6 +27,8 @@ Works With:		Internet Explorer 6+
 
 1.5.3: 	method Events.fire improved to manage invoking 
 		on elements that does not support event
+
+1.5.4:  method DOM.realSize improved
 */
 
 if(window['JASTEggIt']==null && _==null){
@@ -691,7 +693,10 @@ if(window['JASTEggIt']==null && _==null){
 				el = JASTEggIt._el(el);
 				if(el){
 					
-	
+					if(el.offsetWidth!=null && !isNaN(el.offsetWidth) && el.offsetWidth != 0){
+						var width 	= el.offsetWidth;
+						var height 	= el.offsetHeight;
+					}else{
 						var att = this.style(el, 'width height paddingTop paddingBottom paddingLeft paddingRight marginTop marginBottom borderLeftWidth borderRightWidth borderTopWidth borderBottomWidth');
 						var buffer = "";
 						for(prop in att){
@@ -701,11 +706,12 @@ if(window['JASTEggIt']==null && _==null){
 						};
 						var width = (att.width==0?el.offsetWidth - (att.paddingLeft + att.paddingRight):att.width ) + att.borderLeftWidth + att.borderRightWidth;
 						var height = (att.height==0?el.offsetHeight - (att.paddingTop + att.paddingBottom):att.height) + att.borderTopWidth + att.borderBottomWidth;
-						return {
-								width: width,
-								height: height
-							};
-	
+					}
+					return {
+							width: width,
+							height: height
+						};
+
 				}
 			},
 			locate: function(el, x, y, w, h, p){

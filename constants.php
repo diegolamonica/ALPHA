@@ -13,7 +13,9 @@
  * https://github.com/diegolamonica/ALPHA/commit/306d9bfbb49d7cdf987657cc763027ddc1411969#diff-6
  */ 
 #define('ALPHA_FRAMEWORK_VERSION','1.2.1');
-define('ALPHA_FRAMEWORK_VERSION','1.3.0');
+#define('ALPHA_FRAMEWORK_VERSION','1.3.0');
+define('ALPHA_FRAMEWORK_VERSION','1.3.1');
+
 /*
  * Removed a php_notice
  */

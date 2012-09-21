@@ -5,6 +5,9 @@ require_once CORE_ROOT. 'classes/Debug.php';
 class Oci8Connector extends Debugger implements iConnector {
 	/*
 	 * CHANGELOG:
+	 * V 2.2
+	 *  - allowed to invoke stored procedure passing parameters by its name
+	 * 
 	 * V 2.1
 	 * - describeTable method is invoking all_tab_columns (better) instead of user_tab_columns
 	 * - insert query is building the columns section in the query if missed and try to identify by it's own the id field name
@@ -15,7 +18,8 @@ class Oci8Connector extends Debugger implements iConnector {
 	 */
 	
 	# const VERSION = '2.0';
-	const VERSION = '2.1';
+	#const VERSION = '2.1';
+	const VERSION = '2.2';
 	private $conn;
 	private $result;
 	public $lastQuery;
@@ -244,15 +248,22 @@ class Oci8Connector extends Debugger implements iConnector {
 		$sql ="call $storedProcedure(";
 		if(is_array($params)){
 			$paramList = '';
+			
 			foreach($params as $paramInfo){
 				if($paramList!='') $paramList.=',';
+				# If the option PARAM_BY_NAME is defined and set to true then 
+				# each parameter will be binded by original name
 				
+				if(isset($options[connector::CALL_OPTIONS_PARAM_BY_NAME]) && $options[connector::CALL_OPTIONS_PARAM_BY_NAME]==true) 
+					$paramList .= $paramInfo[connector::CALL_PARAM_NAME] .'=>';
 				# Oracle uses ":" as placeholder for binding parameters
 				$paramList .= ':'.$paramInfo[connector::CALL_PARAM_NAME];
 			}
 			$sql .= $paramList;
 		}
 		$sql .=")";
+		$this->lastQuery = $sql;
+		
 		$stm = oci_parse($this->conn, $sql);
 		
 		if(is_array($params)){
@@ -273,6 +284,7 @@ class Oci8Connector extends Debugger implements iConnector {
 					$params[$index][1] = oci_new_cursor($this->conn);
 					
 				}
+				
 				oci_bind_by_name($stm, 
 					# Oracle uses ":" as placeholder for binding parameters
 					$paramInfo[connector::CALL_PARAM_NAME], 
@@ -294,7 +306,7 @@ class Oci8Connector extends Debugger implements iConnector {
 				if(!is_array($options)) $options = array();
 				
 				# If the RESULTSET option is not defined then we should create it as empty value
-				if(!isset($options['RESULTSET'])) $options['RESULTSET'] = ''; 
+				if(!isset($options[connector::CALL_OPTIONS_RESULTSET])) $options[connector::CALL_OPTIONS_RESULTSET] = ''; 
 				
 				foreach($params as $paramInfo){
 					
@@ -309,6 +321,7 @@ class Oci8Connector extends Debugger implements iConnector {
 				}
 			}
 		}
+		
 		return $output;
 	}
 	
@@ -438,15 +451,16 @@ class Oci8Connector extends Debugger implements iConnector {
 		if(is_null($stm)) $stm = $this->result;
 		
 		if($stm){
-			$return = array();	
+
+			$return = array();
 			while($rs = oci_fetch_assoc($stm)){
 				if(function_exists('formatRecordset')){
-					
 					$return[] = formatRecordset($rs, $this->lastQuery);
 				}else{
 					$return[] = $rs;
 				}
 			}
+			
 			if(count($return)==0) $return = null;
 		}else{
 			$this->lastError = DB_ERROR_NO_RESOURCE;
