@@ -2,7 +2,6 @@
 /**
  * @name Costants
  * @author Diego La Monica <me@diegolamonica.info>
- * @version 1.1
  * @desc Required application Costants
  * @package ALPHA
  */
@@ -14,7 +13,8 @@
  */ 
 #define('ALPHA_FRAMEWORK_VERSION','1.2.1');
 #define('ALPHA_FRAMEWORK_VERSION','1.3.0');
-define('ALPHA_FRAMEWORK_VERSION','1.3.1');
+#define('ALPHA_FRAMEWORK_VERSION','1.3.1');
+define('ALPHA_FRAMEWORK_VERSION','1.3.2');
 
 /*
  * Removed a php_notice

@@ -12,6 +12,12 @@
  */
 $constantsToBeDefined = array();
 
+require_once dirname(__FILE__) . '/helpers/error.php';
+require_once dirname(__FILE__) . '/helpers/datetime.php';
+require_once dirname(__FILE__) . '/helpers/mail.php';
+require_once dirname(__FILE__) . '/helpers/sql.php';
+require_once dirname(__FILE__) . '/helpers/constant.php';
+require_once dirname(__FILE__) . '/helpers/array.php';
 
 function object2XML($obj, $tabs ='', $container = ''){
 	$buffer = '';
@@ -37,52 +43,6 @@ function object2XML($obj, $tabs ='', $container = ''){
 	}
 	if($container!='') $buffer .= "$tabs</$container>\n";
 	return $buffer;
-}
-
-
-function echoTime(){
-	
-	global $echoTimeIndex, $lastMicrotime;
-	if(!isset($echoTimeIndex)) $echoTimeIndex = 1;
-	$currentMT =time();
-	if(!isset($lastMicrotime)) $lastMicrotime = $currentMT;
-	
-	echo( $echoTimeIndex++ . ' - ' . $currentMT . ' &delta; '. ($currentMT-$lastMicrotime) . '<br />');
-}
-
-
-function _define($key, $value, $overwrite= false, $referencesConstant = false, $immediate = false){
-	global $constantsToBeDefined;
-	if(!isset($constantsToBeDefined[$key] ) || $overwrite){
-		if($immediate){
-			_defineApplySingle($key, array($value, $referencesConstant));
-		}else{
-			$constantsToBeDefined[$key] = array($value, $referencesConstant);
-		}
-	}
-}
-
-function _defineApplySingle($key, $value){
-	if($value[1]){
-		if(!defined($value[0])){
-			
-			global $constantsToBeDefined;
-			_defineApplySingle($value[0], $constantsToBeDefined[$value[0]]);
-		}
-		$value[0]=constant($value[0]);
-	}
-	if(!defined($key)) define($key, $value[0]);
-}
-
-function _defineApplyAll(){
-	global $constantsToBeDefined;
-	
-	foreach($constantsToBeDefined as $key => $value){
-		if(!defined($key)){
-			_defineApplySingle($key, $value);
-		}
-	}
-	
 }
 
 function findPathRecursive($files){
@@ -146,100 +106,6 @@ function includeFrom($subFolder, $fileName, $append ='', $includeAll = false){
 }
 
 
-
-/**
- * Invia una email
- * @param string $from
- * @param string $to
- * @param string $cc
- * @param string $bcc
- * @param string $subject
- * @param string $body
- * @param string $replyTo
- * @return void
- */
-function mailSend($from, $to, $cc, $bcc, $subject, $body, $replyTo=null){
-	if(function_exists('customMailSend')) return customMailSend($from, $to, $cc, $bcc, $subject, $body, $replyTo);
-	# ---
-	# issue 0000025 resolution: Use of undefined constant sendmail_from - assumed 'sendmail_from'
-	# Note:
-	# I've forgotten to enclose sendmail_from between the quotes
-	# ini_set(sendmail_from, $from);   
-	ini_set('sendmail_from', $from);
-	# ---
-	if($replyTo==null) $replyTo = $from;
-	$smtp = $_SERVER['SERVER_NAME']; 
-	//if(function_exists('imap_8bit')) $body = imap_8bit($body);
-	$header = "MIME-Version: 1.0\r\n";
-	$header .= "Content-type: text/plain; charset=utf-8\r\n";
-	//$header .= "Content-Transfer-Encoding: quoted-printable\r\n";
-	$header .= "From: $from\r\n";
-	$header .= ($cc!=''?"Cc:$cc\r\n":'');
-	$header .= ($bcc!=''?"Bcc:$bcc\r\n":''); 
-	$header .= "Reply-To: $replyTo\r\n" ;
-	$header .= "Errors-To: $replyTo\r\n" ;
-	$header .= "X-Sender: $replyTo\r\n";
-	$header .= "Date: " . date('D, d M Y H:i:s O') . "\r\n";
-	$header .= "Message-Id: <".md5(uniqid(rand())).".alpha@localhost>\r\n";
-	$header .= "X-Mailer: ALPHA-Mail-PHP/" . phpversion();
-
-	 mail($to,
-		$subject,
-		//$body,
-		str_replace('=','=3D',$body),
-		$header);
-}
-/**
- * Aggiunge una quantità di tempo specifico ad una data
- * @param string $interval è l'intervallo di riferimento (anno, mese, giorno, settimane, ore, minuti, secondi)
- * @param integer $number è il valore di riferimento per la traslazione della data. Può assumere anche un valore negativo 
- * @param string $date data nel formato <i>Y-m-d H:i:s</i> 
- * @return string La nuova data nel formato <i>Y-m-d H:i:s</i>
- */
-function dateAdd($interval, $number, $date) {
-
-    $date_time_array = preg_split('/[^0-9]+/', $date);
-    
-    $seconds = $date_time_array[5];
-    $minutes = $date_time_array[4];
-    $hours = $date_time_array[3];
-    $day = $date_time_array[2];
-    $month = $date_time_array[1];
-    $year = $date_time_array[0];
-    
-    switch ($interval) {
-    
-        case "yyyy":
-            $year+=$number;
-            break;
-        case "q":
-            $year+=($number*3);
-            break;
-        case "m":
-            $month+=$number;
-            break;
-        case "y":
-        case "d":
-        case "w":
-            $day+=$number;
-            break;
-        case "ww":
-        case 'W':
-            $day+=($number*7);
-            break;
-        case "h":
-            $hours+=$number;
-            break;
-        case "n":
-            $minutes+=$number;
-            break;
-        case "s":
-            $seconds+=$number; 
-            break;            
-    }
-    $timestamp= mktime($hours,$minutes,$seconds,$month,$day,$year);
-    return $timestamp;
-}
 
 /**
  * Implementa una vista di default con l'elenco dei contenuti
@@ -414,21 +280,6 @@ function implementDefaultForm($redirectInvalidId,$viewToUse, $dataSource, $itemN
 	}
 }
 
-function oneOfIsIn($arraySrc, $arrayDst, $ifDestIsEmptyReturn = true){
-	if(count($arrayDst)==0 || (count($arrayDst)==1 && $arrayDst[0]=='') ) return $ifDestIsEmptyReturn;
-	for($i = 0; $i<count($arraySrc );$i++){
-		
-		if($arraySrc[$i]!=''){
-			if(array_search($arraySrc[$i],$arrayDst,true)!==false){
-
-				return true;
-			}
-		}
-		
-	}
-
-	return false;
-}
 /**
  * Check if user has one of the roles given to the function as list of string parameters or a single array argument.The optional last parameter will set the condition to check for all given roles, or at least one of the given roles (default behavior)
  * @param paramarray $role
@@ -459,58 +310,6 @@ function userHasRole(){
 	}
 }
 
-function formattaDateTime($valore){
-	$valore = str_replace('00:00:00', '', $valore);
-	$valore = trim($valore);
-	if(strpos($valore, ' ') !== false ){
-		$valori = preg_split(" ", $valore);
-		$valori[0] = formattaDateTime( $valori[0] );
-		$valore = $valori[0] . ' ' . $valori[1];
-	}else{
-		$isDate = ( strlen( $valore ) == 10 );			// L'orario può essere scritto nel formato 00.00.00 oppure
-		if($isDate){
-			$valori = preg_split("/-/", $valore);
-			if(count($valori)==3){
-				$valore = $valori[2] . "/" . $valori[1] . "/" . $valori[0];
-			}
-		}
-	}
-	return $valore;
-}
-
-function unsetFields(&$array, $items){
-	foreach($items as $key=>$value){
-		unset($array[$value]);
-	}
-}
-
-/**
- * xml2array() will convert the given XML text to an array in the XML structure.
- * Link: http://www.bin-co.com/php/scripts/xml2array/
- * Arguments : $contents - The XML text
- *                $get_attributes - 1 or 0. If this is 1 the function will get the attributes as well as the tag values - this results in a different array structure in the return value.
- *                $priority - Can be 'tag' or 'attribute'. This will change the way the resulting array sturcture. For 'tag', the tags are given more importance.
- * Return: The parsed XML in an array form. Use print_r() to see the resulting array structure.
- * Examples: $array =  xml2array(file_get_contents('feed.xml'));
- *              $array =  xml2array(file_get_contents('feed.xml', 1, 'attribute'));
- */
-function xml2array($contents) {
-	require_once('classes/Xml2array.php');
-	$x = new Xml2array();
-	$x->fromString($contents);
-	return $x->parse();
-}
-
-
-function populateList($variableName, $querySQL ){
-	$c = ClassFactory::get('connector');
-	$m =ClassFactory::get('Model');
-	
-	$c->query($querySQL);
-	$m->setVar($variableName,$c->allResults());
-	
-}
-
 /**
  * Prende una chiave di relazione dal model ($key), elabora la query SQL fornita ($query) e scrive tra le variabili del model( $outputKey ) la decodifica.<br /> <strong>NOTA</strong>: è necessario che la query SQL restituisca almeno un valore in un campo denominato 'DECODED' altrimenti non verrà generata alcuna informazione di output.<br/>In <strong>$query</strong> verranno sostituite tutte el occorrenze di %key% con la chiave fornita.  
  * @param String $key la chiave da decodificare dal Model
@@ -523,54 +322,159 @@ function decodeItem($key, $query, $outputKey, $rawOutput = false){
 	if(isset(Model::$variables[$key])){
 		$sql = str_replace('%key%', Model::$variables[$key], $query);
 		if($rawOutput){
-			return _decodeItem($sql);
+			return HelperSQL::decodeItem($sql);
 		}else{
-			$m->setVar($outputKey, _decodeItem($sql));
+			$m->setVar($outputKey, HelperSQL::decodeItem($sql));
 		}
 	}
 }
 
-function _decodeItem($query, $rowSeparator = ',', $fieldSeparator = ' ', $onlyFirstRecord = true, $onlyFirstField = true){
-	$c = ClassFactory::get('connector',true,'tmpConnector');
-	$c->disablePagination();
-	if($onlyFirstRecord){
-		$rs = $c->getFirstRecord($query);
 
-		$results = array($rs);
-		
-	}else{
-		
-		$c->query($query);
-		$results = $c->allResults();
-	}
-	$v = '';
-	if($results!=null){
-		for($i=0;$i<count($results); $i++){
-			$rs = $results[$i];
-			if($rs==null) break;
-			if($v!='') $v.= $rowSeparator;
-			foreach($rs as $key => $value){
-				if($v!='') $v.= $fieldSeparator;
-				$v .= $value;
-				if($onlyFirstField) break;
-			}
-			if($onlyFirstRecord) break;
-		}
-	}
-	ClassFactory::destroy('tmpConnector', false);
-	return $v;
-}
-
-function generateIdInSQL($mainTable, $relatedIdField, $relatedIdTable, $idFilterField, $id, $sortField = '', $exclude = false, $additionalFilter=''){
-	$sql = "select * from $mainTable where ID " .  ($exclude?'NOT':'') . " in (select $relatedIdField from $relatedIdTable where $idFilterField= $id ) $additionalFilter " . (($sortField!='')?"ORDER BY $sortField":'');
-	return $sql;	
-}
-
-		
 function toDottedNumber($value){
 	$value = str_replace(',','.',$value);
 	if(substr($value,0,1)=='.') $value = '0'.$value;
 	return $value;
 	
 }
+/**
+ * @deprecated 
+ * @see HelperDateTime::formatDateTime
+ */
+function formattaDateTime($valore){
+	
+	HelperError::methodDeprecated(__FUNCTION__, "1.3.2", "HelperDateTime::formatDateTime()");
+	return HelperDateTime::formatDateTime($valore);
+	
+}
+
+/**
+ * @deprecated
+ * @see HelperSQL::populateList
+ */
+function populateList($variableName, $querySQL ){
+	
+	HelperError::methodDeprecated(__FUNCTION__, "1.3.2", "HelperSQL::populateList()");
+	HelperSQL::populateList($variableName, $querySQL);
+	
+}
+
+/**
+ * @deprecated
+ * @see HelperSQL::decodeItem
+ */
+function _decodeItem($query, $rowSeparator = ',', $fieldSeparator = ' ', $onlyFirstRecord = true, $onlyFirstField = true){
+	
+	HelperError::methodDeprecated(__FUNCTION__, "1.3.2", "HelperSQL::decodeItem()");
+	return HelperSQL::decodeItem($query, $rowSeparator, $fieldSeparator, $onlyFirstRecord, $onlyFirstField);
+
+}
+
+/**
+ * @deprecated
+ * @see HelperSQL::generateIdInSQL
+ */
+function generateIdInSQL($mainTable, $relatedIdField, $relatedIdTable, $idFilterField, $id, $sortField = '', $exclude = false, $additionalFilter=''){
+	
+	
+	HelperError::methodDeprecated(__FUNCTION__, '1.3.2', "HelperSQL::generateIdInSQL()");
+	return HelperSQL::generateIdInSQL($mainTable, 'ID', $relatedIdField, $relatedIdTable, $idFilterField, $id, $exclude, $additionalFilter, $sortField);
+	# $sql = "select * from $mainTable where ID " .  ($exclude?'NOT':'') . " in (select $relatedIdField from $relatedIdTable where $idFilterField= $id ) $additionalFilter " . (($sortField!='')?"ORDER BY $sortField":'');
+}
+
+
+/**
+ * @deprecated
+ * @see HelperMail::mailSend
+ */
+function mailSend($from, $to, $cc, $bcc, $subject, $body, $replyTo=null){
+	
+	HelperError::methodDeprecated(__FUNCTION__, "1.3.1", "HelperMail::mailSend()");
+	HelperMail::mailSend($from, $to, $cc, $bcc, $subject, $body, $replyTo);
+	
+}
+/**
+ * @deprecated
+ * @see HelperDateTime::dateAdd
+ */
+function dateAdd($interval, $number, $date) {
+	HelperError::methodDeprecated(__FUNCTION__, "1.3.1", "HelperDateTime::dateAdd()");
+	return HelperDateTime::dateAdd($interval, $number, $date);
+	
+}
+
+/**
+ * @deprecated
+ * @see HelperDateTime::echoTime
+ */
+function echoTime(){
+	
+	HelperDateTime::echoTime();
+	
+}
+
+
+/**
+ * @deprecated
+ * @see HelperConstant::define
+ */
+function _define($key, $value, $overwrite= false, $referencesConstant = false, $immediate = false){
+	
+	HelperError::methodDeprecated(__FUNCTION__, '1.3.2', 'HelperConstant::define()');
+	HelperConstant::define($key, $value, $overwrite, $referencesConstant, $immediate);
+	
+}
+/**
+ * @deprecated
+ * @see HelperConstant::defineApplySingle
+ */
+function _defineApplySingle($key, $value){
+	
+	HelperError::methodDeprecated(__FUNCTION__, '1.3.2', 'HelperConstant::applySingle()');
+	HelperConstant::applySingle($key, $value);
+	
+}
+
+/**
+ * @deprecated
+ * @see HelperConstant::defineApplySingle
+ */
+function _defineApplyAll(){
+	
+	HelperError::methodDeprecated(__FUNCTION__, '1.3.2', 'HelperConstant::applyAll()');
+	HelperConstant::applyAll();
+	
+}
+
+/**
+ * @deprecated
+ * @see HelperArray::unsetFields
+ */
+function unsetFields(&$array, $items){
+	
+	HelperError::methodDeprecated(__FUNCTION__, '1.3.2', 'HelperArray::unsetFields()');
+	HelperArray::unsetFields($array, $items);
+	
+}
+
+/**
+ * @deprecated
+ * @see HelperArray::oneOfIsIn
+ */
+function oneOfIsIn($arraySrc, $arrayDst, $ifDestIsEmptyReturn = true){
+	
+	HelperError::methodDeprecated(__FUNCTION__, '1.3.1', 'HelperArray::oneOfIsIn');
+	return HelperArray::oneOfIsIn($arraySrc, $arrayDst, $ifDestIsEmptyReturn);
+}
+
+/**
+ * @deprecated
+ * @see HelperArray::xml2array
+ */
+function xml2array($contents) {
+	
+	HelperError::methodDeprecated(__FUNCTION__, '1.3.2', 'HelperArray::xml2array()');
+	return HelperArray::xml2array($contents);
+	
+}
+
 ?>

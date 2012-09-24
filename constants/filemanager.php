@@ -1,3 +1,3 @@
 <?php
-_define('FILEMANAGER_DEFAULT_FILENAME_EXPRESSION','g%id%;-x%name%;.x%ext%;',false, false, false);
+HelperConstant::define('FILEMANAGER_DEFAULT_FILENAME_EXPRESSION','g%id%;-x%name%;.x%ext%;',false, false, false);
 ?>

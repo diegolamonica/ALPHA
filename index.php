@@ -194,16 +194,16 @@ if(!class_exists('core')){
 			foreach($a['application']['constants'] as $constant => $value){
 				
 				if(is_string($value)){
-					_define($constant, $value);
+					HelperConstant::define($constant, $value);
 				}else{
 					if(!isset($value['value'])) $value['value'] = '';
 					if(!isset($value['attributes'])) $value['attributes'] = array('reference' => 'false');
-					_define($constant, $value['value'], true, $value['attributes']['reference']=='true');
+					HelperConstant::define($constant, $value['value'], true, $value['attributes']['reference']=='true');
 				}
 			}
 			
 			require_once CORE_ROOT.'constants.php';
-			_defineApplyAll();
+			HelperConstant::applyAll();
 			require_once CORE_ROOT.'classes/ClassFactory.php';
 			
 			

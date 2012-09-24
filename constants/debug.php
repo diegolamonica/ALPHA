@@ -76,7 +76,7 @@ define('DEBUG_REPORT_ALL', 		DEBUG_REPORT_CLASS_INFO+							# For maniacal purpo
 								DEBUG_REPORT_OTHER_DATA);
 
 #define('DEBUG_REPORT_LEVEL', DEBUG_REPORT_CLASS_FUNCTION_INFO+DEBUG_REPORT_CLASS_INFO);	
-_define('DEBUG_REPORT_LEVEL', DEBUG_REPORT_NONE,false,false,true);
+HelperConstant::define('DEBUG_REPORT_LEVEL', DEBUG_REPORT_NONE,false,false,true);
 #define('DEBUG_REPORT_LEVEL', DEBUG_REPORT_NONE,false,false,true);
 #_define('DEBUG_REPORT_LEVEL', DEBUG_REPORT_CLASS_INFO+DEBUG_REPORT_FUNCTION_ENTER+DEBUG_REPORT_OTHER_DATA,false,false,true);
 								
@@ -85,17 +85,17 @@ date_default_timezone_set(APPLICATION_TIMEZONE);
  * Identify the name of the generated debug file
  * @var String
  */
-_define('DEBUG_FILE_NAME',	date('YmdH') . '@' . $_SERVER['REMOTE_ADDR']. '.txt',false,false,true);
+HelperConstant::define('DEBUG_FILE_NAME',	date('YmdH') . '@' . $_SERVER['REMOTE_ADDR']. '.txt',false,false,true);
 /**
  * Identifica il folder nel quale verranno messi i file di debug.
  * @var String
  */
-_define('DEBUG_FILE_PATH',	CORE_ROOT . 'debugging/',false,false,true);
+HelperConstant::define('DEBUG_FILE_PATH',	CORE_ROOT . 'debugging/',false,false,true);
 
 /**
  * Variabile per la notifica di errore presenti nella classe debugger
  */
 
-_define('ERROR_FUNCTION_NOT_FOUND', 'Funzione non definita nel contesto');
+HelperConstant::define('ERROR_FUNCTION_NOT_FOUND', 'Funzione non definita nel contesto');
 
 ?>
