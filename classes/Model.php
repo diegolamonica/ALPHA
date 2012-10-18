@@ -1,7 +1,7 @@
 <?php
 /**
  * @author Diego La Monica
- * @version 2.5
+ * @version 2.6
  * @name Model
  * @package ALPHA
  * @uses Debugger
@@ -46,8 +46,11 @@ class Model extends Debugger {
 	 *
 	 * V 2.5
 	 * - Improved url building in rendering method
+	 * 
+	 * V 2.6
+	 * - Bugfix in setVarRuntime()
 	 */
-	const VERSION = '2.5';
+	const VERSION = '2.6';
 
 	const KEYWORD_PHP_BLOCK_START = 'php';
 	const KEYWORD_PHP_BLOCK_END = 'phpend';
@@ -1429,28 +1432,43 @@ class Model extends Debugger {
 
 	}
 	private function setVarRuntime($buffer){
-
+	
 		if(preg_match('/{' .self::KEYWORD_SETVAR.':([a-z0-9_\-\.]+) ([^{}]+)}/i', $buffer, $items)){
-
+	
 			$newVar = $items[1];
 			$value = $items[2];
 			$value = $this->replaceNestedVar($value);
-			$result = $this->getVar($value);
+			if(substr($value,0,1) == '@'){
+				/*
+				 * Explicit setting of variable value
+				*/
+				$value = substr($value, 1);
+				$value = $this->getVar($value);
+			}else{
+				/*
+				 * Backcompatibility: if exists a variable with the given name then we need to use it.
+				 */
+				$result = $this->getVar($value);
+				if($result!='') $value = $result;
+				/*
+				 * Else it would be the exact value.
+				 */
+			}
+			$this->setVar($newVar, $value);
 
-			if($result!='') $value = $result;
-			$this->setVar($newVar, $value); 
-			#self::$variables[$newVar] =  $value;
 			$result = array(
-				preg_replace('/[^a-z0-9]/i', '\\\\\0', $items[0]),
-				''
-			) ;
-					
+					preg_replace('/[^a-z0-9]/i', '\\\\\0', $items[0]),
+							''
+					) ;
+	
 		}else{
-				
-			$result = '';
+	
+					$result = '';
 		}
 		return $result;
-	}
+		}
+	
+	
 	/**
 	 * Obtain the value stored in a template variable
 	 * @param string $key

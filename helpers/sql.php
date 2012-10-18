@@ -17,10 +17,15 @@ class HelperSQL{
 		$c = ClassFactory::get('connector',true,'HelperSQLConnector');
 		if($onlyFirstRecord){
 			$rs = $c->getFirstRecord($query);
-	
+			/*
+			 * Converting direct data in one row result. 
+			 */
 			$results = array($rs);
-			
+	
 		}else{
+			/*
+			 * Retrieving all records from the query
+			 */
 			$c->disablePagination();
 			$c->query($query);
 			$results = $c->allResults();
@@ -31,18 +36,23 @@ class HelperSQL{
 				$rs = $results[$i];
 				if($rs==null) break;
 				if($v!='') $v.= $rowSeparator;
+				/*
+				 * Bugfix: on multiple line extractor the separator were been put on the beginning of each line
+				 */
+				$row = '';
 				foreach($rs as $key => $value){
-					if($v!='') $v.= $fieldSeparator;
-					$v .= $value;
+					if($row!='') $row.= $fieldSeparator;
+					$row .= $value;
 					if($onlyFirstField) break;
 				}
+				$v .= $row;
 				if($onlyFirstRecord) break;
 			}
 		}
 		ClassFactory::destroy('HelperSQLConnector', false);
 		return $v;
 	}
-	
+		
 	/**
 	 * 
 	 * Populate a variable into Model using the result returned by the execution of SQL in the current connector
