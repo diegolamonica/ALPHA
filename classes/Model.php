@@ -1,7 +1,7 @@
 <?php
 /**
  * @author Diego La Monica
- * @version 2.6
+ * @version 2.7
  * @name Model
  * @package ALPHA
  * @uses Debugger
@@ -49,8 +49,21 @@ class Model extends Debugger {
 	 * 
 	 * V 2.6
 	 * - Bugfix in setVarRuntime()
+	 *
+	 * V 2.7
+	 * - Include static improvement
+	 * - Improved url building in rendering method
+	 * - Invoked the HelperDateTime::dateAdd instead the deprecaded dateAdd method
+	 * - Introduced the new method genericBlockSearch in favour of future expansion
+	 * - Complete refactoring of IF/ELSE/ENDIF block search:
+	 * 		- removed few bugs 
+	 * 		- faster and accurate
+	 * - LOOP Block parser uses the new "genericBlockSearch" instead of "endBlockSearch"
+	 * - PHP Block parser uses the new "genericBlockSearch" instead of "endBlockSearch"
+	 * - Removed the unused method "ifBlockSearch".
+	 * 
 	 */
-	const VERSION = '2.6';
+	const VERSION = '2.7';
 
 	const KEYWORD_PHP_BLOCK_START = 'php';
 	const KEYWORD_PHP_BLOCK_END = 'phpend';
@@ -670,7 +683,10 @@ class Model extends Debugger {
 				
 			// Scrivo le righe per il file di cache in un array
 			$cacheFile = array();
-			$cacheFile[] = date('Y-m-d H:i:s', dateAdd($expireUnit, $expireValue, date('Y-m-d H:i:s')));
+			/*
+			 * Using the new Helper class instead the deprecated method
+			 */
+			$cacheFile[] = date('Y-m-d H:i:s', HelperDateTime::dateAdd($expireUnit, $expireValue, date('Y-m-d H:i:s')));
 				
 			$modelKeyVars = preg_split('/,/',$cacheAttribs['modelkeyvar']);
 			foreach($modelKeyVars as $cacheIndex => $keyVar){
@@ -1015,12 +1031,20 @@ class Model extends Debugger {
 						$fileToInclude = $value;
 					}
 					$tmpBuffer = file_get_contents($fileToInclude);
-					$buffer = str_replace($items[0], $tmpBuffer,$buffer);
+					/*
+					 * We have to replace just the first include static occourrence in the buffer.
+					 */
+					$buffer = preg_replace('/' . preg_quote( $items[0], '/' ) . '/', $tmpBuffer,$buffer, 1);
 					break;
 				case self::KEYWORD_LOOP_START:
 					$tmpBuffer = '';
-						
-					$loopBlock = $this->endBlockSearch($buffer, $items[0],self::KEYWORD_LOOP_START, self::KEYWORD_LOOP_END);
+					/*
+					 * Used the better new method genericBlockSearch
+					 */
+					$loopBlock = $this->genericBlockSearch($buffer, $items[0], self::KEYWORD_LOOP_START, self::KEYWORD_LOOP_END);
+					$loopBlock = $loopBlock[0];
+					
+					#$loopBlock = $this->endBlockSearch($buffer, $items[0],self::KEYWORD_LOOP_START, self::KEYWORD_LOOP_END);
 					$blockName = $value;
 						
 						
@@ -1211,7 +1235,7 @@ class Model extends Debugger {
 					$this->loopBreakFor = $value;
 					break; 
 				case self::KEYWORD_IF_START:
-					list($ifBlock, $elseBlock) = $this->ifBlockSearch($buffer, $items[0], self::KEYWORD_IF_START, self::KEYWORD_IF_END, self::KEYWORD_IF_ELSE);
+					list($ifBlock, $elseBlock) = $this->genericBlockSearch($buffer, $items[0], self::KEYWORD_IF_START, self::KEYWORD_IF_END, self::KEYWORD_IF_ELSE);
 					$replacement = $items[0];
 					$replacement .= $ifBlock;
 					if($elseBlock!=''){ 
@@ -1227,7 +1251,13 @@ class Model extends Debugger {
 					};
 					break;
 				case self::KEYWORD_PHP_BLOCK_START:
-					$block = $this->endBlockSearch($buffer, $items[0],self::KEYWORD_PHP_BLOCK_START, self::KEYWORD_PHP_BLOCK_END);
+					/*
+					 * Used the better new method genericBlockSearch
+					 */
+					$block = $this->genericBlockSearch($buffer, $items[0], self::KEYWORD_PHP_BLOCK_START, self::KEYWORD_PHP_BLOCK_END);
+					$block = $block[0];
+					#$block = $this->endBlockSearch($buffer, $items[0],self::KEYWORD_PHP_BLOCK_START, self::KEYWORD_PHP_BLOCK_END);
+					
 					$replacement = $items[0].$block.'{'.self::KEYWORD_PHP_BLOCK_END .'}';
 						
 					ob_start();
@@ -1241,8 +1271,13 @@ class Model extends Debugger {
 						
 					break;
 				case self::KEYWORD_IFVAR_START:
-						
-					$block = $this->endBlockSearch($buffer, $items[0],self::KEYWORD_IFVAR_START, self::KEYWORD_IF_END);
+					/*
+					 * Used the better new method genericBlockSearch
+					 */
+					$block = $this->genericBlockSearch($buffer, $items[0],self::KEYWORD_IFVAR_START, self::KEYWORD_IF_END);
+					$block = $block[0];
+					
+					#$block = $this->endBlockSearch($buffer, $items[0],self::KEYWORD_IFVAR_START, self::KEYWORD_IF_END);
 					$replacement = $items[0].$block.'{'.self::KEYWORD_IF_END .'}';
 					$value = trim($value);
 					$evaluation = preg_split(' ',$value);
@@ -1301,7 +1336,10 @@ class Model extends Debugger {
 					break;
 				case self::KEYWORD_SETVAR:
 					$result = $this->setVarRuntime($buffer);
-					$buffer = preg_replace('/' . $result[0] . '/', (is_array($result[1]))?print_r($result[1], true):$result[1],$buffer,1);
+					$buffer = preg_replace(
+						'/' . $result[0] . '/', 
+						is_array($result[1])?print_r($result[1], true):$result[1],
+						$buffer,1);
 					break;
 				case self::KEYWORD_FUNCTION:
 					$tmpValue = $value;
@@ -1434,7 +1472,7 @@ class Model extends Debugger {
 	private function setVarRuntime($buffer){
 	
 		if(preg_match('/{' .self::KEYWORD_SETVAR.':([a-z0-9_\-\.]+) ([^{}]+)}/i', $buffer, $items)){
-	
+
 			$newVar = $items[1];
 			$value = $items[2];
 			$value = $this->replaceNestedVar($value);
@@ -1466,7 +1504,7 @@ class Model extends Debugger {
 					$result = '';
 		}
 		return $result;
-		}
+	}
 	
 	
 	/**
@@ -1787,64 +1825,174 @@ class Model extends Debugger {
 		return $block;
 	}
 
-	private function ifBlockSearch($buffer, $item , $keyword_start, $keyword_end, $keyword_else){
+	private function genericBlockSearch($buffer, $item , $keyword_start, $keyword_end, $keyword_else = ''){
 	
-		// Identify the endif related to this if/endif block  
-		$block = $this->endBlockSearch($buffer, $item, $keyword_start, $keyword_end);
-		
-		$blocks = array();
-		$blocks[0] = array (
-			'if' => array('starts' => 0, 'ends' => strlen($block)),
-			'else' => null
-		);
-		
-		// Search all nested if
-		if(preg_match_all('/{' . $keyword_start .':([^}]+)}/', $block, $matches, PREG_OFFSET_CAPTURE)){
-			
-			foreach($matches[0] as $index => $match){
-				$subBlock = $this->endBlockSearch($block, $match[0], $keyword_start, $keyword_end);
-				$blockEndsTo = strlen($subBlock)+ strlen($match[0]) + strlen('{'.$keyword_end.'}')+$match[1];
+		/*
+		 * Looking for exact offset of the searched "start block"
+		 */
+		preg_match("#" .  preg_quote($item, '#') . '#', $buffer, $startMatch, PREG_OFFSET_CAPTURE );
+		/*
+		 * Look for all "$keyword_start" in the template 
+		 */
+		preg_match_all("#{" .  preg_quote($keyword_start, '#') . ':#', $buffer, $startMatches, PREG_OFFSET_CAPTURE );
+		/*
+		 * Look for all "$keyword_end" in the template
+		 */
+		preg_match_all("#{" .  preg_quote($keyword_end, '#') . '}#', $buffer, $endMatches, PREG_OFFSET_CAPTURE );
+		/*
+		 * Look for all "$keyword_else" in the template
+		 */
+		if($keyword_else!=''){
+			preg_match_all("#{" .  preg_quote($keyword_else, '#') . '}#', $buffer, $elseMatches, PREG_OFFSET_CAPTURE );
+		}
+		/*
+		 * Simplifying the array structures
+		 */
+		$startMatch 	= $startMatch[0][1];
+		$startMatches 	= $startMatches[0];
+		$endMatches 	= $endMatches[0];
+		if($keyword_else!='') $elseMatches 	= $elseMatches[0];
+	
+		/*
+		 * Keeping only the matching offsets for each matching element
+		 */
+		$theItemBlockIndex = -1;
+		foreach($startMatches 	as $index => &$data){
+			$data = $data[1];
+			/*
+			 * And keep in mind which is the threating "start block index" 
+			 * note: is it required? It should be always the first? 
+			 */
+			if($data == $startMatch) $theItemBlockIndex = $index;
+		}
+		foreach($endMatches 	as &$data) 	$data = $data[1];
+		if($keyword_else!='') foreach($elseMatches 	as &$data) 	$data = $data[1];
 				
-				$blocks[$match[1]] = array(
-					'if' => array( 'starts'=> $match[1], 'ends' => $blockEndsTo),
-					'else' => null
-				);
-			}
-		}
-		$return = array('if' => '', 'else' => '');
-		if(preg_match_all('/{' . $keyword_else .'}/',$block, $matches, PREG_OFFSET_CAPTURE)){
-			// There are a lot of else (or at least 1)
-			$current = 0;
-			foreach($matches[0] as $current => $else){
-				// Scan all else
+		/*
+		 * I must traverse all the "end block" array until I'm able to bind the right "start block" element.
+		 */
+		foreach($endMatches as $endOffset){
 			
-				$elseOffset = $else[1];
-				$maybe= 0;
-				foreach($blocks as $startRow => $data){
-					if(	$data['if']['starts']<$elseOffset && 
-						$data['if']['ends']>$elseOffset
-					) $maybe = $startRow;
+			/*
+			 * Just reset some control variables
+			 */
+			$lastStartBlockIndex 	= false;
+			$lastStartMatchOffset	= 0;
+
+			/*
+			 * Traversing all start blocks
+			 */
+			foreach($startMatches as $startBlockIndex => $startMatchOffset){
+				
+				/*
+				 * Ignoring the null values
+				 */
+				if(!is_null($startMatchOffset)){
+
+					/*
+					 * If the "start offset" is just after the current "end offset" then I will break the traversing 
+					 * because the previous "start block" offset (and index) is binded to the current "end block"
+					 */
+					if($startMatchOffset > $endOffset) break;
 					
-					
+					/*
+					 * Indeed here I will set the "last start offset" and the "last start index" 
+					 */
+					$lastStartBlockIndex 	= $startBlockIndex;
+					$lastStartMatchOffset 	= $startMatchOffset;
 				}
-				$blocks[$maybe]['else'] = array('starts' => $elseOffset+ strlen("{".$keyword_else."}"), 'ends' => $blocks[$maybe]['if']['ends']);
-				$blocks[$maybe]['if']['ends'] = $elseOffset;
-				 
 			}
 			
-			$return[0] = substr($block, $blocks[0]['if']['starts'], $blocks[0]['if']['ends']);
-			if($blocks[0]['else']!=null){
-				$return[1] = substr($block, $blocks[0]['else']['starts'], $blocks[0]['else']['ends']);
-			}else{
-				$return[1] = '';
+			if($lastStartBlockIndex!==false){
+				
+				/*
+				 * If I found the corresponding "start block" element then, because I'm using it, I will reset (set to null)
+				 * the used element in the "start matches" array.
+				 */
+				$startMatches[$lastStartBlockIndex] = null;
+				
+				/*
+				 * Just reset some control variables for the ELSE block
+				 */
+				$lastElseIndex = false;
+				$lastElseOffset = -1;
+				
+				if($keyword_else!=''){
+					/*
+					 * Traversing all else blocks
+					 */
+					foreach($elseMatches as $elseIndex => $elseOffset){
+						
+						/*
+						 * Ignoring the null values
+						 */
+						if(!is_null($elseOffset)){
+							
+							/*
+							 * If the "else offset" is next to the current "end offset" then I will break the traversing 
+							 * because I'm outside the "start/end block". 
+							 */
+							if ($elseOffset > $endOffset) break;
+							
+							/*
+							 * Only if the "else block" is placed after the "start block" I will consider it, else, last else block will keep 
+							 * the previous (or default) value.   
+							 */
+							if($elseOffset> $lastStartMatchOffset){
+								$lastElseIndex 	= $elseIndex;
+								$lastElseOffset = $elseOffset;
+							}
+						}
+					}
+					/*
+					 * If I'm using an ELSE block then I will null it that means that, since now, it was "used".
+					 */
+					if($lastElseIndex!==false) $elseMatches[$lastElseIndex] = null;
+				}
+				
+				/* 
+				 * Is it my "start block" ? 
+				 */
+				if($lastStartBlockIndex === $theItemBlockIndex){
+	
+					/*
+					 * Placing the cursor just after the matching item.
+					 */
+					$startMatch += strlen($item);
+					
+					if($lastElseIndex!==false){
+						
+						/*
+						 * If the "else block" is available, the "main buffer" will be the text between the "start block placeholder" 
+						 * and "else block placeholder" while the "alternate buffer" will be the text between the "else block placeholder" 
+						 * and the "end block placeholder".
+						 */
+						$elseOffset 	 = $lastElseOffset;
+						
+						$mainBuffer 	 = substr($buffer, $startMatch, $elseOffset - $startMatch);
+						
+						$elseOffset 	+= strlen($keyword_else) + 2;
+						
+						$elseBuffer 	 = substr($buffer, $elseOffset, $endOffset - $elseOffset);
+						
+					}else{
+						
+						/*
+						 * Else the "main buffer" will be the entire content of the block
+						 */
+						$mainBuffer = substr($buffer, $startMatch, $endOffset-$startMatch);
+						$elseBuffer = '';
+					}
+					
+					break;
+				}
+				
 			}
 			
-		}else{
-		
-		 	$return[0]   = $block;
-			$return[1] = '';
-		
 		}
+
+		$return[0]	= $mainBuffer;
+		$return[1] 	= $elseBuffer;
 		return $return;
 		
 	}

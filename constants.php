@@ -15,7 +15,8 @@
 #define('ALPHA_FRAMEWORK_VERSION','1.3.0');
 #define('ALPHA_FRAMEWORK_VERSION','1.3.1');
 #define('ALPHA_FRAMEWORK_VERSION','1.3.2');
-define('ALPHA_FRAMEWORK_VERSION','1.3.3');
+#define('ALPHA_FRAMEWORK_VERSION','1.3.3');
+define('ALPHA_FRAMEWORK_VERSION','1.3.4');
 
 /*
  * Removed a php_notice
