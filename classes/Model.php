@@ -1,7 +1,7 @@
 <?php
 /**
  * @author Diego La Monica
- * @version 2.7
+ * @version 2.8
  * @name Model
  * @package ALPHA
  * @uses Debugger
@@ -62,8 +62,10 @@ class Model extends Debugger {
 	 * - PHP Block parser uses the new "genericBlockSearch" instead of "endBlockSearch"
 	 * - Removed the unused method "ifBlockSearch".
 	 * 
+	 * V 2.8
+	 * - bugfix: foreach:SQL does not destroy temporary variable after its usage. 
 	 */
-	const VERSION = '2.7';
+	const VERSION = '2.8';
 
 	const KEYWORD_PHP_BLOCK_START = 'php';
 	const KEYWORD_PHP_BLOCK_END = 'phpend';
@@ -1046,8 +1048,14 @@ class Model extends Debugger {
 					
 					#$loopBlock = $this->endBlockSearch($buffer, $items[0],self::KEYWORD_LOOP_START, self::KEYWORD_LOOP_END);
 					$blockName = $value;
-						
-						
+					
+					/*
+					 * Bugfix: if used the same SQL temporary variable 
+					 * on the same page the second will keep the exceding
+					 * values of the first one, because never destroyed.
+					 */
+					$sqlTemporaryBlockUsed = false;
+					
 					if(preg_match('/SQL\(([^\)]+)\)::(.*)/',$blockName, $sqlResults )){
 						$c = ClassFactory::get('connector');
 
@@ -1055,6 +1063,12 @@ class Model extends Debugger {
 						$this->setVar($sqlResults[1], $c->allResults());
 
 						$blockName = $sqlResults[1];
+						/*
+						 * Bugfix: if used the same SQL temporary variable
+						 * on the same page the second will keep the exceding
+						 * values of the first one, because never destroyed.
+						 */
+						$sqlTemporaryBlockUsed = true;
 					}
 					
 					# Used the new syntax (V2.0): Getting the iterable object (not the ZeroIndex Value)
@@ -1222,7 +1236,15 @@ class Model extends Debugger {
 						 * Restoring the iterator
 						 */
 						if(!is_null($tempIterator)) $this->setVar('iterator', 		$tempIterator);
-
+						
+						/*
+						 * Bugfix: if used the same SQL temporary variable
+						 * on the same page the second will keep the exceding
+						 * values of the first one, because never destroyed.
+						 */
+						if($sqlTemporaryBlockUsed){
+							$this->clearVar($blockName);
+						}
 					}else{
 						$tmpBuffer = '';
 					}

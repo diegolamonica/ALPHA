@@ -5,6 +5,10 @@ require_once CORE_ROOT. 'classes/Debug.php';
 class Oci8Connector extends Debugger implements iConnector {
 	/*
 	 * CHANGELOG:
+	 * 
+	 * V 2.3
+	 * - bugfix: call method "isset" returns false if a param is explicitly defined as null 
+	 * 
 	 * V 2.2
 	 *  - allowed to invoke stored procedure passing parameters by its name
 	 * 
@@ -18,8 +22,10 @@ class Oci8Connector extends Debugger implements iConnector {
 	 */
 	
 	# const VERSION = '2.0';
-	#const VERSION = '2.1';
-	const VERSION = '2.2';
+	# const VERSION = '2.1';
+	# const VERSION = '2.2';
+	const VERSION = '2.3';
+
 	private $conn;
 	private $result;
 	public $lastQuery;
@@ -269,7 +275,13 @@ class Oci8Connector extends Debugger implements iConnector {
 		if(is_array($params)){
 			# Binds all params
 			foreach($params as $index => $paramInfo){
-				if(!isset($paramInfo[1])){
+				/*
+				 * If the $paramInfo[1] is null valued but explicitly defined
+				 * I must consider it as setted.
+				 */ 
+				
+				if(!key_exists(connector::CALL_PARAM_VALUE, $paramInfo)){
+				# if(!isset($paramInfo[1])){
 					# it means that the parameter is an output parameter
 					$params[$index][connector::CALL_PARAM_VALUE] = null;
 					$params[$index][connector::CALL_PARAM_OUTPUT] = true; 
