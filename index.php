@@ -1,10 +1,10 @@
 <?php
 /**
  * 
- * CORE 1.3.5
+ * CORE 1.3.6
  * @author Diego La Monica
- * @version 1.3.5
- * @package Alpha Core 1.3.5
+ * @version 1.3.6
+ * @package Alpha Core 1.3.6
  * ----------------------------
  * Changelog:
  * 
@@ -298,7 +298,13 @@ if(!class_exists('core')){
 							if(isset($dbg['function_params']) && strtoupper($dbg['function_params']['attributes']['set'])== 'ON') 	$debugLevel |= DEBUG_REPORT_FUNCTION_PARAMETERS; 
 							if(isset($dbg['function_exit']) && strtoupper($dbg['function_exit']['attributes']['set'])== 'ON') 		$debugLevel |= DEBUG_REPORT_FUNCTION_EXIT; 
 							if(isset($dbg['other_data']) && strtoupper($dbg['other_data']['attributes']['set'])== 'ON') 			$debugLevel |= DEBUG_REPORT_OTHER_DATA; 
-							if(!defined('DEBUG_REPORT_LEVEL')) define('DEBUG_REPORT_LEVEL', $debugLevel);
+							if(!defined('DEBUG_REPORT_LEVEL')){
+								error_log('Defining Debug Report Level');
+								define('DEBUG_REPORT_LEVEL', $debugLevel);
+							}else{
+								error_log('Debug Report Level already defined');
+							}
+							
 							
 							if(isset($dbg['skip']) && count($dbg['skip'])>0){
 								$d = ClassFactory::get('Debug');

@@ -2,6 +2,9 @@
 class SessionStorage implements iStorage{
 	/*
 	 * ChangeLog:
+	 *
+	 * V 1.2
+	 * - method destroy() accepts either string and array as parameter or list of parameters
 	 * 
 	 * V 1.1
 	 * - Checking for headers sent on the class constructor method.
@@ -38,8 +41,25 @@ class SessionStorage implements iStorage{
 
 	}
 
+	/**
+	 * (non-PHPdoc)
+	 * @see iStorage::destroy()
+	 */
 	public function destroy($key = ''){
-		if($key!=''){
+		
+		$arguments = func_get_args();
+		/*
+		 * If multiple parameters given then I will consider them as cookie keys
+		 */
+		if(count($arguments)>1) $key = $arguments;
+		
+		/*
+		 * If array of keys given then I need to recursively invoke this method for each key
+		 */
+		if(is_array($key)){
+			foreach($key as $k)
+				$this->destroy($k);
+		}else if($key!=''){
 			unset($_SESSION[$key]);
 		}else{
 			unset($_SESSION);
@@ -47,6 +67,8 @@ class SessionStorage implements iStorage{
 		session_destroy();
 
 	}
+	
+	
 	public function debug(){
 
 		foreach($_SESSION as $key => $value){

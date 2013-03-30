@@ -3,6 +3,9 @@ class CookieStorage implements iStorage{
 	/*
 	 * ChangeLog:
 	 * 
+	 * V 1.2
+	 * - method destroy() accepts either string, array or multiple parameters
+	 * 
 	 * V 1.1
 	 * - Introduced optional parameter $expiration in write() method
 	 * - Check for PHP version for changes in the PHP setcookie() method
@@ -97,8 +100,20 @@ class CookieStorage implements iStorage{
 	 * @param string $key (optional) the key to remove.
 	 */
 	public function destroy($key = ''){
-
-		if($key!=''){
+		$arguments = func_get_args();
+		/*
+		 * If multiple parameters given then I will consider them as cookie keys
+		 */
+		if(count($arguments)> 1) 
+			$key = $arguments;
+		
+		if(is_array($key)){
+			/*
+			 * If array of cookies given then I need to recursively invoke this method for each key
+			 */
+			foreach($key as $k)
+				$this->destroy($k);
+		}else if($key!=''){
 			/*
 			 * unsetting the cookie telling that it is expired.
 			*/

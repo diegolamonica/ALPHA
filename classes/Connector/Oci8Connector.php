@@ -6,6 +6,11 @@ class Oci8Connector extends Debugger implements iConnector {
 	/*
 	 * CHANGELOG:
 	 * 
+	 * V 2.4
+	 * - update: new parameter $otherData defined for method setErrorObject to debug better problems when happen
+	 * - bugfix: when you invoke a StoredProceduere and one of the parameters is a double it will be converted to the proper format.
+	 * - improvements: on stored procedure invoking error the raised error will report given parameters too.  
+	 * 
 	 * V 2.3
 	 * - bugfix: call method "isset" returns false if a param is explicitly defined as null 
 	 * 
@@ -24,8 +29,9 @@ class Oci8Connector extends Debugger implements iConnector {
 	# const VERSION = '2.0';
 	# const VERSION = '2.1';
 	# const VERSION = '2.2';
-	const VERSION = '2.3';
-
+	# const VERSION = '2.3';
+	const VERSION = '2.4';
+	
 	private $conn;
 	private $result;
 	public $lastQuery;
@@ -186,11 +192,11 @@ class Oci8Connector extends Debugger implements iConnector {
 	 * @param string $sql
 	 * @param string $specificEvent
 	 */
-	private function setErrorObject($errorObject, $sql, $specificEvent = ALPHA_EVENT_CONNECTOR_ON_ERROR){
+	private function setErrorObject($errorObject, $sql, $specificEvent = ALPHA_EVENT_CONNECTOR_ON_ERROR, $otherData = null){
 		
 		$e = ClassFactory::get('ErrorManager');
 		$evt = ClassFactory::get('Events');
-		$evt->raise($specificEvent, $errorObject, $sql);
+		$evt->raise($specificEvent, $errorObject, $sql, $otherData);
 		$this->lastErrorObject = $errorObject;
 		
 		# Improved for Oracle internal error
@@ -274,6 +280,21 @@ class Oci8Connector extends Debugger implements iConnector {
 		
 		if(is_array($params)){
 			# Binds all params
+			
+			/*
+			 * OCI8 doesn't like too much the float values so I need to manage them in a strange way:
+			 * I will gather the NLS_SESSION_PARAMETERS I've defined or the session default. It is 
+			 * The text value received is in the form: 'dg'
+			 * where <d> is the decimal character.
+			 * and <g> is the group separator
+			 */
+			$decimalManagement 	= $this->getFirstRecord("select VALUE from sys.NLS_SESSION_PARAMETERS where PARAMETER='NLS_NUMERIC_CHARACTERS'");
+			$decimalManagement 	= array($decimalManagement['VALUE'][0], $decimalManagement['VALUE'][1]);
+			/*
+			 * PHP uses "." as decimal separator in float values and any char for groups
+			 */
+			$decimalReplacement = array('.', '@@@');
+			
 			foreach($params as $index => $paramInfo){
 				/*
 				 * If the $paramInfo[1] is null valued but explicitly defined
@@ -288,6 +309,23 @@ class Oci8Connector extends Debugger implements iConnector {
 					
 					
 				}
+				
+				/*
+				 * If the value is a float I must change it in a string
+				 * according to NLS_NUMERIC_CHARACTERS
+				 */
+				if(is_float( $params[$index][connector::CALL_PARAM_VALUE] )){
+					
+					$theValue = $params[$index][connector::CALL_PARAM_VALUE];
+					 
+					$theValue = str_replace(
+							$decimalReplacement,
+							$decimalManagement,
+							"$theValue"
+						);
+					$params[$index][connector::CALL_PARAM_VALUE] = $theValue;
+				}
+				
 				if(!isset($paramInfo[connector::CALL_PARAM_TYPE])) $paramInfo[connector::CALL_PARAM_TYPE] = SQLT_CHR;
 				if(!isset($paramInfo[connector::CALL_PARAM_SIZE])) $paramInfo[connector::CALL_PARAM_SIZE] = -1;
 				
@@ -311,7 +349,7 @@ class Oci8Connector extends Debugger implements iConnector {
  		$output = array();
 		if(!$response){
 			$errorObject = oci_error($stm);
-			$this->setErrorObject($errorObject, $sql, ALPHA_EVENT_CONNECTOR_ON_ERROR);
+			$this->setErrorObject($errorObject, $sql, ALPHA_EVENT_CONNECTOR_ON_ERROR, $params);
 		}else{
 			if(is_array($params)){
 				# We have to 	*/create the option array
